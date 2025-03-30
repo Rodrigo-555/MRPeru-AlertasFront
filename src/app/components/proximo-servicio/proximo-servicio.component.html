@@ -1,0 +1,82 @@
+<div class="main-container">
+    <div class="content">
+        <h1>PRÓXIMO SERVICIO</h1>
+
+        <div class="search-container">
+            <img src="assets/img/iconoSearch.png" alt="Buscar" class="input-search-icon">
+            <input type="text" class="form-control custom-search" placeholder="Buscar equipo o cliente">
+            <button class="btn btn-primary search-button" type="button">Buscar</button>
+        </div>
+
+        <div class="content-tree">
+            <div class="tree">
+                <details *ngFor="let cliente of clientes">
+                    <summary>📂 {{ cliente.nombre }}</summary>
+                    <details *ngFor="let sub of cliente.subclientes">
+                        <summary>📂 {{ sub.nombre }}</summary>
+                        <details *ngFor="let subcliente of sub.subclientes">
+                            <summary>📂 {{ subcliente.nombre }}</summary>
+                            <div *ngFor="let equipo of subcliente.subclientes" (click)="seleccionarEquipo(equipo)" class="equipo-item">
+                                <summary>📄 {{ equipo.nombre }} - Próximo Servicio: {{ equipo.proximoServicio | date:'dd/MM/yyyy' }}</summary>
+                            </div>
+                        </details>
+                    </details>
+                </details>
+            </div>
+        </div>
+
+        <h5>📩 Notificaciones de Próximo Servicio</h5>
+
+        <div *ngIf="equipoSeleccionado">
+            <!-- Tabla Resumen -->
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Cliente</th>
+                        <th>Planta</th>
+                        <th>Equipo</th>
+                        <th>Modelo</th>
+                        <th>Serie</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>{{ equipoSeleccionado.cliente }}</td>
+                        <td>{{ equipoSeleccionado.planta }}</td>
+                        <td>{{ equipoSeleccionado.equipo }}</td>
+                        <td>{{ equipoSeleccionado.modelo }}</td>
+                        <td>{{ equipoSeleccionado.serie }}</td>
+                        <td>{{ equipoSeleccionado.estado }}</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h5>🛠️ Detalles de Servicio</h5>
+
+            <!-- Tabla Detallada -->
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Mantenimiento Recomendado</th>
+                        <th>Frecuencia Servicio</th>
+                        <th>Fecha Último Servicio</th>
+                        <th>Fecha Próximo Servicio</th>
+                        <th>Horas de Trabajo </th>
+                        <th>Total de Horas Trabajadas</th> 
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>{{ equipoSeleccionado.recomendacion }}</td>
+                        <td>{{ equipoSeleccionado.recomendacionHoras }} hrs</td>
+                        <td>{{ equipoSeleccionado.ultimoServicio | date:'dd/MM/yyyy' }}</td>
+                        <td>{{ equipoSeleccionado.proximoServicio | date:'dd/MM/yyyy' }}</td>
+                        <td>{{ equipoSeleccionado.horasTrabajadasXdia }}</td>
+                        <td>{{ equipoSeleccionado.horasTrabajo }} hrs</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

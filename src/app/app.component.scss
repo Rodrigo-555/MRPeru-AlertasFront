@@ -1,0 +1,21 @@
+.app-container {
+  display: flex; /* Usa Flexbox */
+  height: 100vh; /* Ocupa toda la pantalla */
+}
+
+app-menu {
+  width: 250px; /* Define un ancho para el menú */
+  height: 100vh; /* Ocupa toda la altura */
+  background-color: #f8f9fa; /* Color de fondo */
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+  position: fixed; /* Fija el menú en la izquierda */
+  left: 0;
+  top: 0;
+  padding: 20px;
+}
+
+.content {
+  margin-left: 250px; /* Empuja el contenido a la derecha */
+  width: calc(100% - 250px); /* Resta el ancho del menú */
+  padding: 20px;
+}

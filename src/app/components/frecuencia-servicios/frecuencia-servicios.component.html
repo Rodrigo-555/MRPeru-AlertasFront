@@ -1,0 +1,126 @@
+<div class="main-container">
+
+    <!-- Sección Tabla (Derecha) -->
+    <div class="content">
+  
+      <h1>FRECUENCIA SERVICIOS</h1>
+  
+      <div class="search-container">
+        <img src="assets/img/iconoSearch.png" alt="Buscar" class="input-search-icon">
+        <input type="text" class="form-control custom-search" placeholder="Busque el cliente">
+        <button class="btn btn-primary search-button" type="button">Buscar</button>
+      </div>
+
+      <div class="content-tree">
+
+        <div class="tree">
+            <details *ngFor="let cliente of clientes">
+              <summary>📂 {{ cliente.nombre }}</summary>
+      
+              <details *ngFor="let sub of cliente.subclientes">
+                <summary>📂 {{ sub.nombre }}</summary>
+      
+                <details *ngFor="let subcliente of sub.subclientes">
+                  <summary>📂 {{ subcliente.nombre }}</summary>
+      
+                  <div *ngFor="let docnombre of subcliente.subclientes">
+                    📄 {{ docnombre.nombre }}
+                  </div>
+                </details>
+              </details>
+      
+            </details>
+          </div>
+
+      </div>
+      
+      <h5>📩 Notificaciones de Servicios</h5>
+  
+      <div class="table-container">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Local</th>
+              <th>Contacto</th>
+              <th>Email</th>
+              <th>Fecha de Envío</th>
+              <th>Modelo</th>
+              <th>Serie</th>
+              <th>Estado</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Planta Santa Anita</td>
+              <td>Edgar Panduro</td>
+              <td>Hepandurocititexsac.com</td>
+              <td>10/03/2025 08:36:15</td>
+              <td>ATLAS COPCO</td>
+              <td>G 11 P</td>
+              <td>Operativo 🟢</td>
+            </tr>
+            <tr>
+              <td>Planta Santa Anita</td>
+              <td>Edgar Panduro</td>
+              <td>Hepandurocititexsac.com</td>
+              <td>10/03/2025 08:22:30</td>
+              <td>ATLAS COPCO</td>
+              <td>G 12 P</td>
+              <td>Mantenimineto Preventivo ⚠️</td>
+            </tr>
+            <tr>
+              <td>Planta Santa Anita</td>
+              <td>Edgar Panduro</td>
+              <td>Hepandurocititexsac.com</td>
+              <td>10/03/2025 08:22:30</td>
+              <td>ATLAS COPCO</td>
+              <td>G 13 P</td>
+              <td>Mantenimineto Critico 🔴</td>
+            </tr>
+  
+            <tr>
+              <td>Planta Santa Anita</td>
+              <td>Edgar Panduro</td>
+              <td>Hepandurocititexsac.com</td>
+              <td>10/03/2025 08:22:30</td>
+              <td>ATLAS COPCO</td>
+              <td>G 14 P</td>
+              <td>Operativo 🟢</td>
+            </tr>
+  
+            <tr>
+              <td>Planta Santa Anita</td>
+              <td>Edgar Panduro</td>
+              <td>Hepandurocititexsac.com</td>
+              <td>10/03/2025 08:22:30</td>
+              <td>ATLAS COPCO</td>
+              <td>G 15 P</td>
+              <td>Operativo 🟢</td>
+            </tr>
+  
+            <tr>
+              <td>Planta Santa Anita</td>
+              <td>Edgar Panduro</td>
+              <td>Hepandurocititexsac.com</td>
+              <td>10/03/2025 08:22:30</td>
+              <td>ATLAS COPCO</td>
+              <td>G 16 P</td>
+              <td>Mantenimineto Critico 🔴</td>
+            </tr>
+  
+            <tr>
+              <td>Planta Santa Anita</td>
+              <td>Edgar Panduro</td>
+              <td>Hepandurocititexsac.com</td>
+              <td>10/03/2025 08:22:30</td>
+              <td>ATLAS COPCO</td>
+              <td>G 17 P</td>
+              <td>Mantenimineto Preventivo ⚠️</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  
+  </div>
+  
