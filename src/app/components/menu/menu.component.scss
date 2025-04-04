@@ -1,5 +1,5 @@
 .menu-container {
-    background: #ffffff;
+    background: #e9eff7;
     margin-top: 60px;
     padding: 20px;
     width: 250px;
@@ -22,6 +22,7 @@
         border-bottom: 2px solid #007bff;
         padding-bottom: 10px;
         width: 100%;
+        
     }
 
     button {
@@ -36,7 +37,9 @@
         text-align: left;
         cursor: pointer;
         font-size: 16px;
+        margin-bottom: 8px;
     }
+
 
     button:hover {
         background: #007bff;
@@ -44,7 +47,7 @@
     }
 
     .active {
-        background: #0056b3;
+        background: #007bff;
         color: white;
     }
 }
