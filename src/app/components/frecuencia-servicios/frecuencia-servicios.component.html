@@ -14,7 +14,7 @@
       <div class="content-tree">
 
         <div class="tree">
-            <details *ngFor="let cliente of clientes">
+            <details *ngFor="let cliente of clientesData">
               <summary>📂 {{ cliente.nombre }}</summary>
       
               <details *ngFor="let sub of cliente.subclientes">
