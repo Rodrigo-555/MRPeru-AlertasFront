@@ -1,0 +1,205 @@
+{
+  "plantas": [
+    {
+      "nombre": "Planta Santa Anita",
+      "equipos": [
+        {
+          "contacto": "Edgar Panduro",
+          "email": "Hepandurocititexsac@gmail.com",
+          "fechaEnvio": "10/03/2025 08:36:15",
+          "referencia": "GA 110 #1",
+          "estado": "Activo🟢",
+          "estado_mantenimiento": "Requiere Servicio⚠️"
+        },
+        {
+          "contacto": "Edgar Panduro",
+          "email": "Hepandurocititexsac@gmail.com",
+          "fechaEnvio": "10/03/2025 08:36:15",
+          "referencia": "GA 110 #1",
+          "estado": "Activo🟢",
+          "estado_mantenimiento": "Requiere Servicio⚠️"
+        },
+        {
+          "contacto": "Edgar Panduro",
+          "email": "Hepandurocititexsac@gmail.com",
+          "fechaEnvio": "10/03/2025 08:36:15",
+          "referencia": "GA 110 #1",
+          "estado": "Activo🟢",
+          "estado_mantenimiento": "Requiere Servicio⚠️"
+        },
+        {
+          "contacto": "Edgar Panduro",
+          "email": "Hepandurocititexsac@gmail.com",
+          "fechaEnvio": "10/03/2025 08:36:15",
+          "referencia": "GA 110 #1",
+          "estado": "Activo🟢",
+          "estado_mantenimiento": "Requiere Servicio⚠️"
+        },
+        {
+          "contacto": "Edgar Panduro",
+          "email": "Hepandurocititexsac@gmail.com",
+          "fechaEnvio": "10/03/2025 08:36:15",
+          "referencia": "GA 110 #1",
+          "estado": "Activo🟢",
+          "estado_mantenimiento": "Requiere Servicio⚠️"
+        },
+        {
+          "contacto": "Edgar Panduro",
+          "email": "Hepandurocititexsac@gmail.com",
+          "fechaEnvio": "10/03/2025 08:36:15",
+          "referencia": "GA 110 #1",
+          "estado": "Activo🟢",
+          "estado_mantenimiento": "Requiere Servicio⚠️"
+        },
+        {
+          "contacto": "Edgar Panduro",
+          "email": "Hepandurocititexsac@gmail.com",
+          "fechaEnvio": "10/03/2025 08:40:22",
+          "referencia": "GA 110 #2",
+          "estado": "Activo🟢",
+          "estado_mantenimiento": "Aun no requiere servicio🟢"
+        },
+        {
+          "contacto": "Edgar Panduro",
+          "email": "Hepandurocititexsac@gmail.com",
+          "fechaEnvio": "10/03/2025 08:45:10",
+          "referencia": "GA 110 #3",
+          "estado": "Activo🟢",
+          "estado_mantenimiento": "Requiere Servicio⚠️"
+        },
+        {
+          "contacto": "Edgar Panduro",
+          "email": "Hepandurocititexsac@gmail.com",
+          "fechaEnvio": "10/03/2025 08:50:00",
+          "referencia": "GA 110 #4",
+          "estado": "Activo🟢",
+          "estado_mantenimiento": "Aun no requiere servicio🟢"
+        },
+        {
+          "contacto": "Edgar Panduro",
+          "email": "Hepandurocititexsac@gmail.com",
+          "fechaEnvio": "10/03/2025 08:55:30",
+          "referencia": "GA 110 #5",
+          "estado": "Activo🟢",
+          "estado_mantenimiento": "Requiere Servicio⚠️"
+        }
+      ]
+    },
+    {
+      "nombre": "Planta Callao",
+      "equipos": [
+        {
+          "contacto": "Contacto Planta Callao",
+          "email": "callao@empresa.com",
+          "fechaEnvio": "11/03/2025 09:00:00",
+          "referencia": "FD 410 Nº 08",
+          "estado": "Activo🟢",
+          "estado_mantenimiento": "Aun no requiere servicio🟢"
+        },
+        {
+          "contacto": "Contacto Planta Callao",
+          "email": "callao@empresa.com",
+          "fechaEnvio": "11/03/2025 09:00:00",
+          "referencia": "FD 410 Nº 08",
+          "estado": "Activo🟢",
+          "estado_mantenimiento": "Aun no requiere servicio🟢"
+        },
+        {
+          "contacto": "Contacto Planta Callao",
+          "email": "callao@empresa.com",
+          "fechaEnvio": "11/03/2025 09:00:00",
+          "referencia": "FD 410 Nº 08",
+          "estado": "Activo🟢",
+          "estado_mantenimiento": "Aun no requiere servicio🟢"
+        },
+        {
+          "contacto": "Contacto Planta Callao",
+          "email": "callao@empresa.com",
+          "fechaEnvio": "11/03/2025 09:00:00",
+          "referencia": "FD 410 Nº 08",
+          "estado": "Activo🟢",
+          "estado_mantenimiento": "Aun no requiere servicio🟢"
+        },
+        {
+          "contacto": "Contacto Planta Callao",
+          "email": "callao@empresa.com",
+          "fechaEnvio": "11/03/2025 09:00:00",
+          "referencia": "FD 410 Nº 08",
+          "estado": "Activo🟢",
+          "estado_mantenimiento": "Aun no requiere servicio🟢"
+        },
+        {
+          "contacto": "Contacto Planta Callao",
+          "email": "callao@empresa.com",
+          "fechaEnvio": "11/03/2025 09:15:00",
+          "referencia": "GA 55+ Nº 2",
+          "estado": "Activo🟢",
+          "estado_mantenimiento": "Requiere Servicio⚠️"
+        }
+      ]
+    },
+    {
+      "nombre": "Planta Surco",
+      "equipos": [
+        {
+          "contacto": "María González",
+          "email": "maria.gonzalez@empresa.com",
+          "fechaEnvio": "12/03/2025 10:15:00",
+          "referencia": "FD 170 Nº 06",
+          "estado": "Activo🟢",
+          "estado_mantenimiento": "Aun no requiere servicio🟢"
+        },
+        {
+          "contacto": "María González",
+          "email": "maria.gonzalez@empresa.com",
+          "fechaEnvio": "12/03/2025 10:45:00",
+          "referencia": "COMP #1",
+          "estado": "Activo🟢",
+          "estado_mantenimiento": "Requiere Servicio⚠️"
+        }
+      ]
+    },
+    {
+      "nombre": "Planta Arequipa",
+      "equipos": [
+        {
+          "contacto": "Carlos Mendoza",
+          "email": "carlos.mendoza@empresa.com",
+          "fechaEnvio": "13/03/2025 11:00:00",
+          "referencia": "FD 170 # 09",
+          "estado": "Activo🟢",
+          "estado_mantenimiento": "Requiere Servicio⚠️"
+        },
+        {
+          "contacto": "Carlos Mendoza",
+          "email": "carlos.mendoza@empresa.com",
+          "fechaEnvio": "13/03/2025 11:30:00",
+          "referencia": "COMP #3",
+          "estado": "Activo🟢",
+          "estado_mantenimiento": "Aun no requiere servicio🟢"
+        }
+      ]
+    },
+    {
+      "nombre": "Planta Cercado de Lima",
+      "equipos": [
+        {
+          "contacto": "Luis Rojas",
+          "email": "luis.rojas@empresa.com",
+          "fechaEnvio": "14/03/2025 12:00:00",
+          "referencia": "GA 160 #1",
+          "estado": "Activo🟢",
+          "estado_mantenimiento": "Requiere Servicio⚠️"
+        },
+        {
+          "contacto": "Luis Rojas",
+          "email": "luis.rojas@empresa.com",
+          "fechaEnvio": "14/03/2025 12:30:00",
+          "referencia": "GA 160 #2",
+          "estado": "Activo🟢",
+          "estado_mantenimiento": "Aun no requiere servicio🟢"
+        }
+      ]
+    }
+  ]
+}

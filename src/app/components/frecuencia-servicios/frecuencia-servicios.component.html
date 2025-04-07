@@ -1,126 +1,84 @@
 <div class="main-container">
 
-    <!-- Sección Tabla (Derecha) -->
-    <div class="content">
-  
-      <h1>FRECUENCIA SERVICIOS</h1>
-  
-      <div class="search-container">
+  <!-- Sección Tabla (Derecha) -->
+  <div class="content">
+
+    <h1>FRECUENCIA SERVICIOS</h1>
+
+    <div class="content-tree">
+
+      <div class="tree">
+        <details *ngFor="let cliente of clientesData">
+          <summary>📂 {{ cliente.nombre }}</summary>
+      
+          <details *ngFor="let sub of cliente.subclientes">
+            <summary>📂 {{ sub.nombre }}</summary>
+      
+            <div 
+              *ngFor="let subcliente of sub.subclientes" 
+              class="planta-item" 
+              (click)="filtrarPorPlanta(subcliente.nombre)"
+              [class.selected]="plantaSeleccionada === subcliente.nombre"
+            >
+              🏢 {{ subcliente.nombre }}
+            </div>
+          </details>
+        </details>
+      </div>
+
+    </div>
+    
+    <h5>📩 Notificaciones de Servicios</h5>
+
+    <div class="search-container">
+      <!-- 🔽 Combo: Estado -->
+       <label for="">Estados:</label>
+      <select class="form-select custom-select" [(ngModel)]="estadoSeleccionado" (change)="filtrarEquipos()">
+        <option value="">Todos</option>
+        <option value="Activo🟢">Activo🟢</option>
+        <option value="Inactivo🔴">Inactivo🔴</option>
+      </select>
+
+      <!-- 🔽 Combo: Estado Mantenimiento -->
+       <label for="">Mantenimiento:</label>
+      <select class="form-form-select custom-select" [(ngModel)]="estadoMantenimientoSeleccionado" (change)="filtrarEquipos()">
+        <option value="">Todos</option>
+        <option value="Aun no requiere servicio🟢">Aun no requiere servicio🟢</option>
+        <option value="Requiere Servicio⚠️">Requiere Servicio⚠️</option>
+      </select>
+
+      <div class="search-group">
         <img src="assets/img/iconoSearch.png" alt="Buscar" class="input-search-icon">
-        <input type="text" class="form-control custom-search" placeholder="Busque el cliente">
-        <button class="btn btn-primary search-button" type="button">Buscar</button>
-      </div>
-
-      <div class="content-tree">
-
-        <div class="tree">
-            <details *ngFor="let cliente of clientesData">
-              <summary>📂 {{ cliente.nombre }}</summary>
-      
-              <details *ngFor="let sub of cliente.subclientes">
-                <summary>📂 {{ sub.nombre }}</summary>
-      
-                <details *ngFor="let subcliente of sub.subclientes">
-                  <summary>📂 {{ subcliente.nombre }}</summary>
-      
-                  <div *ngFor="let docnombre of subcliente.subclientes">
-                          📄 {{ docnombre.nombre }}
-                  </div>
-                </details>
-              </details>
-      
-            </details>
-          </div>
-
-      </div>
-      
-      <h5>📩 Notificaciones de Servicios</h5>
-  
-      <div class="table-container">
-        <table class="table">
-          <thead>
-            <tr>
-              <th>Local</th>
-              <th>Contacto</th>
-              <th>Email</th>
-              <th>Fecha de Envío</th>
-              <th>Modelo</th>
-              <th>Serie</th>
-              <th>Estado</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>Planta Santa Anita</td>
-              <td>Edgar Panduro</td>
-              <td>Hepandurocititexsac.com</td>
-              <td>10/03/2025 08:36:15</td>
-              <td>ATLAS COPCO</td>
-              <td>G 11 P</td>
-              <td>Operativo 🟢</td>
-            </tr>
-            <tr>
-              <td>Planta Santa Anita</td>
-              <td>Edgar Panduro</td>
-              <td>Hepandurocititexsac.com</td>
-              <td>10/03/2025 08:22:30</td>
-              <td>ATLAS COPCO</td>
-              <td>G 12 P</td>
-              <td>Mantenimineto Preventivo ⚠️</td>
-            </tr>
-            <tr>
-              <td>Planta Santa Anita</td>
-              <td>Edgar Panduro</td>
-              <td>Hepandurocititexsac.com</td>
-              <td>10/03/2025 08:22:30</td>
-              <td>ATLAS COPCO</td>
-              <td>G 13 P</td>
-              <td>Mantenimineto Critico 🔴</td>
-            </tr>
-  
-            <tr>
-              <td>Planta Santa Anita</td>
-              <td>Edgar Panduro</td>
-              <td>Hepandurocititexsac.com</td>
-              <td>10/03/2025 08:22:30</td>
-              <td>ATLAS COPCO</td>
-              <td>G 14 P</td>
-              <td>Operativo 🟢</td>
-            </tr>
-  
-            <tr>
-              <td>Planta Santa Anita</td>
-              <td>Edgar Panduro</td>
-              <td>Hepandurocititexsac.com</td>
-              <td>10/03/2025 08:22:30</td>
-              <td>ATLAS COPCO</td>
-              <td>G 15 P</td>
-              <td>Operativo 🟢</td>
-            </tr>
-  
-            <tr>
-              <td>Planta Santa Anita</td>
-              <td>Edgar Panduro</td>
-              <td>Hepandurocititexsac.com</td>
-              <td>10/03/2025 08:22:30</td>
-              <td>ATLAS COPCO</td>
-              <td>G 16 P</td>
-              <td>Mantenimineto Critico 🔴</td>
-            </tr>
-  
-            <tr>
-              <td>Planta Santa Anita</td>
-              <td>Edgar Panduro</td>
-              <td>Hepandurocititexsac.com</td>
-              <td>10/03/2025 08:22:30</td>
-              <td>ATLAS COPCO</td>
-              <td>G 17 P</td>
-              <td>Mantenimineto Preventivo ⚠️</td>
-            </tr>
-          </tbody>
-        </table>
+        <input type="text" class="form-control custom-search" placeholder="Busque el cliente" [(ngModel)]="busquedaCliente" (input)="filtrarEquipos()">
+        <button class="btn btn-primary search-button" type="button" (click)="filtrarEquipos()">Buscar</button>
       </div>
     </div>
-  
+    
+
+    <div class="table-container">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Local</th>
+            <th>Contacto</th>
+            <th>Email</th>
+            <th>Fecha de Envío</th>
+            <th>Referencia</th>
+            <th>Estado</th>
+            <th>Estado Mantenimiento</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let equipo of equiposFiltrados | slice:0:10">
+            <td>{{ plantaSeleccionada }}</td>
+            <td>{{ equipo.contacto }}</td>
+            <td>{{ equipo.email }}</td>
+            <td>{{ equipo.fechaEnvio }}</td>
+            <td>{{ equipo.referencia }}</td>
+            <td>{{ equipo.estado }}</td>
+            <td>{{ equipo.estado_mantenimiento }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </div>
-  
