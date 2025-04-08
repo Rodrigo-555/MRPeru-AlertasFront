@@ -1,60 +1,77 @@
 <div class="main-container">
-
-  <!-- Sección Tabla (Derecha) -->
   <div class="content">
-
     <h1>FRECUENCIA SERVICIOS</h1>
-
-    <div class="content-tree">
-
-      <div class="tree">
-        <details *ngFor="let cliente of clientesData">
-          <summary>📂 {{ cliente.nombre }}</summary>
-      
-          <details *ngFor="let sub of cliente.subclientes">
-            <summary>📂 {{ sub.nombre }}</summary>
-      
-            <div 
-              *ngFor="let subcliente of sub.subclientes" 
-              class="planta-item" 
-              (click)="filtrarPorPlanta(subcliente.nombre)"
-              [class.selected]="plantaSeleccionada === subcliente.nombre"
-            >
-              🏢 {{ subcliente.nombre }}
-            </div>
-          </details>
-        </details>
-      </div>
-
-    </div>
     
+    <!-- Sección Árbol de Clientes -->
+    <div class="content-tree">
+      <div class="tree">
+        <ng-container *ngFor="let cliente of clientesData; trackBy: trackByCliente">
+          <details>
+            <summary>📂 {{ cliente.nombre }}</summary>
+            <ng-container *ngFor="let sub of cliente.subclientes; trackBy: trackBySubcliente">
+              <details>
+                <summary>📂 {{ sub.nombre }}</summary>
+                <ng-container *ngFor="let subcliente of sub.subclientes; trackBy: trackByPlanta">
+                  <div 
+                    class="planta-item" 
+                    (click)="filtrarPorPlanta(subcliente.nombre)"
+                    [class.selected]="plantaSeleccionada === subcliente.nombre">
+                    🏢 {{ subcliente.nombre }}
+                  </div>
+                </ng-container>
+              </details>
+            </ng-container>
+          </details>
+        </ng-container>
+      </div>
+    </div>
+
     <h5>📩 Notificaciones de Servicios</h5>
 
+    <!-- Sección de Filtros y Búsqueda -->
     <div class="search-container">
-      <!-- 🔽 Combo: Estado -->
-       <label for="">Estados:</label>
-      <select class="form-select custom-select" [(ngModel)]="estadoSeleccionado" (change)="filtrarEquipos()">
-        <option value="">Todos</option>
-        <option value="Activo🟢">Activo🟢</option>
-        <option value="Inactivo🔴">Inactivo🔴</option>
-      </select>
-
-      <!-- 🔽 Combo: Estado Mantenimiento -->
-       <label for="">Mantenimiento:</label>
-      <select class="form-form-select custom-select" [(ngModel)]="estadoMantenimientoSeleccionado" (change)="filtrarEquipos()">
-        <option value="">Todos</option>
-        <option value="Aun no requiere servicio🟢">Aun no requiere servicio🟢</option>
-        <option value="Requiere Servicio⚠️">Requiere Servicio⚠️</option>
-      </select>
-
+      <div class="form-group">
+        <label for="estadoSelect">Estados:</label>
+        <select
+          id="estadoSelect"
+          class="form-select custom-select"
+          [(ngModel)]="estadoSeleccionado"
+          (change)="filtrarEquipos()">
+          <option value="">Todos</option>
+          <option value="Activo🟢">Activo🟢</option>
+          <option value="Inactivo🔴">Inactivo🔴</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="mantenimientoSelect">Mantenimiento:</label>
+        <select
+          id="mantenimientoSelect"
+          class="form-select custom-select"
+          [(ngModel)]="estadoMantenimientoSeleccionado"
+          (change)="filtrarEquipos()">
+          <option value="">Todos</option>
+          <option value="Aun no requiere servicio🟢">Aun no requiere servicio🟢</option>
+          <option value="Requiere Servicio⚠️">Requiere Servicio⚠️</option>
+        </select>
+      </div>
       <div class="search-group">
         <img src="assets/img/iconoSearch.png" alt="Buscar" class="input-search-icon">
-        <input type="text" class="form-control custom-search" placeholder="Busque el cliente" [(ngModel)]="busquedaCliente" (input)="filtrarEquipos()">
-        <button class="btn btn-primary search-button" type="button" (click)="filtrarEquipos()">Buscar</button>
+        <input 
+          type="text" 
+          class="form-control custom-search" 
+          placeholder="Busque el cliente"
+          [(ngModel)]="busquedaCliente"
+          (input)="filtrarEquipos()">
+        <button
+          class="btn btn-primary search-button"
+          type="button"
+          (click)="filtrarEquipos()">
+          Buscar
+        </button>
       </div>
     </div>
-    
 
+    <!-- Sección Tabla de Equipos -->
     <div class="table-container">
       <table class="table">
         <thead>
@@ -69,7 +86,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let equipo of equiposFiltrados | slice:0:10">
+          <tr *ngFor="let equipo of equiposFiltrados | slice:0:10; trackBy: trackByEquipo">
             <td>{{ plantaSeleccionada }}</td>
             <td>{{ equipo.contacto }}</td>
             <td>{{ equipo.email }}</td>
@@ -82,3 +99,4 @@
       </table>
     </div>
   </div>
+</div>

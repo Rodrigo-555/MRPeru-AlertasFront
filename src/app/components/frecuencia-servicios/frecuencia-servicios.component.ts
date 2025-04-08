@@ -1,47 +1,53 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { HttpClient, HttpClientModule } from '@angular/common/http'; // 👈 Importa esto
+import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { ClienteNode, ClientesData } from '../../interface/clientes.interface';
-import { Equipos, EquiposData, Planta } from '../../interface/equipos.interface'; // Asegúrate de que la ruta sea correcta
+import { Equipos, EquiposData, Planta } from '../../interface/equipos.interface';
 
 @Component({
   selector: 'app-frecuencia-servicios',
   standalone: true,
-  imports: [CommonModule, HttpClientModule,FormsModule], 
+  imports: [CommonModule, HttpClientModule, FormsModule],
   templateUrl: './frecuencia-servicios.component.html',
-  styleUrl: './frecuencia-servicios.component.scss'
+  styleUrls: ['./frecuencia-servicios.component.scss']
 })
 export class FrecuenciaServiciosComponent implements OnInit {
-
   clientesData!: ClienteNode[];
   plantas: Planta[] = [];
   equiposOriginales: Equipos[] = [];
   equiposFiltrados: Equipos[] = [];
 
-  // Nuevas variables de filtro
+  // Variables para filtros
   estadoSeleccionado: string = '';
   estadoMantenimientoSeleccionado: string = '';
   busquedaCliente: string = '';
-
   plantaSeleccionada: string | null = null;
 
   constructor(private http: HttpClient) {}
 
   ngOnInit(): void {
-    // Cargar el árbol de clientes
+    this.loadClientesData();
+    this.loadEquiposData();
+  }
+
+  /**
+   * Carga el árbol de clientes desde el JSON.
+   */
+  private loadClientesData(): void {
     this.http.get<ClientesData>('assets/json/clientes-data.json').subscribe({
-      next: (data) => {
-        this.clientesData = data.clientes;
-      },
+      next: (data) => this.clientesData = data.clientes,
       error: (err) => console.error('Error fetching clientes:', err)
     });
+  }
 
-    // Cargar equipos reestructurados
+  /**
+   * Carga los equipos y plantas, y establece por defecto la primera planta.
+   */
+  private loadEquiposData(): void {
     this.http.get<EquiposData>('assets/json/equipos-data.json').subscribe({
       next: (data) => {
         this.plantas = data.plantas;
-        // Por defecto, muestra los equipos de la primera planta si existe
         if (this.plantas.length > 0) {
           this.filtrarPorPlanta(this.plantas[0].nombre);
         }
@@ -50,20 +56,46 @@ export class FrecuenciaServiciosComponent implements OnInit {
     });
   }
 
+  /**
+   * Filtra los equipos por la planta seleccionada y actualiza el listado.
+   * @param nombrePlanta Nombre de la planta a filtrar.
+   */
   filtrarPorPlanta(nombrePlanta: string): void {
     this.plantaSeleccionada = nombrePlanta;
     const planta = this.plantas.find(p => p.nombre === nombrePlanta);
     this.equiposOriginales = planta ? planta.equipos : [];
     this.filtrarEquipos();
   }
-  
 
+  /**
+   * Aplica los filtros de estado, mantenimiento y búsqueda de cliente a la lista de equipos.
+   */
   filtrarEquipos(): void {
     this.equiposFiltrados = this.equiposOriginales.filter(equipo => {
-      const coincideEstado = this.estadoSeleccionado === '' || equipo.estado === this.estadoSeleccionado;
-      const coincideMantenimiento = this.estadoMantenimientoSeleccionado === '' || equipo.estado_mantenimiento === this.estadoMantenimientoSeleccionado;
-      const coincideCliente = this.busquedaCliente === '' || equipo.contacto.toLowerCase().includes(this.busquedaCliente.toLowerCase());
+      const coincideEstado = !this.estadoSeleccionado || equipo.estado === this.estadoSeleccionado;
+      const coincideMantenimiento = !this.estadoMantenimientoSeleccionado || equipo.estado_mantenimiento === this.estadoMantenimientoSeleccionado;
+      const coincideCliente = !this.busquedaCliente || equipo.contacto.toLowerCase().includes(this.busquedaCliente.toLowerCase());
       return coincideEstado && coincideMantenimiento && coincideCliente;
     });
+  }
+
+  /**
+   * Funciones trackBy para optimizar los *ngFor del template.
+   */
+  trackByCliente(index: number, item: ClienteNode): string {
+    return item.nombre;
+  }
+
+  trackBySubcliente(index: number, item: any): string {
+    return item.nombre;
+  }
+
+  trackByPlanta(index: number, item: any): string {
+    return item.nombre;
+  }
+
+  trackByEquipo(index: number, item: Equipos): string {
+    // Se asume que 'referencia' es un identificador único
+    return item.referencia;
   }
 }
