@@ -2,8 +2,8 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
-import { ClienteNode, ClientesData } from '../../interface/clientes.interface';
-import { Equipos, EquiposData, Planta } from '../../interface/equipos.interface';
+import { ClienteNode, ClientesData } from '../../interface/clientes.interface.fs';
+import { Equipos, PlantasData, Planta } from '../../interface/equipos.interface.fs';
 
 @Component({
   selector: 'app-frecuencia-servicios',
@@ -15,6 +15,7 @@ import { Equipos, EquiposData, Planta } from '../../interface/equipos.interface'
 export class FrecuenciaServiciosComponent implements OnInit {
   clientesData!: ClienteNode[];
   plantas: Planta[] = [];
+  plantasData!: PlantasData;
   equiposOriginales: Equipos[] = [];
   equiposFiltrados: Equipos[] = [];
 
@@ -28,14 +29,14 @@ export class FrecuenciaServiciosComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadClientesData();
-    this.loadEquiposData();
+    this.loadPlantasData();
   }
 
   /**
    * Carga el árbol de clientes desde el JSON.
    */
   private loadClientesData(): void {
-    this.http.get<ClientesData>('assets/json/clientes-data.json').subscribe({
+    this.http.get<ClientesData>('assets/json/clientes-data-fs.json').subscribe({
       next: (data) => this.clientesData = data.clientes,
       error: (err) => console.error('Error fetching clientes:', err)
     });
@@ -44,12 +45,12 @@ export class FrecuenciaServiciosComponent implements OnInit {
   /**
    * Carga los equipos y plantas, y establece por defecto la primera planta.
    */
-  private loadEquiposData(): void {
-    this.http.get<EquiposData>('assets/json/equipos-data.json').subscribe({
-      next: (data) => {
-        this.plantas = data.plantas;
-        if (this.plantas.length > 0) {
-          this.filtrarPorPlanta(this.plantas[0].nombre);
+  private loadPlantasData(): void {
+    this.http.get<PlantasData>('assets/json/equipos-data-fs.json').subscribe({
+      next: (data:PlantasData) => {
+        this.plantasData = data;
+        if (this.plantasData.plantas.length > 0) {
+          this.filtrarPorPlanta(this.plantasData.plantas[0].nombre);
         }
       },
       error: (err) => console.error('Error fetching equipos:', err)
@@ -62,7 +63,7 @@ export class FrecuenciaServiciosComponent implements OnInit {
    */
   filtrarPorPlanta(nombrePlanta: string): void {
     this.plantaSeleccionada = nombrePlanta;
-    const planta = this.plantas.find(p => p.nombre === nombrePlanta);
+    const planta = this.plantasData.plantas.find(p => p.nombre === nombrePlanta);
     this.equiposOriginales = planta ? planta.equipos : [];
     this.filtrarEquipos();
   }

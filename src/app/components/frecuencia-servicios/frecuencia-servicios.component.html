@@ -86,7 +86,8 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let equipo of equiposFiltrados | slice:0:10; trackBy: trackByEquipo">
+          <tr *ngFor="let equipo of equiposFiltrados; trackBy: trackByEquipo">
+            <!-- En este caso, ya que el filtrado se realiza por planta, el valor de plantaSeleccionada es el local -->
             <td>{{ plantaSeleccionada }}</td>
             <td>{{ equipo.contacto }}</td>
             <td>{{ equipo.email }}</td>

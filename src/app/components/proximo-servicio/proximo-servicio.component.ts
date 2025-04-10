@@ -1,154 +1,112 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+import { ClienteNode, ClientesData } from '../../interface/clientes.interface.ps';
+import { Equipos, PlantasData, Planta } from '../../interface/equipos.interface.ps';
+import { FormsModule } from '@angular/forms';
+import { HttpClient, HttpClientModule } from '@angular/common/http';
 
 @Component({
   selector: 'app-proximo-servicio',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, HttpClientModule, FormsModule],
   templateUrl: './proximo-servicio.component.html',
-  styleUrl: './proximo-servicio.component.scss'
+  styleUrls: ['./proximo-servicio.component.scss']
 })
-export class ProximoServicioComponent {
+export class ProximoServicioComponent implements OnInit {
 
-  equipoSeleccionado: any = null;
+  clientesData!: ClienteNode[];
+  plantas: Planta[] = [];
+  plantasData!: PlantasData;
+  equiposOriginales: Equipos[] = [];
+  equiposFiltrados: Equipos[] = [];
 
-  clientes = [
-    {
-      nombre: 'EQUIPOS CON PRÓXIMO SERVICIO',
-      subclientes: [
-        {
-          nombre: 'CITY TEX S.A.C',
-          subclientes: [
-            {
-              nombre: 'Planta Santa Anita',
-              subclientes: [
-                { nombre: 'Atlas Copco - G11 P', proximoServicio: this.parseDate('06/12/2024') },
-                { nombre: 'Atlas Copco - G12 P', proximoServicio: this.parseDate('10/12/2024') },
-                { nombre: 'Atlas Copco - G13 P', proximoServicio: this.parseDate('15/12/2024') },
-                { nombre: 'Atlas Copco - G14 P', proximoServicio: this.parseDate('20/12/2024') },
-                { nombre: 'Atlas Copco - G15 P', proximoServicio: this.parseDate('25/12/2024') },
-                { nombre: 'Atlas Copco - G16 P', proximoServicio: this.parseDate('30/12/2024') },
-                { nombre: 'Atlas Copco - G17 P', proximoServicio: this.parseDate('05/01/2025') },
-              ]
-            }
-          ]
-        },
-        { nombre: 'BISAGRAS PERUANAS S.A.C.', subclientes: [] },
-        { nombre: 'ARANGO VALLEJOS NORMA', subclientes: [] }
-      ]
-    }
-  ];
+  // Variable para el filtro de fecha (formato "YYYY-MM")
+  fechaFiltro: string = '';
 
-  equipos = [
-    {
-      cliente: 'CITY TEX S.A.C',
-      planta: 'Planta Santa Anita',
-      equipo: 'ATLAS COPO',
-      modelo: 'G 15 VSID+',
-      serie: 'G11 P',
-      recomendacion: 'Cambio de aceite y filtro',
-      recomendacionHoras: 2000,
-      ultimoServicio: new Date(2024, 5, 6),
-      proximoServicio: new Date(2024, 11, 6),
-      horasTrabajadasXdia: 10,
-      horasTrabajo: 23000, 
-      estado: 'Operativo 🟢'
-    },
-    {
-      cliente: 'CITY TEX S.A.C',
-      planta: 'Planta Santa Anita',
-      equipo: 'ATLAS COPO',
-      modelo: 'G 15 VSID+',
-      serie: 'G12 P',
-      recomendacion: 'Cambio de válvulas',
-      recomendacionHoras: 2000,
-      ultimoServicio: new Date(2024, 5, 10),
-      proximoServicio: new Date(2024, 11, 10),
-      horasTrabajadasXdia: 10,
-      horasTrabajo: 18000,
-      estado: 'Mantenimiento Preventivo ⚠️'
-    },
-    {
-      cliente: 'CITY TEX S.A.C',
-      planta: 'Planta Santa Anita',
-      equipo: 'ATLAS COPO',
-      modelo: 'G 15 VSID+',
-      serie: 'G13 P',
-      recomendacion: 'Revisión general',
-      recomendacionHoras: 2000,
-      ultimoServicio: new Date(2024, 5, 15),
-      proximoServicio: new Date(2024, 11, 15),
-      horasTrabajadasXdia: 10,
-      horasTrabajo: 24000,
-      estado: 'Mantenimiento Crítico 🔴'
-    },
-    {
-      cliente: 'BISAGRAS PERUANAS S.A.C.',
-      planta: 'Planta Callao',
-      equipo: 'ATLAS COPO',
-      modelo: 'G 15 VSID+',
-      serie: 'G14 P',
-      recomendacion: 'Cambio de filtros de aire',
-      recomendacionHoras: 1500,
-      ultimoServicio: new Date(2024, 4, 20),
-      proximoServicio: new Date(2024, 10, 20),
-      horasTrabajadasXdia: 12,
-      horasTrabajo: 21000,
-      estado: 'Operativo 🟢'
-    },
-    {
-      cliente: 'ARANGO VALLEJOS NORMA',
-      planta: 'Planta Arequipa',
-      equipo: 'ATLAS COPO',
-      modelo: 'G 15 VSID+',
-      serie: 'G15 P',
-      recomendacion: 'Revisión de correas y lubricación',
-      recomendacionHoras: 2500,
-      ultimoServicio: new Date(2024, 3, 12),
-      proximoServicio: new Date(2024, 9, 12),
-      horasTrabajadasXdia: 9,
-      horasTrabajo: 17500,
-      estado: 'Mantenimiento Preventivo ⚠️'
-    },
-    {
-      cliente: 'CITY TEX S.A.C',
-      planta: 'Planta Santa Anita',
-      equipo: 'ATLAS COPO',
-      modelo: 'G 15 VSID+',
-      serie: 'G16 P',
-      recomendacion: 'Cambio de aceite y ajuste de válvulas',
-      recomendacionHoras: 2000,
-      ultimoServicio: new Date(2024, 5, 30),
-      proximoServicio: new Date(2024, 11, 30),
-      horasTrabajadasXdia: 11,
-      horasTrabajo: 22000,
-      estado: 'Operativo 🟢'
-    },
-    {
-      cliente: 'BISAGRAS PERUANAS S.A.C.',
-      planta: 'Planta Callao',
-      equipo: 'ATLAS COPO',
-      modelo: 'G 15 VSID+',
-      serie: 'G17 P',
-      recomendacion: 'Inspección de motor y sensores',
-      recomendacionHoras: 2000,
-      ultimoServicio: new Date(2024, 6, 5),
-      proximoServicio: new Date(2024, 12, 5),
-      horasTrabajadasXdia: 10,
-      horasTrabajo: 19000,
-      estado: 'Mantenimiento Preventivo ⚠️'
-    }
-  ];
+  // Conservamos la variable para la planta seleccionada
+  plantaSeleccionada: string | null = null;
 
-  parseDate(dateString: string): Date {
-    const [day, month, year] = dateString.split('/').map(Number);
-    return new Date(year, month - 1, day);
+  constructor(private http: HttpClient) {}
+
+  ngOnInit(): void {
+    this.loadClientesData();
+    this.loadPlantasData();
   }
 
-  seleccionarEquipo(equipoSeleccionado: any) {
-    const equipoEncontrado = this.equipos.find(e => e.serie === equipoSeleccionado.nombre.split('- ')[1]);
-    if (equipoEncontrado) {
-      this.equipoSeleccionado = equipoEncontrado;
+  /**
+   * Carga el árbol de clientes desde el JSON.
+   */
+  private loadClientesData(): void {
+    this.http.get<ClientesData>('assets/json/clientes-data-ps.json').subscribe({
+      next: (data) => this.clientesData = data.clientes,
+      error: (err) => console.error('Error fetching clientes:', err)
+    });
+  }
+
+  /**
+   * Carga los equipos y plantas, y establece por defecto la primera planta.
+   */
+  private loadPlantasData(): void {
+    this.http.get<PlantasData>('assets/json/equipos-data-ps.json').subscribe({
+      next: (data: PlantasData) => {
+        this.plantasData = data;
+        if (this.plantasData.plantas.length > 0) {
+          this.filtrarPorPlanta(this.plantasData.plantas[0].nombre);
+        }
+      },
+      error: (err) => console.error('Error fetching equipos:', err)
+    });
+  }
+
+  /**
+   * Filtra los equipos por la planta seleccionada y actualiza el listado.
+   * @param nombrePlanta Nombre de la planta a filtrar.
+   */
+  filtrarPorPlanta(nombrePlanta: string): void {
+    this.plantaSeleccionada = nombrePlanta;
+    const planta = this.plantasData.plantas.find(p => p.nombre === nombrePlanta);
+    this.equiposOriginales = planta ? planta.equipos : [];
+    this.filtrarEquipos();
+  }
+
+  /**
+   * Filtra los equipos según el año y mes seleccionado en la variable `fechaFiltro`.
+   * Se compara el valor del input (formato "YYYY-MM") con la parte correspondiente de `fecha_notificacion`.
+   * Si no se ingresa ningún valor, se muestran todos los equipos.
+   */
+  filtrarEquipos(): void {
+    if (!this.fechaFiltro) {
+      this.equiposFiltrados = [...this.equiposOriginales];
+      return;
     }
+
+    // El input de tipo "month" devuelve una cadena en formato "YYYY-MM"
+    const filtro = this.fechaFiltro; // Ejemplo: "2023-10"
+
+    this.equiposFiltrados = this.equiposOriginales.filter(equipo => {
+      // Extrae la parte "YYYY-MM" de la fecha (formato: "YYYY-MM-DD")
+      const fechaEquipoYM = equipo.fecha_notificacion.substring(0, 7);
+      return fechaEquipoYM === filtro;
+    });
+  }
+
+  /**
+   * Funciones trackBy para optimizar los *ngFor del template.
+   */
+  trackByCliente(index: number, item: ClienteNode): string {
+    return item.nombre;
+  }
+
+  trackBySubcliente(index: number, item: any): string {
+    return item.nombre;
+  }
+
+  trackByPlanta(index: number, item: any): string {
+    return item.nombre;
+  }
+
+  trackByEquipo(index: number, item: Equipos): string {
+    // Se asume que 'referencia' es un identificador único
+    return item.referencia;
   }
 }

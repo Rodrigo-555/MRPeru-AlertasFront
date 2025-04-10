@@ -1,0 +1,274 @@
+{
+  "plantas": [
+    {
+      "nombre": "Planta Santa Anita",
+      "equipos": [
+        {
+          "cliente": "CITY TEX S.A.C",
+          "referencia": "ATLAS COPCO",
+          "serie": "G11P-001",
+          "estado": "Activo🟢",
+          "estado_mantenimiento": "Requiere Servicio⚠️",
+          "fecha_notificacion": "2023-10-01"
+        },
+        {
+          "cliente": "CITY TEX S.A.C",
+          "referencia": "ATLAS COPCO",
+          "serie": "G11P-002",
+          "estado": "Activo🟢",
+          "estado_mantenimiento": "Requiere Servicio⚠️",
+          "fecha_notificacion": "2023-12-15"
+        },
+        {
+          "cliente": "CITY TEX S.A.C",
+          "referencia": "ATLAS COPCO",
+          "serie": "G11P-003",
+          "estado": "Activo🟢",
+          "estado_mantenimiento": "Requiere Servicio⚠️",
+          "fecha_notificacion": "2024-03-20"
+        },
+        {
+          "cliente": "CITY TEX S.A.C",
+          "referencia": "ATLAS COPCO",
+          "serie": "G11P-004",
+          "estado": "Activo🟢",
+          "estado_mantenimiento": "Requiere Servicio⚠️",
+          "fecha_notificacion": "2024-08-05"
+        },
+        {
+          "cliente": "CITY TEX S.A.C",
+          "referencia": "ATLAS COPCO",
+          "serie": "G11P-005",
+          "estado": "Activo🟢",
+          "estado_mantenimiento": "Requiere Servicio⚠️",
+          "fecha_notificacion": "2025-01-11"
+        }
+      ]
+    },
+    {
+      "nombre": "Planta Callao",
+      "equipos": [
+        {
+          "cliente": "BISAGRAS PERUANAS S.A.C.",
+          "referencia": "ATLAS COPCO",
+          "serie": "G11C-001",
+          "estado": "Activo🟢",
+          "estado_mantenimiento": "Requiere Servicio⚠️",
+          "fecha_notificacion": "2023-11-10"
+        },
+        {
+          "cliente": "BISAGRAS PERUANAS S.A.C.",
+          "referencia": "ATLAS COPCO",
+          "serie": "G11C-002",
+          "estado": "Activo🟢",
+          "estado_mantenimiento": "Requiere Servicio⚠️",
+          "fecha_notificacion": "2024-01-25"
+        },
+        {
+          "cliente": "BISAGRAS PERUANAS S.A.C.",
+          "referencia": "ATLAS COPCO",
+          "serie": "G11C-003",
+          "estado": "Activo🟢",
+          "estado_mantenimiento": "Requiere Servicio⚠️",
+          "fecha_notificacion": "2024-05-12"
+        },
+        {
+          "cliente": "BISAGRAS PERUANAS S.A.C.",
+          "referencia": "ATLAS COPCO",
+          "serie": "G11C-004",
+          "estado": "Activo🟢",
+          "estado_mantenimiento": "Requiere Servicio⚠️",
+          "fecha_notificacion": "2024-09-30"
+        },
+        {
+          "cliente": "BISAGRAS PERUANAS S.A.C.",
+          "referencia": "ATLAS COPCO",
+          "serie": "G11C-005",
+          "estado": "Activo🟢",
+          "estado_mantenimiento": "Requiere Servicio⚠️",
+          "fecha_notificacion": "2025-02-18"
+        }
+      ]
+    },
+    {
+      "nombre": "Planta Surco",
+      "equipos": [
+        {
+          "cliente": "ARANGO VALLEJOS NORMA",
+          "referencia": "ATLAS COPCO",
+          "serie": "G11S-001",
+          "estado": "Activo🟢",
+          "estado_mantenimiento": "Requiere Servicio⚠️",
+          "fecha_notificacion": "2023-09-05"
+        },
+        {
+          "cliente": "ARANGO VALLEJOS NORMA",
+          "referencia": "ATLAS COPCO",
+          "serie": "G11S-002",
+          "estado": "Activo🟢",
+          "estado_mantenimiento": "Requiere Servicio⚠️",
+          "fecha_notificacion": "2023-12-22"
+        },
+        {
+          "cliente": "ARANGO VALLEJOS NORMA",
+          "referencia": "ATLAS COPCO",
+          "serie": "G11S-003",
+          "estado": "Activo🟢",
+          "estado_mantenimiento": "Requiere Servicio⚠️",
+          "fecha_notificacion": "2024-04-17"
+        },
+        {
+          "cliente": "ARANGO VALLEJOS NORMA",
+          "referencia": "ATLAS COPCO",
+          "serie": "G11S-004",
+          "estado": "Activo🟢",
+          "estado_mantenimiento": "Requiere Servicio⚠️",
+          "fecha_notificacion": "2024-07-23"
+        },
+        {
+          "cliente": "ARANGO VALLEJOS NORMA",
+          "referencia": "ATLAS COPCO",
+          "serie": "G11S-005",
+          "estado": "Activo🟢",
+          "estado_mantenimiento": "Requiere Servicio⚠️",
+          "fecha_notificacion": "2025-03-09"
+        }
+      ]
+    },
+    {
+      "nombre": "Planta Arequipa",
+      "equipos": [
+        {
+          "cliente": "ARANGO VALLEJOS NORMA",
+          "referencia": "ATLAS COPCO",
+          "serie": "G11A-001",
+          "estado": "Activo🟢",
+          "estado_mantenimiento": "Requiere Servicio⚠️",
+          "fecha_notificacion": "2023-08-15"
+        },
+        {
+          "cliente": "ARANGO VALLEJOS NORMA",
+          "referencia": "ATLAS COPCO",
+          "serie": "G11A-002",
+          "estado": "Activo🟢",
+          "estado_mantenimiento": "Requiere Servicio⚠️",
+          "fecha_notificacion": "2023-11-30"
+        },
+        {
+          "cliente": "ARANGO VALLEJOS NORMA",
+          "referencia": "ATLAS COPCO",
+          "serie": "G11A-003",
+          "estado": "Activo🟢",
+          "estado_mantenimiento": "Requiere Servicio⚠️",
+          "fecha_notificacion": "2024-02-28"
+        },
+        {
+          "cliente": "ARANGO VALLEJOS NORMA",
+          "referencia": "ATLAS COPCO",
+          "serie": "G11A-004",
+          "estado": "Activo🟢",
+          "estado_mantenimiento": "Requiere Servicio⚠️",
+          "fecha_notificacion": "2024-06-10"
+        },
+        {
+          "cliente": "ARANGO VALLEJOS NORMA",
+          "referencia": "ATLAS COPCO",
+          "serie": "G11A-005",
+          "estado": "Activo🟢",
+          "estado_mantenimiento": "Requiere Servicio⚠️",
+          "fecha_notificacion": "2025-01-20"
+        }
+      ]
+    },
+    {
+      "nombre": "Planta Trujillo",
+      "equipos": [
+        {
+          "cliente": "INDUSTRIAS DEL SUR S.A.",
+          "referencia": "ATLAS COPCO",
+          "serie": "G11T-001",
+          "estado": "Activo🟢",
+          "estado_mantenimiento": "Requiere Servicio⚠️",
+          "fecha_notificacion": "2023-07-01"
+        },
+        {
+          "cliente": "INDUSTRIAS DEL SUR S.A.",
+          "referencia": "ATLAS COPCO",
+          "serie": "G11T-002",
+          "estado": "Activo🟢",
+          "estado_mantenimiento": "Requiere Servicio⚠️",
+          "fecha_notificacion": "2023-10-18"
+        },
+        {
+          "cliente": "INDUSTRIAS DEL SUR S.A.",
+          "referencia": "ATLAS COPCO",
+          "serie": "G11T-003",
+          "estado": "Activo🟢",
+          "estado_mantenimiento": "Requiere Servicio⚠️",
+          "fecha_notificacion": "2024-03-05"
+        },
+        {
+          "cliente": "INDUSTRIAS DEL SUR S.A.",
+          "referencia": "ATLAS COPCO",
+          "serie": "G11T-004",
+          "estado": "Activo🟢",
+          "estado_mantenimiento": "Requiere Servicio⚠️",
+          "fecha_notificacion": "2024-09-12"
+        },
+        {
+          "cliente": "INDUSTRIAS DEL SUR S.A.",
+          "referencia": "ATLAS COPCO",
+          "serie": "G11T-005",
+          "estado": "Activo🟢",
+          "estado_mantenimiento": "Requiere Servicio⚠️",
+          "fecha_notificacion": "2025-04-25"
+        }
+      ]
+    },
+    {
+      "nombre": "Planta Lima",
+      "equipos": [
+        {
+          "cliente": "TEXTILES ANDINOS S.A.",
+          "referencia": "ATLAS COPCO",
+          "serie": "G11L-001",
+          "estado": "Activo🟢",
+          "estado_mantenimiento": "Requiere Servicio⚠️",
+          "fecha_notificacion": "2023-09-21"
+        },
+        {
+          "cliente": "TEXTILES ANDINOS S.A.",
+          "referencia": "ATLAS COPCO",
+          "serie": "G11L-002",
+          "estado": "Activo🟢",
+          "estado_mantenimiento": "Requiere Servicio⚠️",
+          "fecha_notificacion": "2023-12-05"
+        },
+        {
+          "cliente": "TEXTILES ANDINOS S.A.",
+          "referencia": "ATLAS COPCO",
+          "serie": "G11L-003",
+          "estado": "Activo🟢",
+          "estado_mantenimiento": "Requiere Servicio⚠️",
+          "fecha_notificacion": "2024-04-30"
+        },
+        {
+          "cliente": "TEXTILES ANDINOS S.A.",
+          "referencia": "ATLAS COPCO",
+          "serie": "G11L-004",
+          "estado": "Activo🟢",
+          "estado_mantenimiento": "Requiere Servicio⚠️",
+          "fecha_notificacion": "2024-08-16"
+        },
+        {
+          "cliente": "TEXTILES ANDINOS S.A.",
+          "referencia": "ATLAS COPCO",
+          "serie": "G11L-005",
+          "estado": "Activo🟢",
+          "estado_mantenimiento": "Requiere Servicio⚠️",
+          "fecha_notificacion": "2025-02-28"
+        }
+      ]
+    }
+  ]
+}

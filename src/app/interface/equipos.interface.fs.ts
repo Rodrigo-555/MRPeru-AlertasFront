@@ -12,6 +12,6 @@ export interface Planta {
   equipos: Equipos[];
 }
 
-export interface EquiposData {
+export interface PlantasData {
   plantas: Planta[];
 }
