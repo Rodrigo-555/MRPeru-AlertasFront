@@ -1,9 +1,11 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
-import { ClienteNode, ClientesData } from '../../interface/clientes.interface.fs';
-import { Equipos, PlantasData, Planta } from '../../interface/equipos.interface.fs';
+import { Equipos, Planta } from '../../interface/equipos.interface.fs';
+import { ClienteService } from '../../service/Clientes/cliente.service';
+import { FrecuenciaServicioService } from '../../service/FrecuenciaServicio/frecuencia-servicio.service';
+import { Cliente } from '../../interface/clientes.interface.';
 
 @Component({
   selector: 'app-frecuencia-servicios',
@@ -13,90 +15,86 @@ import { Equipos, PlantasData, Planta } from '../../interface/equipos.interface.
   styleUrls: ['./frecuencia-servicios.component.scss']
 })
 export class FrecuenciaServiciosComponent implements OnInit {
-  clientesData!: ClienteNode[];
-  plantas: Planta[] = [];
-  plantasData!: PlantasData;
+  clienteCategories: any[] = [];
   equiposOriginales: Equipos[] = [];
   equiposFiltrados: Equipos[] = [];
 
   // Variables para filtros
   estadoSeleccionado: string = '';
   estadoMantenimientoSeleccionado: string = '';
-  busquedaCliente: string = '';
+  busquedaContacto: string = '';
   plantaSeleccionada: string | null = null;
 
-  constructor(private http: HttpClient) {}
+  constructor(
+    private http: HttpClient, 
+    private cdr: ChangeDetectorRef, 
+    private clienteService: ClienteService, 
+    private frecuenciaServicioService: FrecuenciaServicioService
+  ) {}
 
-  ngOnInit(): void {
-    this.loadClientesData();
-    this.loadPlantasData();
+  ngOnInit() {
+    this.loadClientes();
   }
 
-  /**
-   * Carga el árbol de clientes desde el JSON.
-   */
-  private loadClientesData(): void {
-    this.http.get<ClientesData>('assets/json/clientes-data-fs.json').subscribe({
-      next: (data) => this.clientesData = data.clientes,
-      error: (err) => console.error('Error fetching clientes:', err)
-    });
-  }
+  private loadClientes(): void {
+    const categories = [
+      { name: "Clientes con Servicios Regulares", title: "Clientes con Servicios Regulares" },
+      { name: "Clientes con Servicios No-Regulares", title: "Clientes con Servicios No-Regulares" },
+      { name: "Clientes con Servicios Antiguos-Recientes", title: "Clientes con Servicios Antiguos-Recientes" },
+      { name: "Clientes con Servicios Antiguos", title: "Clientes con Servicios Antiguos" },
+      { name: "Clientes sin servicios", title: "Clientes sin servicios" },
+      { name: "No Es Cliente", title: "No Es Cliente" },
+    ];
 
-  /**
-   * Carga los equipos y plantas, y establece por defecto la primera planta.
-   */
-  private loadPlantasData(): void {
-    this.http.get<PlantasData>('assets/json/equipos-data-fs.json').subscribe({
-      next: (data:PlantasData) => {
-        this.plantasData = data;
-        if (this.plantasData.plantas.length > 0) {
-          this.filtrarPorPlanta(this.plantasData.plantas[0].nombre);
+    categories.forEach(category => {
+      this.clienteService.getClientes(category.name).subscribe(
+        (data: Cliente[]) => {
+          this.clienteCategories.push({ title: category.title, clientes: data });
+          this.cdr.detectChanges();
+        },
+        error => {
+          console.error(`Error al cargar los clientes de ${category.name}:`, error);
         }
-      },
-      error: (err) => console.error('Error fetching equipos:', err)
+      );
     });
   }
 
-  /**
-   * Filtra los equipos por la planta seleccionada y actualiza el listado.
-   * @param nombrePlanta Nombre de la planta a filtrar.
-   */
-  filtrarPorPlanta(nombrePlanta: string): void {
-    this.plantaSeleccionada = nombrePlanta;
-    const planta = this.plantasData.plantas.find(p => p.nombre === nombrePlanta);
-    this.equiposOriginales = planta ? planta.equipos : [];
-    this.filtrarEquipos();
+  private cargarEquiposFrecuenciaServicio(nombrePlanta: string): void {
+    this.frecuenciaServicioService.getFrecuenciaServicio(nombrePlanta).subscribe(
+      (data: Equipos[]) => {
+        this.equiposOriginales = data;
+        this.equiposFiltrados = [...this.equiposOriginales];
+        this.cdr.detectChanges();
+      },
+      error => {
+        console.error('Error al cargar los equipos:', error);
+      }
+    );
   }
 
-  /**
-   * Aplica los filtros de estado, mantenimiento y búsqueda de cliente a la lista de equipos.
-   */
+  seleccionarPlanta(nombrePlanta: string): void {
+    this.plantaSeleccionada = nombrePlanta;
+    this.cargarEquiposFrecuenciaServicio(nombrePlanta);
+  }
+
   filtrarEquipos(): void {
     this.equiposFiltrados = this.equiposOriginales.filter(equipo => {
       const coincideEstado = !this.estadoSeleccionado || equipo.estado === this.estadoSeleccionado;
-      const coincideMantenimiento = !this.estadoMantenimientoSeleccionado || equipo.estado_mantenimiento === this.estadoMantenimientoSeleccionado;
-      const coincideCliente = !this.busquedaCliente || equipo.contacto.toLowerCase().includes(this.busquedaCliente.toLowerCase());
+      const coincideMantenimiento = !this.estadoMantenimientoSeleccionado || equipo.estadoMantenimiento === this.estadoMantenimientoSeleccionado;
+      const coincideCliente = !this.busquedaContacto || equipo.contacto.toLowerCase().includes(this.busquedaContacto.toLowerCase());
       return coincideEstado && coincideMantenimiento && coincideCliente;
     });
   }
 
-  /**
-   * Funciones trackBy para optimizar los *ngFor del template.
-   */
-  trackByCliente(index: number, item: ClienteNode): string {
+  trackByCliente(index: number, item: Cliente): string {
     return item.nombre;
   }
 
-  trackBySubcliente(index: number, item: any): string {
-    return item.nombre;
-  }
-
-  trackByPlanta(index: number, item: any): string {
+  trackByPlanta(index: number, item: Planta): string {
     return item.nombre;
   }
 
   trackByEquipo(index: number, item: Equipos): string {
-    // Se asume que 'referencia' es un identificador único
     return item.referencia;
   }
 }

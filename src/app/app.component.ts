@@ -1,6 +1,8 @@
 import { Component } from '@angular/core';
 import { RouterModule, RouterOutlet } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { Cliente } from './interface/clientes.interface.';
+import { ClienteService } from './service/Clientes/cliente.service';
 
 @Component({
   selector: 'app-root',
@@ -11,4 +13,7 @@ import { CommonModule } from '@angular/common';
 })
 export class AppComponent {
   title = 'mrperu-alertas';
+
 }
+
+

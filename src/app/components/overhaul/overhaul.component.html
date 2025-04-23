@@ -2,88 +2,239 @@
     <div class="content">
         <h1>OVERHOAL</h1>
 
-        <div class="search-container">
-            <img src="assets/img/iconoSearch.png" alt="Buscar" class="input-search-icon">
-            <input type="text" class="form-control custom-search" placeholder="Buscar equipo o cliente">
-            <button class="btn btn-primary search-button" type="button">Buscar</button>
-        </div>
 
-        <!-- Sección Árbol de Clientes -->
+     <!-- Sección Árbol de Clientes -->
     <div class="content-tree">
-        <div class="tree">
-          <ng-container *ngFor="let cliente of clientesData; trackBy: trackByCliente">
-            <details>
-              <summary>📂 {{ cliente.nombre }}</summary>
-              <ng-container *ngFor="let sub of cliente.subclientes; trackBy: trackBySubcliente">
-                <details>
-                  <summary>📂 {{ sub.nombre }}</summary>
-                  <ng-container *ngFor="let subcliente of sub.subclientes; trackBy: trackByPlanta">
-                    <div 
-                      class="planta-item" 
-                      (click)="filtrarPorPlanta(subcliente.nombre)"
-                      [class.selected]="plantaSeleccionada === subcliente.nombre">
-                      🏢 {{ subcliente.nombre }}
-                    </div>
-                  </ng-container>
-                </details>
-              </ng-container>
-            </details>
-          </ng-container>
-        </div>
+      <div class="tree">
+        <ng-container >
+          <details>
+            <summary>📂 Clientes con Servicios Regulares</summary>
+            <ng-container *ngFor="let cliente of ClientesRegulares; trackBy: trackBySubcliente">
+              <details>
+                <summary>📂 {{ cliente.nombre }}</summary>
+                <ng-container *ngFor="let local of cliente.locales; trackBy: trackByPlanta">
+                  <div 
+                    class="planta-item" 
+                    (click)="filtrarPorPlanta(local.local)"
+                    [class.selected]="plantaSeleccionada === local.local">
+                    🏢 {{ local.local }}
+                  </div>
+                </ng-container>
+              </details>
+            </ng-container>
+          </details>
+        </ng-container>
+
+        <ng-container >
+          <details>
+            <summary>📂 Clientes con Servicios No-Regulares </summary>
+            <ng-container *ngFor="let cliente of ClientesNoRegulares; trackBy: trackBySubcliente">
+              <details>
+                <summary>📂 {{ cliente.nombre }}</summary>
+                <ng-container *ngFor="let local of cliente.locales; trackBy: trackByPlanta">
+                  <div 
+                    class="planta-item" 
+                    (click)="filtrarPorPlanta(local.local)"
+                    [class.selected]="plantaSeleccionada === local.local">
+                    🏢 {{ local.local }}
+                  </div>
+                </ng-container>
+              </details>
+            </ng-container>
+          </details>
+        </ng-container>
+
+        <ng-container >
+          <details>
+            <summary>📂 Clientes con Servicios Antiguos-Recientes</summary>
+            <ng-container *ngFor="let cliente of ClientesAntiguosRecientes; trackBy: trackBySubcliente">
+              <details>
+                <summary>📂 {{ cliente.nombre }}</summary>
+                <ng-container *ngFor="let local of cliente.locales; trackBy: trackByPlanta">
+                  <div 
+                    class="planta-item" 
+                    (click)="filtrarPorPlanta(local.local)"
+                    [class.selected]="plantaSeleccionada === local.local">
+                    🏢 {{ local.local }}
+                  </div>
+                </ng-container>
+              </details>
+            </ng-container>
+          </details>
+        </ng-container>
+
+        <ng-container >
+          <details>
+            <summary>📂 Clientes con Servicios Antiguos</summary>
+            <ng-container *ngFor="let cliente of ClientesAntiguos; trackBy: trackBySubcliente">
+              <details>
+                <summary>📂 {{ cliente.nombre }}</summary>
+                <ng-container *ngFor="let local of cliente.locales; trackBy: trackByPlanta">
+                  <div 
+                    class="planta-item" 
+                    (click)="filtrarPorPlanta(local.local)"
+                    [class.selected]="plantaSeleccionada === local.local">
+                    🏢 {{ local.local }}
+                  </div>
+                </ng-container>
+              </details>
+            </ng-container>
+          </details>
+        </ng-container>
+
+        <ng-container >
+          <details>
+            <summary>📂 Clientes sin servicios</summary>
+            <ng-container *ngFor="let cliente of ClientesSinServicio; trackBy: trackBySubcliente">
+              <details>
+                <summary>📂 {{ cliente.nombre }}</summary>
+                <ng-container *ngFor="let local of cliente.locales; trackBy: trackByPlanta">
+                  <div 
+                    class="planta-item" 
+                    (click)="filtrarPorPlanta(local.local)"
+                    [class.selected]="plantaSeleccionada === local.local">
+                    🏢 {{ local.local }}
+                  </div>
+                </ng-container>
+              </details>
+            </ng-container>
+          </details>
+        </ng-container>
+
+        <ng-container >
+          <details>
+            <summary>📂 No Es Cliente</summary>
+            <ng-container *ngFor="let cliente of NoEsCliente; trackBy: trackBySubcliente">
+              <details>
+                <summary>📂 {{ cliente.nombre }}</summary>
+                <ng-container *ngFor="let local of cliente.locales; trackBy: trackByPlanta">
+                  <div 
+                    class="planta-item" 
+                    (click)="filtrarPorPlanta(local.local)"
+                    [class.selected]="plantaSeleccionada === local.local">
+                    🏢 {{ local.local }}
+                  </div>
+                </ng-container>
+              </details>
+            </ng-container>
+          </details>
+        </ng-container>
       </div>
+    </div>
+     
 
         <h5>📩 Notificacion de Overhoal</h5>
 
-        <div *ngIf="equipoSeleccionado">
-            <!-- Tabla Resumen -->
-            <table class="table table-bordered">
-                <thead>
-                    <tr>
-                        <th>Cliente</th>
-                        <th>Equipo</th>
-                        <th>Modelo</th>
-                        <th>Serie</th>
-                        <th>Overhoal Realizado</th>
-                        <th>Estado</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>{{ equipoSeleccionado.cliente }}</td>
-                        <td>{{ equipoSeleccionado.equipo }}</td>
-                        <td>{{ equipoSeleccionado.modelo }}</td>
-                        <td>{{ equipoSeleccionado.serie }}</td>
-                        <td>{{ equipoSeleccionado.overhoal }}</td>
-                        <td>{{ equipoSeleccionado.estado }}</td>
-                    </tr>
-                </tbody>
-            </table>
-
-            <h5>🛠️ Detalles de Servicio</h5>
-
-            <!-- Tabla Detallada -->
-            <table class="table table-striped">
-                <thead>
-                    <tr>
-                        <th>Mantenimiento Recomendado</th>
-                        <th>Frecuencia Servicio</th>
-                        <th>Fecha Último Servicio</th>
-                        <th>Fecha Próximo Servicio</th>
-                        <th>Horas de Trabajo </th>
-                        <th>Total de Horas Trabajadas</th> 
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>{{ equipoSeleccionado.recomendacion }}</td>
-                        <td>{{ equipoSeleccionado.recomendacionHoras }} hrs</td>
-                        <td>{{ equipoSeleccionado.ultimoServicio | date:'dd/MM/yyyy' }}</td>
-                        <td>{{ equipoSeleccionado.proximoServicio | date:'dd/MM/yyyy' }}</td>
-                        <td>{{ equipoSeleccionado.horasTrabajadasXdia }}</td>
-                        <td>{{ equipoSeleccionado.horasTrabajo }} hrs</td>
-                    </tr>
-                </tbody>
-            </table>
+        <!-- Sección de Filtros y Búsqueda -->
+      <div class="search-container">
+        <div class="form-group">
+          <label for="fechaFiltro">Fecha (Año y Mes):</label>
+          <input
+            type="month"
+            id="fechaFiltro"
+            class="form-control custom-select"
+            [(ngModel)]="fechaFiltro"
+          />
+          <button class="btn btn-primary" type="button" (click)="filtrarEquipos()">
+            Filtrar
+          </button>
         </div>
+      </div>
+
+      <!-- Sección Tabla de Equipos -->
+    <div class="table-container">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Cliente</th>
+            <th>Local</th>
+            <th>Referencia</th>
+            <th>Serie</th>
+            <th>Estado</th>
+            <th>Estado Mantenimiento</th>
+            <th>Fecha Notificacion</th>
+            <th>Ver Detalles</th>
+          </tr>
+        </thead>
+        <tbody *ngFor="let planta of plantasData?.plantas; trackBy: trackByPlanta">
+          <ng-container *ngIf="planta.nombre === plantaSeleccionada">
+            <!-- Se recorre cada equipo dentro de la planta -->
+            <tr *ngFor="let equipo of equiposFiltrados; trackBy: trackByEquipo">
+              <td>{{ equipo.cliente }}</td>
+              <td>{{ planta.nombre }}</td>
+              <td>{{ equipo.referencia }}</td>
+              <td>{{ equipo.serie }}</td>
+              <td>{{ equipo.estado }}</td>
+              <td>{{ equipo.estado_mantenimiento }}</td>
+              <td>{{ equipo.fecha_notificacion }}</td>
+              <!-- Botón para abrir modal con los detalles -->
+              <td>
+                <button class="btn btn-primary" (click)="abrirModal(equipo)">
+                  Detalles
+                </button>
+              </td>
+            </tr>
+          </ng-container>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Modal: Se muestra cuando selectedEquipo tiene datos -->
+      <div class="modal-overlay" *ngIf="selectedEquipo" (click)="cerrarModal()">
+        <div class="modal" (click)="$event.stopPropagation()">
+          <div class="modal-header">
+            <h2>Detalles del Equipo</h2>
+            <button class="btn btn-secondary" (click)="cerrarModal()">Cerrar</button>
+          </div>
+          <div class="modal-body">
+            <!-- Primera tabla: Datos principales -->
+            <table class="table modal-table">
+              <thead>
+                <tr>
+                  <th>Cliente</th>
+                  <th>Local</th>
+                  <th>Referencia</th>
+                  <th>Serie</th>
+                  <th>Estado</th>
+                  <th>Estado Mantenimiento</th>
+                  <th>Fecha Notificacion</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>{{ selectedEquipo.cliente }}</td>
+                  <!-- Asumimos que 'plantaSeleccionada' es el local -->
+                  <td>{{ plantaSeleccionada }}</td>
+                  <td>{{ selectedEquipo.referencia }}</td>
+                  <td>{{ selectedEquipo.serie }}</td>
+                  <td>{{ selectedEquipo.estado }}</td>
+                  <td>{{ selectedEquipo.estado_mantenimiento }}</td>
+                  <td>{{ selectedEquipo.fecha_notificacion }}</td>
+                </tr>
+              </tbody>
+            </table>
+
+            <!-- Segunda tabla: Datos adicionales -->
+            <table class="table modal-table" style="margin-top: 20px;">
+              <thead>
+                <tr>
+                  <th>Frecuencia Servicio</th>
+                  <th>Fecha Último Servicio</th>
+                  <th>Fecha Próximo Servicio</th>
+                  <th>Horómetro Último Servicio</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>{{ selectedEquipo.frecuenciaServicio || 'N/A' }}</td>
+                  <td>{{ selectedEquipo.fechaUltimoServicio || 'N/A' }}</td>
+                  <td>{{ selectedEquipo.fechaProximoServicio || 'N/A' }}</td>
+                  <td>{{ selectedEquipo.horometroUltimoServicio || 'N/A' }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
     </div>
 </div>

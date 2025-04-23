@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
-import { ClienteNode, ClientesData } from '../../interface/clientes.interface.ps';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { Cliente } from '../../interface/clientes.interface.';
+import { ClienteService } from '../../service/Clientes/cliente.service';
 import { Equipos, PlantasData, Planta } from '../../interface/equipos.interface.ps';
 import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
@@ -14,7 +15,14 @@ import { HttpClient, HttpClientModule } from '@angular/common/http';
 })
 export class ProximoServicioComponent implements OnInit {
 
-  clientesData!: ClienteNode[];
+    ClientesRegulares!: Cliente[];
+    ClientesNoRegulares!: Cliente[];
+    ClientesAntiguosRecientes!: Cliente[];
+    ClientesAntiguos!: Cliente[];
+    ClientesSinServicio!: Cliente[];
+    NoEsCliente!: Cliente[];
+
+  //clientesData!: ClienteNode[];
   plantas: Planta[] = [];
   plantasData!: PlantasData;
   equiposOriginales: Equipos[] = [];
@@ -26,26 +34,100 @@ export class ProximoServicioComponent implements OnInit {
   // Conservamos la variable para la planta seleccionada
   plantaSeleccionada: string | null = null;
 
-  constructor(private http: HttpClient) {}
+  // Variable para el modal: almacena el equipo seleccionado
+  selectedEquipo: Equipos | null = null;
+
+  constructor(private http: HttpClient, private cdr: ChangeDetectorRef, private clienteService: ClienteService) {}
 
   ngOnInit(): void {
-    this.loadClientesData();
+    this.cargarClientesRegulares();
+    this.cargarClientesNoRegulares();
+    this.cargarClientesAntiguosRecientes();
+    this.cargarClientesAntiguos();
+    this.cargarClientesSinServicio();
+    this.cargarNoEsCliente();
     this.loadPlantasData();
   }
 
-  /**
+  
+   /**
    * Carga el árbol de clientes desde el JSON.
    */
-  private loadClientesData(): void {
-    this.http.get<ClientesData>('assets/json/clientes-data-ps.json').subscribe({
-      next: (data) => this.clientesData = data.clientes,
-      error: (err) => console.error('Error fetching clientes:', err)
-    });
+  private cargarClientesRegulares(): void {
+    this.clienteService.getClientes("Clientes con Servicios Regulares").subscribe(
+      (data: Cliente[]) => {
+        this.ClientesRegulares = data; // Guardamos el resultado en la propiedad "clientes"
+        this.cdr.detectChanges(); // Detectamos cambios manualmente
+      },
+      error => {
+        console.error('Error al cargar los clientes:', error);
+      }
+    );
   }
 
-  /**
-   * Carga los equipos y plantas, y establece por defecto la primera planta.
-   */
+  private cargarClientesNoRegulares(): void {
+    this.clienteService.getClientes("Clientes con Servicios No-Regulares").subscribe(
+      (data: Cliente[]) => {
+        this.ClientesNoRegulares = data; // Guardamos el resultado en la propiedad "clientes"
+        this.cdr.detectChanges(); // Detectamos cambios manualmente
+      },
+      error => {
+        console.error('Error al cargar los clientes:', error);
+      }
+    );
+  }
+
+  private cargarClientesAntiguosRecientes(): void {
+    this.clienteService.getClientes("Clientes con Servicios Antiguos-Recientes").subscribe(
+      (data: Cliente[]) => {
+        this.ClientesAntiguosRecientes = data; // Guardamos el resultado en la propiedad "clientes"
+        this.cdr.detectChanges(); // Detectamos cambios manualmente
+      },
+      error => {
+        console.error('Error al cargar los clientes:', error);
+      }
+    );
+  }
+
+  private cargarClientesAntiguos(): void {
+    this.clienteService.getClientes("Clientes con Servicios Antiguos").subscribe(
+      (data: Cliente[]) => {
+        this.ClientesAntiguos = data; // Guardamos el resultado en la propiedad "clientes"
+        this.cdr.detectChanges(); // Detectamos cambios manualmente
+      },
+      error => {
+        console.error('Error al cargar los clientes:', error);
+      }
+    );
+  }
+
+  private cargarClientesSinServicio(): void {
+    this.clienteService.getClientes("Clientes sin servicios").subscribe(
+      (data: Cliente[]) => {
+        this.ClientesSinServicio = data; // Guardamos el resultado en la propiedad "clientes"
+        this.cdr.detectChanges(); // Detectamos cambios manualmente
+      },
+      error => {
+        console.error('Error al cargar los clientes:', error);
+      }
+    );
+  }
+
+  private cargarNoEsCliente(): void {
+    this.clienteService.getClientes("No Es Cliente").subscribe(
+      (data: Cliente[]) => {
+        this.NoEsCliente = data; // Guardamos el resultado en la propiedad "clientes"
+        this.cdr.detectChanges(); // Detectamos cambios manualmente
+      },
+      error => {
+        console.error('Error al cargar los clientes:', error);
+      }
+    );
+  }
+
+  
+  //Carga los equipos y plantas, y establece por defecto la primera planta.
+  
   private loadPlantasData(): void {
     this.http.get<PlantasData>('assets/json/equipos-data-ps.json').subscribe({
       next: (data: PlantasData) => {
@@ -71,8 +153,6 @@ export class ProximoServicioComponent implements OnInit {
 
   /**
    * Filtra los equipos según el año y mes seleccionado en la variable `fechaFiltro`.
-   * Se compara el valor del input (formato "YYYY-MM") con la parte correspondiente de `fecha_notificacion`.
-   * Si no se ingresa ningún valor, se muestran todos los equipos.
    */
   filtrarEquipos(): void {
     if (!this.fechaFiltro) {
@@ -80,22 +160,37 @@ export class ProximoServicioComponent implements OnInit {
       return;
     }
 
-    // El input de tipo "month" devuelve una cadena en formato "YYYY-MM"
-    const filtro = this.fechaFiltro; // Ejemplo: "2023-10"
-
+    const filtro = this.fechaFiltro; // Formato "YYYY-MM"
     this.equiposFiltrados = this.equiposOriginales.filter(equipo => {
-      // Extrae la parte "YYYY-MM" de la fecha (formato: "YYYY-MM-DD")
+      // Extrae la parte "YYYY-MM" de la fecha (formato "YYYY-MM-DD")
       const fechaEquipoYM = equipo.fecha_notificacion.substring(0, 7);
       return fechaEquipoYM === filtro;
     });
   }
 
   /**
+   * Abre el modal asignando el equipo seleccionado.
+   * @param equipo Equipo sobre el cual se desea ver los detalles.
+   */
+  abrirModal(equipo: Equipos): void {
+    // En este punto, podrías también asignar valores extra para los datos adicionales, 
+    // en caso de que no provengan directamente del objeto 'equipo'.
+    this.selectedEquipo = equipo;
+  }
+
+  /**
+   * Cierra el modal y limpia el equipo seleccionado.
+   */
+  cerrarModal(): void {
+    this.selectedEquipo = null;
+  }
+
+  /**
    * Funciones trackBy para optimizar los *ngFor del template.
    */
-  trackByCliente(index: number, item: ClienteNode): string {
-    return item.nombre;
-  }
+  //trackByCliente(index: number, item: ClienteNode): string {
+  //  return item.nombre;
+  //}
 
   trackBySubcliente(index: number, item: any): string {
     return item.nombre;

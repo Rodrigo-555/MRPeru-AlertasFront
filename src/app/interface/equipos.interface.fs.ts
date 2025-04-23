@@ -1,10 +1,11 @@
 export interface Equipos {
+  local: string;
   contacto: string;
   email: string;
-  fechaEnvio: string;
+  fechaProximoServicio?: Date;
   referencia:string;
   estado: string;
-  estado_mantenimiento: string;
+  estadoMantenimiento: string;
 }
 
 export interface Planta {

@@ -35,48 +35,78 @@ h5 {
     margin-top: 20px;
 }
 
-/* Buscador */
-.search-container {
+  /* Buscador y Filtros */
+  .search-container {
     display: flex;
-    align-items: center;
     gap: 10px;
-    margin-bottom: 20px;
-    justify-content: center;
-}
-
-.custom-search {
-    flex-grow: 1;
-    max-width: 300px;
-    padding: 8px 12px;
-    border-radius: 4px;
-    border: 2px solid #007bff;
-    outline: none;
-    transition: border 0.3s ease;
-}
-
-.custom-search:focus {
-    border-color: #0056b3;
-    box-shadow: 0 0 8px rgba(0, 91, 187, 0.5);
-}
-
-.search-button {
-    background-color: #007bff;
-    color: white;
-    border: none;
-    padding: 8px 16px;
-    cursor: pointer;
-    border-radius: 4px;
-    transition: background 0.3s ease;
-}
-
-.search-button:hover {
-    background-color: #0056b3;
-}
-
-.input-search-icon {
-    width: 20px;
-    height: 20px;
-}
+    margin-bottom: 10px;
+    align-items: start;
+  
+    .custom-search {
+      width: 250px;
+      padding: 8px 35px;
+      border: 2px solid #007bff;
+      border-radius: 20px;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.3s, box-shadow 0.3s;
+      text-align: start;
+    }
+  
+    .custom-search:focus {
+      border-color: #0056b3;
+      box-shadow: 0 0 8px rgba(0, 91, 187, 0.5);
+    }
+  
+    .input-search-icon {
+      position: relative;
+      left: 40px;
+      width: 20px;
+      height: 20px;
+    }
+  
+    .search-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-left: auto; // Esto alinea el grupo a la derecha
+    }
+  
+    .search-button {
+      padding: 8px 15px;
+      font-size: 14px;
+      border: none;
+      border-radius: 20px;
+      background-color: #007bff;
+      color: #fff;
+      cursor: pointer;
+      transition: background-color 0.3s, box-shadow 0.3s;
+  
+      &:hover {
+        background-color: #0056b3;
+        box-shadow: 0 4px 8px rgba(0, 91, 187, 0.5);
+      }
+    }
+  
+    .custom-select {
+      border: 2px solid #007bff;
+      border-radius: 20px;
+      padding: 6px 12px;
+      font-size: 14px;
+      transition: border-color 0.3s, box-shadow 0.3s;
+      text-align: start;
+    }
+  
+    .custom-select:focus {
+      border-color: #0056b3;
+      box-shadow: 0 0 8px rgba(0, 91, 187, 0.5);
+    }
+  
+    .label {
+      align-self: center;
+      
+    }
+  }
 
 .content-tree {
     border: 2px solid #007bff;
@@ -250,4 +280,69 @@ h5 {
     color: #28a745; /* Verde */
     font-weight: bold;
 }
+
+/* Modal - Capa overlay que cubre toda la pantalla */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    /* Caja del modal */
+    .modal {
+      background: #fff;
+      width: 1000px;
+      height: 400px;
+      overflow-y: auto; /* En caso de que el contenido sea muy extenso */
+      padding: 20px;
+      box-sizing: border-box;
+      position: relative;
+    }
+  
+    /* Cabecera del modal */
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #ddd;
+      padding-bottom: 10px;
+      margin-bottom: 20px;
+    }
+  
+    /* Si deseas que la tabla dentro del modal tenga el mismo estilo que las tablas del table-container,
+      se puede reutilizar la clase .table y/o definir .modal-table para que no haya diferencias.
+      Aquí se usará la clase .modal-table combinada con .table para asegurar consistencia. */
+    .modal-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+  
+    .modal-table th,
+    .modal-table td {
+      padding: 10px;
+      border-bottom: 1px solid #ddd;
+      text-align: center;
+    }
+  
+    .modal-table th {
+      background: #007bff;
+      color: white;
+      text-align: center;
+    }
+  
+    /* Botón de cerrar en el modal */
+    .btn-secondary {
+      background-color: #6c757d;
+    }
+  
+    .btn-secondary:hover {
+      background-color: #545b62;
+    }
+  
+  }
 

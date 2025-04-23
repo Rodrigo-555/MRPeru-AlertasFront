@@ -6,55 +6,55 @@
         {
           "contacto": "Edgar Panduro",
           "email": "Hepandurocititexsac@gmail.com",
-          "fechaEnvio": "10/03/2025 08:36:15",
+          "fechaEnvio": "10/03/2025",
+          "referencia": "GA 110 #1",
+          "estado": "Activo🟢",
+          "estadoMantenimiento": "Requiere Servicio⚠️"
+        },
+        {
+          "contacto": "ANDREA SORIA",
+          "email": "Hepandurocititexsac@gmail.com",
+          "fechaEnvio": "10/03/2025",
           "referencia": "GA 110 #1",
           "estado": "Activo🟢",
           "estado_mantenimiento": "Requiere Servicio⚠️"
         },
         {
-          "contacto": "Edgar Panduro",
+          "contacto": "ISABEL CABELLO",
           "email": "Hepandurocititexsac@gmail.com",
-          "fechaEnvio": "10/03/2025 08:36:15",
+          "fechaEnvio": "10/03/2025",
           "referencia": "GA 110 #1",
           "estado": "Activo🟢",
           "estado_mantenimiento": "Requiere Servicio⚠️"
         },
         {
-          "contacto": "Edgar Panduro",
+          "contacto": "KENNY BRONCANO",
           "email": "Hepandurocititexsac@gmail.com",
-          "fechaEnvio": "10/03/2025 08:36:15",
+          "fechaEnvio": "10/03/2025",
           "referencia": "GA 110 #1",
           "estado": "Activo🟢",
           "estado_mantenimiento": "Requiere Servicio⚠️"
         },
         {
-          "contacto": "Edgar Panduro",
+          "contacto": "LEONARDO ALVAREZ",
           "email": "Hepandurocititexsac@gmail.com",
-          "fechaEnvio": "10/03/2025 08:36:15",
+          "fechaEnvio": "10/03/2025",
           "referencia": "GA 110 #1",
           "estado": "Activo🟢",
           "estado_mantenimiento": "Requiere Servicio⚠️"
         },
         {
-          "contacto": "Edgar Panduro",
+          "contacto": "JOSELYN INFANTES",
           "email": "Hepandurocititexsac@gmail.com",
-          "fechaEnvio": "10/03/2025 08:36:15",
+          "fechaEnvio": "10/03/2025",
           "referencia": "GA 110 #1",
           "estado": "Activo🟢",
           "estado_mantenimiento": "Requiere Servicio⚠️"
         },
         {
-          "contacto": "Edgar Panduro",
+          "contacto": "VICTOR CHIROQUE",
           "email": "Hepandurocititexsac@gmail.com",
-          "fechaEnvio": "10/03/2025 08:36:15",
-          "referencia": "GA 110 #1",
-          "estado": "Activo🟢",
-          "estado_mantenimiento": "Requiere Servicio⚠️"
-        },
-        {
-          "contacto": "Edgar Panduro",
-          "email": "Hepandurocititexsac@gmail.com",
-          "fechaEnvio": "10/03/2025 08:40:22",
+          "fechaEnvio": "10/03/2025",
           "referencia": "GA 110 #2",
           "estado": "Activo🟢",
           "estado_mantenimiento": "Aun no requiere servicio🟢"
@@ -62,7 +62,7 @@
         {
           "contacto": "Edgar Panduro",
           "email": "Hepandurocititexsac@gmail.com",
-          "fechaEnvio": "10/03/2025 08:45:10",
+          "fechaEnvio": "10/03/2025",
           "referencia": "GA 110 #3",
           "estado": "Activo🟢",
           "estado_mantenimiento": "Requiere Servicio⚠️"
@@ -70,7 +70,7 @@
         {
           "contacto": "Edgar Panduro",
           "email": "Hepandurocititexsac@gmail.com",
-          "fechaEnvio": "10/03/2025 08:50:00",
+          "fechaEnvio": "10/03/2025",
           "referencia": "GA 110 #4",
           "estado": "Activo🟢",
           "estado_mantenimiento": "Aun no requiere servicio🟢"
@@ -78,7 +78,7 @@
         {
           "contacto": "Edgar Panduro",
           "email": "Hepandurocititexsac@gmail.com",
-          "fechaEnvio": "10/03/2025 08:55:30",
+          "fechaEnvio": "10/03/2025",
           "referencia": "GA 110 #5",
           "estado": "Activo🟢",
           "estado_mantenimiento": "Requiere Servicio⚠️"

@@ -1,0 +1,91 @@
+{
+  "clientes": [
+    {
+      "nombre": "CLIENTES REGULARES",
+      "subclientes": [
+        {
+          "nombre": "CITY TEX S.A.C",
+          "subclientes": [
+            {
+              "nombre": "Planta Santa Anita"
+            }
+          ]
+        },
+        {
+          "nombre": "BISAGRAS PERUANAS S.A.C.",
+          "subclientes": [
+            {
+              "nombre": "Planta Callao"
+            }
+          ]
+        },
+        {
+          "nombre": "ARANGO VALLEJOS NORMA",
+          "subclientes": [
+            {
+              "nombre": "Planta Surco"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nombre": "CLIENTES NO-REGULARES",
+      "subclientes": [
+        {
+          "nombre": "INDUSTRIAS DEL SUR S.A.",
+          "subclientes": [
+            {
+              "nombre": "Planta Arequipa"
+            }
+          ]
+        },
+        {
+          "nombre": "TEXTILES ANDINOS S.A.",
+          "subclientes": [
+            {
+              "nombre": "Planta Trujillo"
+            }
+          ]
+        },
+        {
+          "nombre": "MECÁNICA INDUSTRIAL PERÚ",
+          "subclientes": [
+            {
+              "nombre": "Planta Lima"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nombre": "CLIENTES ANTIGUOS-RECIENTES",
+      "subclientes": [
+        {
+          "nombre": "COMPAÑÍA TEXTIL LIMA S.A.",
+          "subclientes": [
+            {
+              "nombre": "Planta Cercado de Lima"
+            }
+          ]
+        },
+        {
+          "nombre": "CONFECCIONES DEL NORTE",
+          "subclientes": [
+            {
+              "nombre": "Planta Piura"
+            }
+          ]
+        },
+        {
+          "nombre": "EQUIPOS INDUSTRIALES S.A.C.",
+          "subclientes": [
+            {
+              "nombre": "Planta Cusco"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

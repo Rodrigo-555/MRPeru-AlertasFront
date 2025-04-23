@@ -1,22 +1,29 @@
 <div class="main-container">
   <div class="content">
-    <h1>FRECUENCIA SERVICIOS</h1>
+    <h1>NOTIFICACIONES DE SERVICIOS</h1>
     
     <!-- Sección Árbol de Clientes -->
     <div class="content-tree">
       <div class="tree">
-        <ng-container *ngFor="let cliente of clientesData; trackBy: trackByCliente">
+        <ng-container *ngFor="let category of clienteCategories">
           <details>
-            <summary>📂 {{ cliente.nombre }}</summary>
-            <ng-container *ngFor="let sub of cliente.subclientes; trackBy: trackBySubcliente">
+            <summary>
+              <img src="assets/img/folder-icon.png" alt="Carpeta" class="icono-arbol">
+              {{ category.title }}
+            </summary>
+            <ng-container *ngFor="let cliente of category.clientes; trackBy: trackByCliente">
               <details>
-                <summary>📂 {{ sub.nombre }}</summary>
-                <ng-container *ngFor="let subcliente of sub.subclientes; trackBy: trackByPlanta">
-                  <div 
-                    class="planta-item" 
-                    (click)="filtrarPorPlanta(subcliente.nombre)"
-                    [class.selected]="plantaSeleccionada === subcliente.nombre">
-                    🏢 {{ subcliente.nombre }}
+                <summary>
+                  <img src="assets/img/user-icon.png" alt="Cliente" class="icono-arbol">
+                  {{ cliente.nombre }}
+                </summary>
+                <ng-container *ngFor="let local of cliente.locales; trackBy: trackByPlanta">
+                  <div
+                    class="planta-item"
+                    (click)="seleccionarPlanta(local.local)"
+                    [class.selected]="plantaSeleccionada === local.local">
+                    <img src="assets/img/building-icon.png" alt="Local" class="icono-arbol">
+                    {{ local.local }}
                   </div>
                 </ng-container>
               </details>
@@ -59,8 +66,8 @@
         <input 
           type="text" 
           class="form-control custom-search" 
-          placeholder="Busque el cliente"
-          [(ngModel)]="busquedaCliente"
+          placeholder="Busque el contacto"
+          [(ngModel)]="busquedaContacto"
           (input)="filtrarEquipos()">
         <button
           class="btn btn-primary search-button"
@@ -87,14 +94,13 @@
         </thead>
         <tbody>
           <tr *ngFor="let equipo of equiposFiltrados; trackBy: trackByEquipo">
-            <!-- En este caso, ya que el filtrado se realiza por planta, el valor de plantaSeleccionada es el local -->
             <td>{{ plantaSeleccionada }}</td>
             <td>{{ equipo.contacto }}</td>
             <td>{{ equipo.email }}</td>
-            <td>{{ equipo.fechaEnvio }}</td>
+            <td>{{ equipo.fechaProximoServicio ? (equipo.fechaProximoServicio | date: 'dd/MM/yyyy') : "No hay Proximo Servicio" }}</td>
             <td>{{ equipo.referencia }}</td>
             <td>{{ equipo.estado }}</td>
-            <td>{{ equipo.estado_mantenimiento }}</td>
+            <td>{{ equipo.estadoMantenimiento }}</td>
           </tr>
         </tbody>
       </table>

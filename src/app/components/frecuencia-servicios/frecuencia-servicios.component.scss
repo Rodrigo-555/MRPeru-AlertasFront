@@ -58,6 +58,14 @@
       list-style: none;
       padding-left: 10px;
     }
+
+    .icono-arbol {
+      width: 20px;
+      height: 20px;
+      margin-right: 6px;
+      vertical-align: middle;
+    }
+    
   
     details {
       margin-bottom: 5px;
@@ -76,9 +84,8 @@
         color: #007bff;
       }
     }
-  }
-  
-  /* Elemento de Planta en el Árbol */
+
+    /* Elemento de Planta en el Árbol */
   .planta-item {
     cursor: pointer;
     font-weight: bold;
@@ -97,6 +104,9 @@
       color: #007bff;
     }
   }
+  }
+  
+  
   
   /* Buscador y Filtros */
   .search-container {
@@ -185,14 +195,14 @@
         background: #007bff;
         color: #fff;
         padding: 10px;
-        text-align: center;
+        text-align: start;
         font-weight: bold;
       }
   
       td {
-        text-align: center;
-        padding: 10px;
-        border-bottom: 2.5px solid #ddd;
+        text-align: start;
+        padding: 5px;
+        border-bottom: 2px solid #ddd;
         transition: background 0.3s;
       }
   
@@ -205,22 +215,22 @@
       td:nth-child(1) { width: 12.5%; }
   
       th:nth-child(2),
-      td:nth-child(2) { width: 11%; }
+      td:nth-child(2) { width: 15%; }
   
       th:nth-child(3),
-      td:nth-child(3) { width: 15%; }
+      td:nth-child(3) { width: 8%; }
   
       th:nth-child(4),
       td:nth-child(4) { width: 15%; }
   
       th:nth-child(5),
-      td:nth-child(5) { width: 11%; }
+      td:nth-child(5) { width: 8%; }
   
       th:nth-child(6),
-      td:nth-child(6) { width: 8%; }
+      td:nth-child(6) { width: 3%; }
   
       th:nth-child(7),
-      td:nth-child(7) { width: 10%; }
+      td:nth-child(7) { width: 3%; }
     }
   }
   
