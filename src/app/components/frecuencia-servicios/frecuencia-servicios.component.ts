@@ -159,9 +159,9 @@ export class FrecuenciaServiciosComponent implements OnInit {
     // Obtener etiqueta de estado
   getEstadoLabel(estado: string): string {
     switch (estado) {
-      case 'A': return 'Activo';
+      case 'A': return '🟢';
       case 'C': return 'Por Cotizar';
-      case 'I': return 'Inactivo';
+      case 'I': return '🔴';
       case 'R': return 'En Reparación';
       case 'X': return 'Malogrado';
       default: return estado;
@@ -183,12 +183,12 @@ export class FrecuenciaServiciosComponent implements OnInit {
   // Obtener etiqueta de estado de mantenimiento
   getMantenimientoLabel(estadoMantenimiento: string): string {
     switch (estadoMantenimiento) {
-      case 'A': return 'Requiere Servicio';
+      case 'A': return '⚠️';
       case 'E': return '(Por Configurar)';
       case 'I': return 'Equipo Inactivo o de Baja';
-      case 'V': return 'Aun no Requiere Servicio';
+      case 'V': return '🟢';
       case 'N': return '(Sin Reportes de Servicio)';
-      case 'R': return 'Sin servicio mas de un Año';
+      case 'R': return '🔴';
       default: return estadoMantenimiento;
     }
   }
@@ -268,10 +268,8 @@ export class FrecuenciaServiciosComponent implements OnInit {
 
   filtrarEquipos(): void {
     this.equiposFiltrados = this.equiposOriginales.filter(equipo => {
-      const coincideEstado = !this.estadoSeleccionado || 
-                             this.getEstadoLabel(equipo.estado) === this.estadoSeleccionado.replace('🟢', '').replace('🔴', '').trim();
-      const coincideMantenimiento = !this.estadoMantenimientoSeleccionado || 
-                                   this.getMantenimientoLabel(equipo.estadoMantenimiento) === this.estadoMantenimientoSeleccionado.replace('🟢', '').replace('⚠️', '').trim();
+      const coincideEstado = !this.estadoSeleccionado || equipo.estado === this.estadoSeleccionado;
+      const coincideMantenimiento = !this.estadoMantenimientoSeleccionado || equipo.estadoMantenimiento === this.estadoMantenimientoSeleccionado;
       const coincideContacto = !this.busquedaContacto || 
                               equipo.contacto.toLowerCase().includes(this.busquedaContacto.toLowerCase()) ||
                               (equipo.email && equipo.email.toLowerCase().includes(this.busquedaContacto.toLowerCase()));
