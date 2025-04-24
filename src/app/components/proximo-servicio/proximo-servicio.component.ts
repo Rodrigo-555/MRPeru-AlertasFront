@@ -34,8 +34,7 @@ export class ProximoServicioComponent implements OnInit {
   // Conservamos la variable para la planta seleccionada
   plantaSeleccionada: string | null = null;
 
-  // Variable para el modal: almacena el equipo seleccionado
-  selectedEquipo: Equipos | null = null;
+
 
   constructor(private http: HttpClient, private cdr: ChangeDetectorRef, private clienteService: ClienteService) {}
 
@@ -168,22 +167,7 @@ export class ProximoServicioComponent implements OnInit {
     });
   }
 
-  /**
-   * Abre el modal asignando el equipo seleccionado.
-   * @param equipo Equipo sobre el cual se desea ver los detalles.
-   */
-  abrirModal(equipo: Equipos): void {
-    // En este punto, podrías también asignar valores extra para los datos adicionales, 
-    // en caso de que no provengan directamente del objeto 'equipo'.
-    this.selectedEquipo = equipo;
-  }
 
-  /**
-   * Cierra el modal y limpia el equipo seleccionado.
-   */
-  cerrarModal(): void {
-    this.selectedEquipo = null;
-  }
 
   /**
    * Funciones trackBy para optimizar los *ngFor del template.

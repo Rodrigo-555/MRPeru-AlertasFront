@@ -143,99 +143,34 @@
 
 
      <!-- Sección Tabla de Equipos -->
-    <div class="table-container">
-      <table class="table">
-        <thead>
-          <tr>
-            <th>Cliente</th>
-            <th>Local</th>
-            <th>Referencia</th>
-            <th>Serie</th>
-            <th>Estado</th>
-            <th>Estado Mantenimiento</th>
-            <th>Fecha Notificacion</th>
-            <th>Ver Detalles</th>
-          </tr>
-        </thead>
-        <tbody *ngFor="let planta of plantasData?.plantas; trackBy: trackByPlanta">
-          <ng-container *ngIf="planta.nombre === plantaSeleccionada">
-            <!-- Se recorre cada equipo dentro de la planta -->
-            <tr *ngFor="let equipo of equiposFiltrados; trackBy: trackByEquipo">
-              <td>{{ equipo.cliente }}</td>
-              <td>{{ planta.nombre }}</td>
-              <td>{{ equipo.referencia }}</td>
-              <td>{{ equipo.serie }}</td>
-              <td>{{ equipo.estado }}</td>
-              <td>{{ equipo.estado_mantenimiento }}</td>
-              <td>{{ equipo.fecha_notificacion }}</td>
-              <!-- Botón para abrir modal con los detalles -->
-              <td>
-                <button class="btn btn-primary" (click)="abrirModal(equipo)">
-                  Detalles
-                </button>
-              </td>
+      <div class="table-container">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Cliente</th>
+              <th>Local</th>
+              <th>Referencia</th>
+              <th>Serie</th>
+              <th>Estado</th>
+              <th>Estado Mantenimiento</th>
+              <th>Fecha Notificacion</th>
             </tr>
-          </ng-container>
-        </tbody>
-      </table>
-    </div>
-
-    <!-- Modal: Se muestra cuando selectedEquipo tiene datos -->
-      <div class="modal-overlay" *ngIf="selectedEquipo" (click)="cerrarModal()">
-        <div class="modal" (click)="$event.stopPropagation()">
-          <div class="modal-header">
-            <h2>Detalles del Equipo</h2>
-            <button class="btn btn-secondary" (click)="cerrarModal()">Cerrar</button>
-          </div>
-          <div class="modal-body">
-            <!-- Primera tabla: Datos principales -->
-            <table class="table modal-table">
-              <thead>
-                <tr>
-                  <th>Cliente</th>
-                  <th>Local</th>
-                  <th>Referencia</th>
-                  <th>Serie</th>
-                  <th>Estado</th>
-                  <th>Estado Mantenimiento</th>
-                  <th>Fecha Notificacion</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>{{ selectedEquipo.cliente }}</td>
-                  <!-- Asumimos que 'plantaSeleccionada' es el local -->
-                  <td>{{ plantaSeleccionada }}</td>
-                  <td>{{ selectedEquipo.referencia }}</td>
-                  <td>{{ selectedEquipo.serie }}</td>
-                  <td>{{ selectedEquipo.estado }}</td>
-                  <td>{{ selectedEquipo.estado_mantenimiento }}</td>
-                  <td>{{ selectedEquipo.fecha_notificacion }}</td>
-                </tr>
-              </tbody>
-            </table>
-
-            <!-- Segunda tabla: Datos adicionales -->
-            <table class="table modal-table" style="margin-top: 20px;">
-              <thead>
-                <tr>
-                  <th>Frecuencia Servicio</th>
-                  <th>Fecha Último Servicio</th>
-                  <th>Fecha Próximo Servicio</th>
-                  <th>Horómetro Último Servicio</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>{{ selectedEquipo.frecuenciaServicio || 'N/A' }}</td>
-                  <td>{{ selectedEquipo.fechaUltimoServicio || 'N/A' }}</td>
-                  <td>{{ selectedEquipo.fechaProximoServicio || 'N/A' }}</td>
-                  <td>{{ selectedEquipo.horometroUltimoServicio || 'N/A' }}</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
+          </thead>
+          <tbody *ngFor="let planta of plantasData?.plantas; trackBy: trackByPlanta">
+            <ng-container *ngIf="planta.nombre === plantaSeleccionada">
+              <!-- Se recorre cada equipo dentro de la planta -->
+              <tr *ngFor="let equipo of equiposFiltrados; trackBy: trackByEquipo">
+                <td>{{ equipo.cliente }}</td>
+                <td>{{ planta.nombre }}</td>
+                <td>{{ equipo.referencia }}</td>
+                <td>{{ equipo.serie }}</td>
+                <td>{{ equipo.estado }}</td>
+                <td>{{ equipo.estado_mantenimiento }}</td>
+                <td>{{ equipo.fecha_notificacion }}</td>
+              </tr>
+            </ng-container>
+          </tbody>
+        </table>
       </div>
     </div>
 </div>
