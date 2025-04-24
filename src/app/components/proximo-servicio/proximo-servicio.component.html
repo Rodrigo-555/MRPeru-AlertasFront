@@ -1,22 +1,38 @@
 <div class="main-container">
-    <div class="content">
-        <h1>PRÓXIMO SERVICIO</h1>
-
-    <!-- Sección Árbol de Clientes -->
+  <div class="content">
+    <h1>PRÓXIMO SERVICIO</h1>
+    
+    <!-- Sección Árbol de Clientes Mejorada -->
     <div class="content-tree">
+      <div class="tree-header">
+        <span>Árbol de Clientes</span>
+        <div>
+          <span class="expand-all" (click)="expandirTodo()">Expandir Todo</span> | 
+          <span class="collapse-all" (click)="colapsarTodo()">Colapsar Todo</span>
+        </div>
+      </div>
       <div class="tree">
-        <ng-container >
-          <details>
-            <summary>📂 Clientes con Servicios Regulares</summary>
+        <ng-container>
+          <details #categoryDetails>
+            <summary>
+              <img src="assets/img/folder-icon.png" alt="Carpeta" class="icono-arbol">
+              Clientes con Servicios Regulares
+              <span class="cliente-count">({{ ClientesRegulares.length || 0 }})</span>
+            </summary>
             <ng-container *ngFor="let cliente of ClientesRegulares; trackBy: trackBySubcliente">
-              <details>
-                <summary>📂 {{ cliente.nombre }}</summary>
+              <details #clienteDetails>
+                <summary>
+                  <img src="assets/img/user-icon.png" alt="Cliente" class="icono-arbol">
+                  {{ cliente.nombre }}
+                  <span class="local-count">({{ cliente.locales?.length || 0 }})</span>
+                </summary>
                 <ng-container *ngFor="let local of cliente.locales; trackBy: trackByPlanta">
-                  <div 
-                    class="planta-item" 
+                  <div
+                    class="planta-item"
                     (click)="filtrarPorPlanta(local.local)"
                     [class.selected]="plantaSeleccionada === local.local">
-                    🏢 {{ local.local }}
+                    <img src="assets/img/building-icon.png" alt="Local" class="icono-arbol">
+                    {{ local.local }}
                   </div>
                 </ng-container>
               </details>
@@ -24,18 +40,27 @@
           </details>
         </ng-container>
 
-        <ng-container >
-          <details>
-            <summary>📂 Clientes con Servicios No-Regulares </summary>
+        <ng-container>
+          <details #categoryDetails>
+            <summary>
+              <img src="assets/img/folder-icon.png" alt="Carpeta" class="icono-arbol">
+              Clientes con Servicios No-Regulares
+              <span class="cliente-count">({{ ClientesNoRegulares.length || 0 }})</span>
+            </summary>
             <ng-container *ngFor="let cliente of ClientesNoRegulares; trackBy: trackBySubcliente">
-              <details>
-                <summary>📂 {{ cliente.nombre }}</summary>
+              <details #clienteDetails>
+                <summary>
+                  <img src="assets/img/user-icon.png" alt="Cliente" class="icono-arbol">
+                  {{ cliente.nombre }}
+                  <span class="local-count">({{ cliente.locales?.length || 0 }})</span>
+                </summary>
                 <ng-container *ngFor="let local of cliente.locales; trackBy: trackByPlanta">
-                  <div 
-                    class="planta-item" 
+                  <div
+                    class="planta-item"
                     (click)="filtrarPorPlanta(local.local)"
                     [class.selected]="plantaSeleccionada === local.local">
-                    🏢 {{ local.local }}
+                    <img src="assets/img/building-icon.png" alt="Local" class="icono-arbol">
+                    {{ local.local }}
                   </div>
                 </ng-container>
               </details>
@@ -43,18 +68,27 @@
           </details>
         </ng-container>
 
-        <ng-container >
-          <details>
-            <summary>📂 Clientes con Servicios Antiguos-Recientes</summary>
+        <ng-container>
+          <details #categoryDetails>
+            <summary>
+              <img src="assets/img/folder-icon.png" alt="Carpeta" class="icono-arbol">
+              Clientes con Servicios Antiguos-Recientes
+              <span class="cliente-count">({{ ClientesAntiguosRecientes.length || 0 }})</span>
+            </summary>
             <ng-container *ngFor="let cliente of ClientesAntiguosRecientes; trackBy: trackBySubcliente">
-              <details>
-                <summary>📂 {{ cliente.nombre }}</summary>
+              <details #clienteDetails>
+                <summary>
+                  <img src="assets/img/user-icon.png" alt="Cliente" class="icono-arbol">
+                  {{ cliente.nombre }}
+                  <span class="local-count">({{ cliente.locales?.length || 0 }})</span>
+                </summary>
                 <ng-container *ngFor="let local of cliente.locales; trackBy: trackByPlanta">
-                  <div 
-                    class="planta-item" 
+                  <div
+                    class="planta-item"
                     (click)="filtrarPorPlanta(local.local)"
                     [class.selected]="plantaSeleccionada === local.local">
-                    🏢 {{ local.local }}
+                    <img src="assets/img/building-icon.png" alt="Local" class="icono-arbol">
+                    {{ local.local }}
                   </div>
                 </ng-container>
               </details>
@@ -62,18 +96,27 @@
           </details>
         </ng-container>
 
-        <ng-container >
-          <details>
-            <summary>📂 Clientes con Servicios Antiguos</summary>
+        <ng-container>
+          <details #categoryDetails>
+            <summary>
+              <img src="assets/img/folder-icon.png" alt="Carpeta" class="icono-arbol">
+              Clientes con Servicios Antiguos
+              <span class="cliente-count">({{ ClientesAntiguos.length || 0 }})</span>
+            </summary>
             <ng-container *ngFor="let cliente of ClientesAntiguos; trackBy: trackBySubcliente">
-              <details>
-                <summary>📂 {{ cliente.nombre }}</summary>
+              <details #clienteDetails>
+                <summary>
+                  <img src="assets/img/user-icon.png" alt="Cliente" class="icono-arbol">
+                  {{ cliente.nombre }}
+                  <span class="local-count">({{ cliente.locales?.length || 0 }})</span>
+                </summary>
                 <ng-container *ngFor="let local of cliente.locales; trackBy: trackByPlanta">
-                  <div 
-                    class="planta-item" 
+                  <div
+                    class="planta-item"
                     (click)="filtrarPorPlanta(local.local)"
                     [class.selected]="plantaSeleccionada === local.local">
-                    🏢 {{ local.local }}
+                    <img src="assets/img/building-icon.png" alt="Local" class="icono-arbol">
+                    {{ local.local }}
                   </div>
                 </ng-container>
               </details>
@@ -81,18 +124,27 @@
           </details>
         </ng-container>
 
-        <ng-container >
-          <details>
-            <summary>📂 Clientes sin servicios</summary>
+        <ng-container>
+          <details #categoryDetails>
+            <summary>
+              <img src="assets/img/folder-icon.png" alt="Carpeta" class="icono-arbol">
+              Clientes sin servicios
+              <span class="cliente-count">({{ ClientesSinServicio.length || 0 }})</span>
+            </summary>
             <ng-container *ngFor="let cliente of ClientesSinServicio; trackBy: trackBySubcliente">
-              <details>
-                <summary>📂 {{ cliente.nombre }}</summary>
+              <details #clienteDetails>
+                <summary>
+                  <img src="assets/img/user-icon.png" alt="Cliente" class="icono-arbol">
+                  {{ cliente.nombre }}
+                  <span class="local-count">({{ cliente.locales?.length || 0 }})</span>
+                </summary>
                 <ng-container *ngFor="let local of cliente.locales; trackBy: trackByPlanta">
-                  <div 
-                    class="planta-item" 
+                  <div
+                    class="planta-item"
                     (click)="filtrarPorPlanta(local.local)"
                     [class.selected]="plantaSeleccionada === local.local">
-                    🏢 {{ local.local }}
+                    <img src="assets/img/building-icon.png" alt="Local" class="icono-arbol">
+                    {{ local.local }}
                   </div>
                 </ng-container>
               </details>
@@ -100,18 +152,27 @@
           </details>
         </ng-container>
 
-        <ng-container >
-          <details>
-            <summary>📂 No Es Cliente</summary>
+        <ng-container>
+          <details #categoryDetails>
+            <summary>
+              <img src="assets/img/folder-icon.png" alt="Carpeta" class="icono-arbol">
+              No Es Cliente
+              <span class="cliente-count">({{ NoEsCliente.length || 0 }})</span>
+            </summary>
             <ng-container *ngFor="let cliente of NoEsCliente; trackBy: trackBySubcliente">
-              <details>
-                <summary>📂 {{ cliente.nombre }}</summary>
+              <details #clienteDetails>
+                <summary>
+                  <img src="assets/img/user-icon.png" alt="Cliente" class="icono-arbol">
+                  {{ cliente.nombre }}
+                  <span class="local-count">({{ cliente.locales?.length || 0 }})</span>
+                </summary>
                 <ng-container *ngFor="let local of cliente.locales; trackBy: trackByPlanta">
-                  <div 
-                    class="planta-item" 
+                  <div
+                    class="planta-item"
                     (click)="filtrarPorPlanta(local.local)"
                     [class.selected]="plantaSeleccionada === local.local">
-                    🏢 {{ local.local }}
+                    <img src="assets/img/building-icon.png" alt="Local" class="icono-arbol">
+                    {{ local.local }}
                   </div>
                 </ng-container>
               </details>
@@ -122,7 +183,6 @@
     </div>
 
     <h5>📩 Notificaciones de Próximo Servicio</h5>
-
 
     <!-- Sección de Filtros y Búsqueda -->
     <div class="search-container">
@@ -138,39 +198,94 @@
           Filtrar
         </button>
       </div>
-    </div>
-
-
-
-     <!-- Sección Tabla de Equipos -->
-      <div class="table-container">
-        <table class="table">
-          <thead>
-            <tr>
-              <th>Cliente</th>
-              <th>Local</th>
-              <th>Referencia</th>
-              <th>Serie</th>
-              <th>Estado</th>
-              <th>Estado Mantenimiento</th>
-              <th>Fecha Notificacion</th>
-            </tr>
-          </thead>
-          <tbody *ngFor="let planta of plantasData?.plantas; trackBy: trackByPlanta">
-            <ng-container *ngIf="planta.nombre === plantaSeleccionada">
-              <!-- Se recorre cada equipo dentro de la planta -->
-              <tr *ngFor="let equipo of equiposFiltrados; trackBy: trackByEquipo">
-                <td>{{ equipo.cliente }}</td>
-                <td>{{ planta.nombre }}</td>
-                <td>{{ equipo.referencia }}</td>
-                <td>{{ equipo.serie }}</td>
-                <td>{{ equipo.estado }}</td>
-                <td>{{ equipo.estado_mantenimiento }}</td>
-                <td>{{ equipo.fecha_notificacion }}</td>
-              </tr>
-            </ng-container>
-          </tbody>
-        </table>
+      <div class="search-group">
+        <img src="assets/img/iconoSearch.png" alt="Buscar" class="input-search-icon">
+        <input 
+          type="text" 
+          class="form-control custom-search" 
+          placeholder="Busque por referencia, cliente o serie"
+          [(ngModel)]="busquedaTexto"
+          (input)="filtrarEquipos()">
       </div>
     </div>
+
+    <!-- Sección Tabla de Equipos Mejorada -->
+    <div class="table-container">
+      <table class="table" *ngIf="equiposFiltrados.length > 0; else emptyTable">
+        <thead>
+          <tr>
+            <th (click)="ordenarPor('cliente')">
+              Cliente <i class="sort-icon" [ngClass]="getSortIcon('cliente')"></i>
+            </th>
+            <th (click)="ordenarPor('local')">
+              Local <i class="sort-icon" [ngClass]="getSortIcon('local')"></i>
+            </th>
+            <th (click)="ordenarPor('referencia')">
+              Referencia <i class="sort-icon" [ngClass]="getSortIcon('referencia')"></i>
+            </th>
+            <th (click)="ordenarPor('serie')">
+              Serie <i class="sort-icon" [ngClass]="getSortIcon('serie')"></i>
+            </th>
+            <th (click)="ordenarPor('estado')">
+              Estado <i class="sort-icon" [ngClass]="getSortIcon('estado')"></i>
+            </th>
+            <th (click)="ordenarPor('estado_mantenimiento')">
+              Estado Mantenimiento <i class="sort-icon" [ngClass]="getSortIcon('estado_mantenimiento')"></i>
+            </th>
+            <th (click)="ordenarPor('fecha_notificacion')">
+              Fecha Notificación <i class="sort-icon" [ngClass]="getSortIcon('fecha_notificacion')"></i>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let equipo of equiposFiltrados | slice:(paginaActual-1)*itemsPorPagina:paginaActual*itemsPorPagina; trackBy: trackByEquipo">
+            <td>{{ equipo.cliente }}</td>
+            <td>{{ plantaSeleccionada }}</td>
+            <td>{{ equipo.referencia }}</td>
+            <td>{{ equipo.serie }}</td>
+            <td>
+              <span class="estado-badge" [ngClass]="getBadgeClass(equipo.estado)">
+                {{ getEstadoLabel(equipo.estado) }}
+              </span>
+            </td>
+            <td>
+              <span class="mantenimiento-badge" [ngClass]="getMantenimientoBadgeClass(equipo.estado_mantenimiento)">
+                {{ getMantenimientoLabel(equipo.estado_mantenimiento) }}
+              </span>
+            </td>
+            <td [class.proxima-fecha]="esFechaProxima(equipo.fecha_notificacion)">
+              {{ equipo.fecha_notificacion | date: 'dd/MM/yyyy' }}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      
+      <ng-template #emptyTable>
+        <div class="empty-table">
+          <p>No se encontraron registros que coincidan con los criterios de búsqueda.</p>
+        </div>
+      </ng-template>
+      
+      <!-- Paginación -->
+      <div class="pagination" *ngIf="equiposFiltrados.length > itemsPorPagina">
+        <button class="page-button" [disabled]="paginaActual === 1" (click)="cambiarPagina(1)">
+          «
+        </button>
+        <button class="page-button" [disabled]="paginaActual === 1" (click)="cambiarPagina(paginaActual - 1)">
+          ‹
+        </button>
+        <button class="page-button" *ngFor="let pagina of getPaginas()" 
+                [class.active]="pagina === paginaActual"
+                (click)="cambiarPagina(pagina)">
+          {{ pagina }}
+        </button>
+        <button class="page-button" [disabled]="paginaActual === totalPaginas" (click)="cambiarPagina(paginaActual + 1)">
+          ›
+        </button>
+        <button class="page-button" [disabled]="paginaActual === totalPaginas" (click)="cambiarPagina(totalPaginas)">
+          »
+        </button>
+      </div>
+    </div>
+  </div>
 </div>
