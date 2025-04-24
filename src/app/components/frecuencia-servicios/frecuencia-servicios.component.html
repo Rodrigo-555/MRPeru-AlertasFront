@@ -2,20 +2,29 @@
   <div class="content">
     <h1>NOTIFICACIONES DE SERVICIOS</h1>
     
-    <!-- Sección Árbol de Clientes -->
+    <!-- Sección Árbol de Clientes Mejorada -->
     <div class="content-tree">
+      <div class="tree-header">
+        <span>Árbol de Clientes</span>
+        <div>
+          <span class="expand-all" (click)="expandirTodo()">Expandir Todo</span> | 
+          <span class="collapse-all" (click)="colapsarTodo()">Colapsar Todo</span>
+        </div>
+      </div>
       <div class="tree">
         <ng-container *ngFor="let category of clienteCategories">
-          <details>
+          <details #categoryDetails>
             <summary>
               <img src="assets/img/folder-icon.png" alt="Carpeta" class="icono-arbol">
-              {{ category.title }}
+              {{ category.title }} 
+              <span class="cliente-count">({{ category.clientes?.length || 0 }})</span>
             </summary>
             <ng-container *ngFor="let cliente of category.clientes; trackBy: trackByCliente">
-              <details>
+              <details #clienteDetails>
                 <summary>
                   <img src="assets/img/user-icon.png" alt="Cliente" class="icono-arbol">
                   {{ cliente.nombre }}
+                  <span class="local-count">({{ cliente.locales?.length || 0 }})</span>
                 </summary>
                 <ng-container *ngFor="let local of cliente.locales; trackBy: trackByPlanta">
                   <div
@@ -79,31 +88,85 @@
     </div>
 
     <!-- Sección Tabla de Equipos -->
+        <!-- Sección Tabla de Equipos Mejorada -->
     <div class="table-container">
-      <table class="table">
+      <table class="table" *ngIf="equiposFiltrados.length > 0; else emptyTable">
         <thead>
           <tr>
-            <th>Local</th>
-            <th>Contacto</th>
-            <th>Email</th>
-            <th>Fecha de Envío</th>
-            <th>Referencia</th>
-            <th>Estado</th>
-            <th>Estado Mantenimiento</th>
+            <th (click)="ordenarPor('local')">
+              Local <i class="sort-icon" [ngClass]="getSortIcon('local')"></i>
+            </th>
+            <th (click)="ordenarPor('contacto')">
+              Contacto <i class="sort-icon" [ngClass]="getSortIcon('contacto')"></i>
+            </th>
+            <th (click)="ordenarPor('email')">
+              Email <i class="sort-icon" [ngClass]="getSortIcon('email')"></i>
+            </th>
+            <th (click)="ordenarPor('fechaProximoServicio')">
+              Fecha de Envío <i class="sort-icon" [ngClass]="getSortIcon('fechaProximoServicio')"></i>
+            </th>
+            <th (click)="ordenarPor('referencia')">
+              Referencia <i class="sort-icon" [ngClass]="getSortIcon('referencia')"></i>
+            </th>
+            <th (click)="ordenarPor('estado')">
+              Estado <i class="sort-icon" [ngClass]="getSortIcon('estado')"></i>
+            </th>
+            <th (click)="ordenarPor('estadoMantenimiento')">
+              Estado Mantenimiento <i class="sort-icon" [ngClass]="getSortIcon('estadoMantenimiento')"></i>
+            </th>
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let equipo of equiposFiltrados; trackBy: trackByEquipo">
+          <tr *ngFor="let equipo of equiposFiltrados | slice:(paginaActual-1)*itemsPorPagina:paginaActual*itemsPorPagina; trackBy: trackByEquipo">
             <td>{{ plantaSeleccionada }}</td>
             <td>{{ equipo.contacto }}</td>
-            <td>{{ equipo.email }}</td>
-            <td>{{ equipo.fechaProximoServicio ? (equipo.fechaProximoServicio | date: 'dd/MM/yyyy') : "No hay Proximo Servicio" }}</td>
+            <td>
+              <a [href]="'mailto:' + equipo.email" class="email-link">{{ equipo.email }}</a>
+            </td>
+            <td [class.proxima-fecha]="esFechaProxima(equipo.fechaProximoServicio)">
+              {{ equipo.fechaProximoServicio ? (equipo.fechaProximoServicio | date: 'dd/MM/yyyy') : "No hay Proximo Servicio" }}
+            </td>
             <td>{{ equipo.referencia }}</td>
-            <td>{{ equipo.estado }}</td>
-            <td>{{ equipo.estadoMantenimiento }}</td>
+            <td>
+              <span class="estado-badge" [ngClass]="getBadgeClass(equipo.estado)">
+                {{ getEstadoLabel(equipo.estado) }}
+              </span>
+            </td>
+            <td>
+              <span class="mantenimiento-badge" [ngClass]="getMantenimientoBadgeClass(equipo.estadoMantenimiento)">
+                {{ getMantenimientoLabel(equipo.estadoMantenimiento) }}
+              </span>
+            </td>
           </tr>
         </tbody>
       </table>
+      
+      <ng-template #emptyTable>
+        <div class="empty-table">
+          <p>No se encontraron registros que coincidan con los criterios de búsqueda.</p>
+        </div>
+      </ng-template>
+      
+      <!-- Paginación -->
+      <div class="pagination" *ngIf="equiposFiltrados.length > itemsPorPagina">
+        <button class="page-button" [disabled]="paginaActual === 1" (click)="cambiarPagina(1)">
+          «
+        </button>
+        <button class="page-button" [disabled]="paginaActual === 1" (click)="cambiarPagina(paginaActual - 1)">
+          ‹
+        </button>
+        <button class="page-button" *ngFor="let pagina of getPaginas()" 
+                [class.active]="pagina === paginaActual"
+                (click)="cambiarPagina(pagina)">
+          {{ pagina }}
+        </button>
+        <button class="page-button" [disabled]="paginaActual === totalPaginas" (click)="cambiarPagina(paginaActual + 1)">
+          ›
+        </button>
+        <button class="page-button" [disabled]="paginaActual === totalPaginas" (click)="cambiarPagina(totalPaginas)">
+          »
+        </button>
+      </div>
     </div>
   </div>
 </div>

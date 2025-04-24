@@ -47,52 +47,139 @@
     text-align: center;
   }
   
-  /* Árbol de Clientes */
-  .content-tree {
-    border: 2px solid #007bff;
-    border-radius: 8px;
-    padding: 15px;
-    margin-bottom: 20px;
+
+/**************************************************************************/
+  /* Mejoras para el content-tree */
+.content-tree {
+  border: 2px solid #007bff;
+  border-radius: 8px;
+  padding: 15px;
+  margin-bottom: 20px;
+  position: relative;
   
-    .tree {
-      list-style: none;
-      padding-left: 10px;
+  /* Altura fija con scroll interno */
+  max-height: 300px;
+  overflow-y: auto;
+  
+  /* Estilo del scrollbar */
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: #c1d8f7;
+    border-radius: 4px;
+  }
+  
+  &::-webkit-scrollbar-thumb:hover {
+    background: #007bff;
+  }
+
+  /* Estilos para el árbol */
+  .tree {
+    list-style: none;
+    padding-left: 10px;
+    
+    /* Asegura que el contenido interno no rompa el layout */
+    overflow: visible;
+  }
+
+  .icono-arbol {
+    width: 20px;
+    height: 20px;
+    margin-right: 6px;
+    vertical-align: middle;
+  }
+
+  /* Header para el content-tree */
+  .tree-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    font-weight: bold;
+    color: #007bff;
+    
+    .collapse-all, .expand-all {
+      cursor: pointer;
+      font-size: 12px;
+      padding: 3px 8px;
+      background-color: #e9f3ff;
+      border-radius: 4px;
+      border: 1px solid #c1d8f7;
+      transition: all 0.2s;
+      
+      &:hover {
+        background-color: #c1d8f7;
+      }
+    }
+  }
+
+  details {
+    margin-bottom: 5px;
+    padding: 0 0 0 5px;
+    border-left: 2px solid transparent;
+    transition: border-color 0.3s;
+    
+    /* Animación suave al abrir/cerrar */
+    &[open] {
+      animation: slideDown 0.3s ease-in-out;
+      border-left: 2px solid #c1d8f7;
+      
+      & > summary {
+        margin-bottom: 5px;
+      }
     }
 
-    .icono-arbol {
-      width: 20px;
-      height: 20px;
-      margin-right: 6px;
-      vertical-align: middle;
-    }
-    
-  
-    details {
-      margin-bottom: 5px;
-      padding-left: 30px;
-  
-      summary {
-        cursor: pointer;
-        font-weight: bold;
-        padding: 5px;
-        transition: color 0.3s;
+    summary {
+      cursor: pointer;
+      font-weight: bold;
+      padding: 5px;
+      transition: all 0.3s;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      
+      &::marker, &::-webkit-details-marker {
+        display: none;
       }
-  
-      /* Al estar abierto o al pasar el mouse, el summary cambia de color */
-      &[open] > summary,
-      summary:hover {
+      
+      &::before {
+        content: "▸";
+        display: inline-block;
+        width: 15px;
+        transition: transform 0.3s;
         color: #007bff;
       }
     }
+    
+    &[open] > summary::before {
+      transform: rotate(90deg);
+    }
 
-    /* Elemento de Planta en el Árbol */
+    /* Al estar abierto o al pasar el mouse, el summary cambia de color */
+    &[open] > summary,
+    summary:hover {
+      color: #007bff;
+      background-color: rgba(0, 123, 255, 0.08);
+    }
+  }
+
+  /* Elemento de Planta en el Árbol */
   .planta-item {
     cursor: pointer;
-    font-weight: bold;
-    padding: 5px 10px;
-    margin-left: 30px;
-    border-radius: 6px;
-    transition: background-color 0.2s, color 0.2s;
+    font-weight: normal;
+    padding: 5px 10px 5px 25px;
+    margin-left: 15px;
+    border-radius: 4px;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
   
     &:hover {
       background-color: #e9f3ff;
@@ -102,9 +189,25 @@
     &.selected {
       background-color: #dbeeff;
       color: #007bff;
+      font-weight: bold;
     }
   }
+}
+
+/* Animación para el details al abrirse */
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Media query para ajustar en pantallas pequeñas */
+@media (max-width: 768px) {
+  .content-tree {
+    max-height: 250px;
   }
+}
+
+/**************************************************************************/
   
   
   
@@ -180,59 +283,111 @@
     }
   }
   
-  /* Tabla de datos */
-  .table-container {
-    max-height: 500px;
-    overflow-y: auto;
-  
-    .table {
-      width: 100%;
-      border-collapse: collapse;
-      border-radius: 8px;
-      overflow: hidden;
-  
-      th {
-        background: #007bff;
-        color: #fff;
-        padding: 10px;
-        text-align: start;
-        font-weight: bold;
+  /* Mejoras para la tabla */
+.table-container {
+  max-height: 500px;
+  overflow-y: auto;
+  margin-top: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+
+  .table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    border-radius: 8px;
+    overflow: hidden;
+
+    th {
+      background: linear-gradient(to bottom, #1a88ff, #007bff);
+      color: #fff;
+      padding: 12px 15px;
+      text-align: left;
+      font-weight: bold;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    td {
+      padding: 10px 15px;
+      border-bottom: 1px solid #e0e0e0;
+      vertical-align: middle;
+      font-size: 14px;
+    }
+
+    tr:nth-child(even) {
+      background-color: #f8f9fa;
+    }
+
+    tr:hover {
+      background: rgba(0, 123, 255, 0.08);
+    }
+
+    /* Estados con colores */
+    td:nth-child(6) {
+      font-weight: bold;
+      &:contains("A") { color: #28a745; }  /* Activo */
+      &:contains("I") { color: #dc3545; }  /* Inactivo */
+      &:contains("X") { color: #6c757d; }  /* Otro estado */
+    }
+
+    /* Estados de mantenimiento con colores */
+    td:nth-child(7) {
+      font-weight: bold;
+      &:contains("V") { color: #28a745; }  /* Verde - OK */
+      &:contains("N") { color: #dc3545; }  /* No mantenimiento */
+      &:contains("R") { color: #ffc107; }  /* Requiere atención */
+    }
+
+    /* Fechas próximas en color distinto */
+    td:nth-child(4) {
+      &:contains("No hay") { 
+        color: #dc3545;
+        font-style: italic;
       }
-  
-      td {
-        text-align: start;
-        padding: 5px;
-        border-bottom: 2px solid #ddd;
-        transition: background 0.3s;
-      }
-  
-      tr:hover {
-        background: rgba(0, 123, 255, 0.1);
-      }
-  
-      /* Ancho de columnas en la tabla */
-      th:nth-child(1),
-      td:nth-child(1) { width: 12.5%; }
-  
-      th:nth-child(2),
-      td:nth-child(2) { width: 15%; }
-  
-      th:nth-child(3),
-      td:nth-child(3) { width: 8%; }
-  
-      th:nth-child(4),
-      td:nth-child(4) { width: 15%; }
-  
-      th:nth-child(5),
-      td:nth-child(5) { width: 8%; }
-  
-      th:nth-child(6),
-      td:nth-child(6) { width: 3%; }
-  
-      th:nth-child(7),
-      td:nth-child(7) { width: 3%; }
     }
   }
+}
+
+/* Añadir indicadores visuales para la tabla vacía */
+.empty-table {
+  text-align: center;
+  padding: 30px;
+  color: #6c757d;
+  font-style: italic;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+}
+
+/* Estilo para paginación */
+.pagination {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 15px;
+  gap: 5px;
+  
+  .page-button {
+    padding: 5px 10px;
+    border: 1px solid #007bff;
+    border-radius: 4px;
+    background-color: white;
+    color: #007bff;
+    cursor: pointer;
+    transition: all 0.2s;
+    
+    &:hover, &.active {
+      background-color: #007bff;
+      color: white;
+    }
+    
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+}
   
   /* Botones */
   .buttons-container {
