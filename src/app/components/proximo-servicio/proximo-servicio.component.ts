@@ -4,7 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { Cliente } from '../../interface/clientes.interface.';
 import { ClienteService } from '../../service/Clientes/cliente.service';
-import { Equipos, PlantasData, Planta } from '../../interface/equipos.interface.ps';
+import { Equipos, EquiposPorPlanta, Planta } from '../../interface/equipos.interface.ps';
+import { ProximoServicioService } from '../../service/ProximoServicio/proximo-servicio.service';
 
 @Component({
   selector: 'app-proximo-servicio',
@@ -14,18 +15,14 @@ import { Equipos, PlantasData, Planta } from '../../interface/equipos.interface.
   styleUrls: ['./proximo-servicio.component.scss']
 })
 export class ProximoServicioComponent implements OnInit {
+  
   @ViewChildren('categoryDetails') categoryDetails!: QueryList<ElementRef>;
   @ViewChildren('clienteDetails') clienteDetails!: QueryList<ElementRef>;
 
-  ClientesRegulares!: Cliente[];
-  ClientesNoRegulares!: Cliente[];
-  ClientesAntiguosRecientes!: Cliente[];
-  ClientesAntiguos!: Cliente[];
-  ClientesSinServicio!: Cliente[];
-  NoEsCliente!: Cliente[];
+  clienteCategories: any[] = [];
 
   plantas: Planta[] = [];
-  plantasData!: PlantasData;
+  EquiposPorPlanta!: EquiposPorPlanta;
   equiposOriginales: Equipos[] = [];
   equiposFiltrados: Equipos[] = [];
 
@@ -41,130 +38,87 @@ export class ProximoServicioComponent implements OnInit {
   // Variables para paginación
   paginaActual: number = 1;
   itemsPorPagina: number = 10;
+columnas: any;
 
   constructor(
     private http: HttpClient, 
     private cdr: ChangeDetectorRef, 
-    private clienteService: ClienteService
+    private clienteService: ClienteService,
+    private proximoServicioService: ProximoServicioService
   ) {}
 
-  ngOnInit(): void {
-    this.cargarClientesRegulares();
-    this.cargarClientesNoRegulares();
-    this.cargarClientesAntiguosRecientes();
-    this.cargarClientesAntiguos();
-    this.cargarClientesSinServicio();
-    this.cargarNoEsCliente();
-    this.loadPlantasData();
+  ngOnInit() {
+    this.loadClientes();
   }
 
-  /**
-   * Carga el árbol de clientes desde el JSON.
-   */
-  private cargarClientesRegulares(): void {
-    this.clienteService.getClientes("Clientes con Servicios Regulares").subscribe(
-      (data: Cliente[]) => {
-        this.ClientesRegulares = data;
-        this.cdr.detectChanges();
-      },
-      error => {
-        console.error('Error al cargar los clientes:', error);
-      }
-    );
-  }
+  private loadClientes(): void {
+    const categories = [
+      { name: "Clientes con Servicios Regulares", title: "Clientes con Servicios Regulares" },
+      { name: "Clientes con Servicios No-Regulares", title: "Clientes con Servicios No-Regulares" },
+      { name: "Clientes con Servicios Antiguos-Recientes", title: "Clientes con Servicios Antiguos-Recientes" },
+      { name: "Clientes con Servicios Antiguos", title: "Clientes con Servicios Antiguos" },
+      { name: "Clientes sin servicios", title: "Clientes sin servicios" },
+      { name: "No Es Cliente", title: "No Es Cliente" },
+    ];
 
-  private cargarClientesNoRegulares(): void {
-    this.clienteService.getClientes("Clientes con Servicios No-Regulares").subscribe(
-      (data: Cliente[]) => {
-        this.ClientesNoRegulares = data;
-        this.cdr.detectChanges();
-      },
-      error => {
-        console.error('Error al cargar los clientes:', error);
-      }
-    );
-  }
+    
+    
 
-  private cargarClientesAntiguosRecientes(): void {
-    this.clienteService.getClientes("Clientes con Servicios Antiguos-Recientes").subscribe(
-      (data: Cliente[]) => {
-        this.ClientesAntiguosRecientes = data;
-        this.cdr.detectChanges();
-      },
-      error => {
-        console.error('Error al cargar los clientes:', error);
-      }
-    );
-  }
-
-  private cargarClientesAntiguos(): void {
-    this.clienteService.getClientes("Clientes con Servicios Antiguos").subscribe(
-      (data: Cliente[]) => {
-        this.ClientesAntiguos = data;
-        this.cdr.detectChanges();
-      },
-      error => {
-        console.error('Error al cargar los clientes:', error);
-      }
-    );
-  }
-
-  private cargarClientesSinServicio(): void {
-    this.clienteService.getClientes("Clientes sin servicios").subscribe(
-      (data: Cliente[]) => {
-        this.ClientesSinServicio = data;
-        this.cdr.detectChanges();
-      },
-      error => {
-        console.error('Error al cargar los clientes:', error);
-      }
-    );
-  }
-
-  private cargarNoEsCliente(): void {
-    this.clienteService.getClientes("No Es Cliente").subscribe(
-      (data: Cliente[]) => {
-        this.NoEsCliente = data;
-        this.cdr.detectChanges();
-      },
-      error => {
-        console.error('Error al cargar los clientes:', error);
-      }
-    );
-  }
-
-  /**
-   * Carga los equipos y plantas, y establece por defecto la primera planta.
-   */
-  private loadPlantasData(): void {
-    this.http.get<PlantasData>('assets/json/equipos-data-ps.json').subscribe({
-      next: (data: PlantasData) => {
-        this.plantasData = data;
-        if (this.plantasData.plantas.length > 0) {
-          this.filtrarPorPlanta(this.plantasData.plantas[0].nombre);
+    categories.forEach(category => {
+      this.clienteService.getClientes(category.name).subscribe(
+        (data: Cliente[]) => {
+          this.clienteCategories.push({ title: category.title, clientes: data });
+          this.cdr.detectChanges();
+        },
+        error => {
+          console.error(`Error al cargar los clientes de ${category.name}:`, error);
         }
-      },
-      error: (err) => console.error('Error fetching equipos:', err)
+      );
     });
+  }
+
+  private cargarEquipoProximoServicio(NombreCliente: string): void {
+    console.log('Solicitando datos para:', NombreCliente);
+    this.proximoServicioService.getProximoServicio(NombreCliente, '').subscribe(
+      (data: Equipos[]) => {
+        console.log('Datos recibidos:', data);
+        this.equiposOriginales = data;
+        this.equiposFiltrados = [...this.equiposOriginales];
+        this.cdr.detectChanges();
+      },
+      (error: any) => {
+        console.error('Error al cargar los equipos:', error);
+      }
+    );
   }
 
   /**
    * Filtra los equipos por la planta seleccionada y actualiza el listado.
    * @param nombrePlanta Nombre de la planta a filtrar.
    */
-  filtrarPorPlanta(nombrePlanta: string): void {
-    this.plantaSeleccionada = nombrePlanta;
-    const planta = this.plantasData.plantas.find(p => p.nombre === nombrePlanta);
-    this.equiposOriginales = planta ? planta.equipos : [];
-    this.filtrarEquipos();
-    
-    // Opcional: hacer scroll hasta la tabla cuando se selecciona una planta
-    setTimeout(() => {
-      const tableElement = document.querySelector('.table-container');
-      if (tableElement) {
-        tableElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  filtrarPorCliente(NombreCliente: string, NombrePlanta: string): void {
+    console.log('Cliente:', NombreCliente, 'Planta:', NombrePlanta);
+    this.plantaSeleccionada = NombrePlanta;
+  
+    this.proximoServicioService.getProximoServicio(NombreCliente, NombrePlanta).subscribe(
+      (data: Equipos[]) => {
+        this.equiposOriginales = data;
+        this.equiposFiltrados = [...this.equiposOriginales];
+        this.cdr.detectChanges();
+        setTimeout(() => {
+          const tableElement = document.querySelector('.table-container');
+          if (tableElement) {
+            tableElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+        }, 100);
+      },
+      error => {
+        console.error('Error al cargar los equipos de la planta:', error);
+        this.equiposOriginales = [];
+        this.equiposFiltrados = [];
+        this.cdr.detectChanges();
       }
-    }, 100);
+    );
   }
 
   /**
@@ -176,12 +130,13 @@ export class ProximoServicioComponent implements OnInit {
     // Filtro por fecha
     if (this.fechaFiltro) {
       equiposFiltrados = equiposFiltrados.filter(equipo => {
-        // Extrae la parte "YYYY-MM" de la fecha (formato "YYYY-MM-DD")
-        const fechaEquipoYM = equipo.fecha_notificacion.substring(0, 7);
+        const fechaEquipoYM = equipo.fechaProximoServicio 
+          ? equipo.fechaProximoServicio.substring(0, 7) 
+          : '';
         return fechaEquipoYM === this.fechaFiltro;
       });
     }
-    
+  
     // Filtro por texto de búsqueda
     if (this.busquedaTexto) {
       const termino = this.busquedaTexto.toLowerCase();
@@ -191,15 +146,9 @@ export class ProximoServicioComponent implements OnInit {
         equipo.serie.toLowerCase().includes(termino)
       );
     }
-    
+  
+    console.log('Equipos filtrados:', equiposFiltrados); // Verifica los datos filtrados
     this.equiposFiltrados = equiposFiltrados;
-    
-    // Si hay un campo de ordenamiento activo, mantener el orden
-    if (this.campoOrdenamiento) {
-      this.ordenarPor(this.campoOrdenamiento);
-    }
-    
-    this.paginaActual = 1; // Regresar a la primera página después de filtrar
   }
 
   /**
@@ -362,6 +311,19 @@ export class ProximoServicioComponent implements OnInit {
     
     return paginas;
   }
+  
+  seleccionarPlanta(nombrePlanta: string): void {
+    this.plantaSeleccionada = nombrePlanta;
+    this.cargarEquipoProximoServicio(nombrePlanta);
+    
+    // Opcional: hacer scroll hasta la tabla cuando se selecciona una planta
+    setTimeout(() => {
+      const tableElement = document.querySelector('.table-container');
+      if (tableElement) {
+        tableElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 100);
+  }
 
   // TrackBy functions para optimizar rendering
   trackBySubcliente(index: number, item: any): string {
@@ -373,6 +335,10 @@ export class ProximoServicioComponent implements OnInit {
   }
 
   trackByEquipo(index: number, item: Equipos): string {
-    return item.referencia;
+    return item.referencia; // Asegúrate de que `referencia` sea única
   }
+
+   trackByCliente(index: number, item: Cliente): string {
+      return item.nombre;
+    }
 }

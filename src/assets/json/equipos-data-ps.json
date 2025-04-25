@@ -8,12 +8,8 @@
           "referencia": "ATLAS COPCO",
           "serie": "G11P-001",
           "estado": "Activo🟢",
-          "estado_mantenimiento": "Requiere Servicio⚠️",
-          "fecha_notificacion": "2023-10-01",
-          "frecuenciaServicio": "Mensual",
-          "fechaUltimoServicio": "2023-09-15",
-          "fechaProximoServicio": "2023-10-15",
-          "horometroUltimoServicio": "1200"
+          "estadoMantenimiento": "Requiere Servicio⚠️",
+          "fechaNotificacion": "2023-10-01"
         },
         {
           "cliente": "CITY TEX S.A.C",

@@ -253,7 +253,7 @@ export class FrecuenciaServiciosComponent implements OnInit {
     );
   }
 
-   seleccionarPlanta(nombrePlanta: string): void {
+  seleccionarPlanta(nombrePlanta: string): void {
     this.plantaSeleccionada = nombrePlanta;
     this.cargarEquiposFrecuenciaServicio(nombrePlanta);
     
