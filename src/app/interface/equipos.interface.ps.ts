@@ -7,13 +7,3 @@ export interface Equipos {
   estadoMantenimiento: string;
   fechaProximoServicio: string | null; 
 }
-
-export interface EquiposPorPlanta {
-  cliente: string;
-  plantas: Planta[];
-}
-
-export interface Planta {
-  nombre: string;
-  equipos: Equipos[];
-}

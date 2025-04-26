@@ -1,10 +1,9 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
-import { Equipos, PlantasData, Planta } from '../../interface/equipos.interface.o';
+import { Component, OnInit } from '@angular/core';
+import { Equipos } from '../../interface/equipos.interface.o';
 import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
-import { ClienteService } from '../../service/Clientes/cliente.service';
-import { Cliente } from '../../interface/clientes.interface.';
+import { OverhoalService } from '../../service/Overhoal/overhoal.service';
 
 @Component({
   selector: 'app-overhaul',
@@ -15,174 +14,304 @@ import { Cliente } from '../../interface/clientes.interface.';
 })
 export class OverhaulComponent implements OnInit {
 
-    ClientesRegulares!: Cliente[];
-    ClientesNoRegulares!: Cliente[];
-    ClientesAntiguosRecientes!: Cliente[];
-    ClientesAntiguos!: Cliente[];
-    ClientesSinServicio!: Cliente[];
-    NoEsCliente!: Cliente[];
-
-
-  plantas: Planta[] = [];
-  plantasData!: PlantasData;
+  // Datos de equipos
   equiposOriginales: Equipos[] = [];
   equiposFiltrados: Equipos[] = [];
 
-  // Variable para el filtro de fecha (formato "YYYY-MM")
-  fechaFiltro: string = '';
+  // Variables para filtros
+  horasSeleccionadas: string | null = null;
+  busquedaTexto: string = '';
+  categoriaClienteSeleccionada: string | null = null;
 
-  // Conservamos la variable para la planta seleccionada
-  plantaSeleccionada: string | null = null;
+  // Variables para ordenamiento
+  campoOrdenamiento: string = '';
+  ordenAscendente: boolean = true;
 
-  // Variable para el modal: almacena el equipo seleccionado
-  selectedEquipo: Equipos | null = null;
+  // Variables para paginación
+  paginaActual: number = 1;
+  itemsPorPagina: number = 10;
 
-  constructor(private http: HttpClient, private cdr: ChangeDetectorRef, private clienteService: ClienteService) {}
+  // Lista de categorías disponibles
+  categoriasClientes: string[] = [
+    'Clientes con Servicios Regulares',
+    'Clientes con Servicios No-Regulares',
+    'Clientes con Servicios Antiguos-Recientes',
+    'Clientes con Servicios Antiguos',
+    'Clientes sin servicios',
+    'No Es Cliente'
+  ];
 
-  ngOnInit(){
-    this.cargarClientesRegulares();
-    this.cargarClientesNoRegulares();
-    this.cargarClientesAntiguosRecientes();
-    this.cargarClientesAntiguos();
-    this.cargarClientesSinServicio();
-    this.cargarNoEsCliente();
+  constructor(
+    private overhoalService: OverhoalService
+  ) {}
+
+  ngOnInit() {
+    // Cargar todos los equipos al inicio (o usar una categoría por defecto)
+    this.cargarEquipos('');
   }
 
   /**
-   * Carga el árbol de clientes desde el JSON.
+   * Carga los equipos desde el servicio según la categoría seleccionada
    */
-  private cargarClientesRegulares(): void {
-    this.clienteService.getClientes("Clientes con Servicios Regulares").subscribe(
-      (data: Cliente[]) => {
-        this.ClientesRegulares = data; // Guardamos el resultado en la propiedad "clientes"
-        this.cdr.detectChanges(); // Detectamos cambios manualmente
+  cargarEquipos(categoria: string): void {
+    this.overhoalService.getProximoServicio(categoria).subscribe(
+      (data: Equipos[]) => {
+        console.log('Datos recibidos:', data);
+        this.equiposOriginales = data;
+        this.equiposFiltrados = [...this.equiposOriginales];
       },
-      error => {
-        console.error('Error al cargar los clientes:', error);
+      (error: any) => {
+        console.error('Error al cargar los equipos:', error);
       }
     );
   }
 
-  private cargarClientesNoRegulares(): void {
-    this.clienteService.getClientes("Clientes con Servicios No-Regulares").subscribe(
-      (data: Cliente[]) => {
-        this.ClientesNoRegulares = data; // Guardamos el resultado en la propiedad "clientes"
-        this.cdr.detectChanges(); // Detectamos cambios manualmente
-      },
-      error => {
-        console.error('Error al cargar los clientes:', error);
-      }
-    );
-  }
-
-  private cargarClientesAntiguosRecientes(): void {
-    this.clienteService.getClientes("Clientes con Servicios Antiguos-Recientes").subscribe(
-      (data: Cliente[]) => {
-        this.ClientesAntiguosRecientes = data; // Guardamos el resultado en la propiedad "clientes"
-        this.cdr.detectChanges(); // Detectamos cambios manualmente
-      },
-      error => {
-        console.error('Error al cargar los clientes:', error);
-      }
-    );
-  }
-
-  private cargarClientesAntiguos(): void {
-    this.clienteService.getClientes("Clientes con Servicios Antiguos").subscribe(
-      (data: Cliente[]) => {
-        this.ClientesAntiguos = data; // Guardamos el resultado en la propiedad "clientes"
-        this.cdr.detectChanges(); // Detectamos cambios manualmente
-      },
-      error => {
-        console.error('Error al cargar los clientes:', error);
-      }
-    );
-  }
-
-  private cargarClientesSinServicio(): void {
-    this.clienteService.getClientes("Clientes sin servicios").subscribe(
-      (data: Cliente[]) => {
-        this.ClientesSinServicio = data; // Guardamos el resultado en la propiedad "clientes"
-        this.cdr.detectChanges(); // Detectamos cambios manualmente
-      },
-      error => {
-        console.error('Error al cargar los clientes:', error);
-      }
-    );
-  }
-
-  private cargarNoEsCliente(): void {
-    this.clienteService.getClientes("No Es Cliente").subscribe(
-      (data: Cliente[]) => {
-        this.NoEsCliente = data; // Guardamos el resultado en la propiedad "clientes"
-        this.cdr.detectChanges(); // Detectamos cambios manualmente
-      },
-      error => {
-        console.error('Error al cargar los clientes:', error);
-      }
-    );
-  }
-
-  /**
-   * Filtra los equipos por la planta seleccionada y actualiza el listado.
-   * @param nombrePlanta Nombre de la planta a filtrar.
-   */
-  filtrarPorPlanta(nombrePlanta: string): void {
-    this.plantaSeleccionada = nombrePlanta;
-    const planta = this.plantasData.plantas.find(p => p.nombre === nombrePlanta);
-    this.equiposOriginales = planta ? planta.equipos : [];
-    this.filtrarEquipos();
-  }
-
-  /**
-   * Filtra los equipos según el año y mes seleccionado en la variable `fechaFiltro`.
-   */
-  filtrarEquipos(): void {
-    if (!this.fechaFiltro) {
-      this.equiposFiltrados = [...this.equiposOriginales];
-      return;
-    }
-
-    const filtro = this.fechaFiltro; // Formato "YYYY-MM"
+ // Método específico para filtrar por rango de fechas
+ filtrarPorHorasRestantes(): void {
+  if (!this.horasSeleccionadas) {
+    // Si no hay selección de horas, mostrar todos los equipos
+    this.equiposFiltrados = [...this.equiposOriginales];
+  } else {
+    const horasLimite = parseInt(this.horasSeleccionadas);
+    const fechaActual = new Date();
+    
     this.equiposFiltrados = this.equiposOriginales.filter(equipo => {
-      // Extrae la parte "YYYY-MM" de la fecha (formato "YYYY-MM-DD")
-      const fechaEquipoYM = equipo.fecha_notificacion.substring(0, 7);
-      return fechaEquipoYM === filtro;
+      // Verificar si el equipo tiene fecha de próximo overhaul
+      if (!equipo.fechaProximoOverhoal) return false;
+      
+      // Calcular horas restantes basado en la diferencia de fechas
+      const fechaOverhaul = new Date(equipo.fechaProximoOverhoal);
+      const diasRestantes = Math.floor((fechaOverhaul.getTime() - fechaActual.getTime()) / (1000 * 60 * 60 * 24));
+      
+      // Estimar horas restantes (asumiendo X horas por día, ajustar según tu contexto)
+      // Por ejemplo, si asumimos 24 horas por día: 
+      const horasRestantes = diasRestantes * 24; 
+      
+      // Filtrar equipos que tienen menos horas restantes que el límite seleccionado
+      return horasRestantes <= horasLimite;
     });
   }
+  
+  // Aplicar filtro de texto si existe
+  if (this.busquedaTexto) {
+    this.filtrarPorTextoEnResultadosActuales();
+  }
+  
+  // Resetear a la primera página
+  this.paginaActual = 1;
+}
+
+// Método auxiliar para filtrar por texto solo en los resultados actuales
+private filtrarPorTextoEnResultadosActuales(): void {
+  const termino = this.busquedaTexto.toLowerCase();
+  this.equiposFiltrados = this.equiposFiltrados.filter(equipo =>
+    equipo.cliente.toLowerCase().includes(termino) ||
+    equipo.referencia.toLowerCase().includes(termino) ||
+    equipo.serie.toLowerCase().includes(termino) ||
+    equipo.planta.toLowerCase().includes(termino)
+  );
+}
+
+// También necesitamos actualizar filtrarPorTexto para respetar los filtros de fecha
+filtrarPorTexto(): void {
+  // Comenzar con todos los equipos o los filtrados por horas restantes
+  let baseEquipos = [...this.equiposOriginales];
+  
+  // Aplicar filtro de horas restantes si existe
+  if (this.horasSeleccionadas) {
+    const horasLimite = parseInt(this.horasSeleccionadas);
+    const fechaActual = new Date();
+    
+    baseEquipos = baseEquipos.filter(equipo => {
+      if (!equipo.fechaProximoOverhoal) return false;
+      
+      const fechaOverhaul = new Date(equipo.fechaProximoOverhoal);
+      const diasRestantes = Math.floor((fechaOverhaul.getTime() - fechaActual.getTime()) / (1000 * 60 * 60 * 24));
+      const horasRestantes = diasRestantes * 24; // Ajustar según tu contexto
+      
+      return horasRestantes <= horasLimite;
+    });
+  }
+  
+  // Aplicar filtro de texto
+  if (this.busquedaTexto) {
+    const termino = this.busquedaTexto.toLowerCase();
+    this.equiposFiltrados = baseEquipos.filter(equipo =>
+      equipo.cliente.toLowerCase().includes(termino) ||
+      equipo.referencia.toLowerCase().includes(termino) ||
+      equipo.serie.toLowerCase().includes(termino) ||
+      equipo.planta.toLowerCase().includes(termino)
+    );
+  } else {
+    // Si no hay texto, usar los equipos base (ya filtrados por horas si aplica)
+    this.equiposFiltrados = baseEquipos;
+  }
+  
+  this.paginaActual = 1;
+}
+
+// El método general filtrarEquipos ahora coordina todos los filtros
+filtrarEquipos(): void {
+  // Si cambia la categoría, volver a cargar los datos desde la API
+  if (this.categoriaClienteSeleccionada) {
+    this.cargarEquipos(this.categoriaClienteSeleccionada);
+    return;
+  }
+  
+  // Restablecer a equipos originales
+  this.equiposFiltrados = [...this.equiposOriginales];
+  
+  // Aplicar filtros en orden
+  if (this.horasSeleccionadas) {
+    this.filtrarPorHorasRestantes();
+  }
+  
+  if (this.busquedaTexto) {
+    this.filtrarPorTexto();
+  }
+  
+  this.paginaActual = 1;
+}
 
   /**
-   * Abre el modal asignando el equipo seleccionado.
-   * @param equipo Equipo sobre el cual se desea ver los detalles.
+   * Ordena los equipos filtrados por el campo especificado.
    */
-  abrirModal(equipo: Equipos): void {
-    // En este punto, podrías también asignar valores extra para los datos adicionales, 
-    // en caso de que no provengan directamente del objeto 'equipo'.
-    this.selectedEquipo = equipo;
+  ordenarPor(campo: string): void {
+    if (this.campoOrdenamiento === campo) {
+      this.ordenAscendente = !this.ordenAscendente;
+    } else {
+      this.campoOrdenamiento = campo;
+      this.ordenAscendente = true;
+    }
+    
+    this.equiposFiltrados.sort((a: any, b: any) => {
+      let valorA = a[campo];
+      let valorB = b[campo];
+      
+      // Manejar fechas
+      if (campo === 'fechaProximoServicio') {
+        if (!valorA) return this.ordenAscendente ? 1 : -1;
+        if (!valorB) return this.ordenAscendente ? -1 : 1;
+        valorA = new Date(valorA).getTime();
+        valorB = new Date(valorB).getTime();
+      }
+      
+      // Comparación estándar para strings y números
+      if (valorA < valorB) return this.ordenAscendente ? -1 : 1;
+      if (valorA > valorB) return this.ordenAscendente ? 1 : -1;
+      return 0;
+    });
+    
+    this.paginaActual = 1; // Regresar a la primera página después de ordenar
   }
 
-  /**
-   * Cierra el modal y limpia el equipo seleccionado.
-   */
-  cerrarModal(): void {
-    this.selectedEquipo = null;
+  // Obtener ícono de ordenamiento
+  getSortIcon(campo: string): string {
+    if (this.campoOrdenamiento !== campo) return 'fas fa-sort';
+    return this.ordenAscendente ? 'fas fa-sort-up' : 'fas fa-sort-down';
   }
 
-  /**
-   * Funciones trackBy para optimizar los *ngFor del template.
-   */
-
-
-  trackBySubcliente(index: number, item: any): string {
-    return item.nombre;
+  // Verificar si una fecha está próxima (dentro de 30 días)
+  esFechaProxima(fecha: string | null | undefined): boolean {
+    if (!fecha) return false;
+    
+    const fechaNotificacion = new Date(fecha);
+    const hoy = new Date();
+    const diferenciaDias = Math.floor((fechaNotificacion.getTime() - hoy.getTime()) / (1000 * 60 * 60 * 24));
+    
+    return diferenciaDias >= 0 && diferenciaDias <= 30;
   }
 
-  trackByPlanta(index: number, item: any): string {
-    return item.nombre;
+  // Obtener etiqueta de estado
+  getEstadoLabel(estado: string): string {
+    switch (estado) {
+      case 'A': return '🟢';
+      case 'C': return 'Por Cotizar';
+      case 'I': return '🔴';
+      case 'R': return 'En Reparación';
+      case 'X': return 'Malogrado';
+      default: return estado;
+    }
+  }
+  
+  // Obtener clase CSS para badge de estado
+  getBadgeClass(estado: string): string {
+    switch (estado) {
+      case 'A': return 'estado-Activo';
+      case 'C': return 'estado-Por Cotizar';
+      case 'I': return 'estado-Inactivo';
+      case 'R': return 'estado-En Reparación';
+      case 'X': return 'estado-Malogrado';
+      default: return '';
+    }
+  }
+  
+  // Obtener etiqueta de estado de mantenimiento
+  getMantenimientoLabel(estadoMantenimiento: string): string {
+    switch (estadoMantenimiento) {
+      case 'A': return '⚠️';
+      case 'E': return '(Por Configurar)';
+      case 'I': return 'Equipo Inactivo o de Baja';
+      case 'V': return '🟢';
+      case 'N': return '(Sin Reportes de Servicio)';
+      case 'R': return '🔴';
+      default: return estadoMantenimiento;
+    }
+  }
+  
+  // Obtener clase CSS para badge de mantenimiento
+  getMantenimientoBadgeClass(estadoMantenimiento: string): string {
+    switch (estadoMantenimiento) {
+      case 'A': return 'mantenimiento-Requiere Servicio';
+      case 'E': return 'mantenimiento-(Por Configurar)';
+      case 'I': return 'mantenimiento-Equipo Inactivo o de Baja';
+      case 'N': return 'mantenimiento-(Sin Reportes de Servicio)';
+      case 'R': return 'mantenimiento-Sin servicio mas de un Año';
+      case 'V': return 'mantenimiento-Aun no Requiere Servicio';
+      default: return '';
+    }
   }
 
+  // Paginación
+  get totalPaginas(): number {
+    return Math.ceil(this.equiposFiltrados.length / this.itemsPorPagina);
+  }
+  
+  cambiarPagina(pagina: number): void {
+    this.paginaActual = pagina;
+  }
+  
+  getPaginas(): number[] {
+    const paginas: number[] = [];
+    const totalPaginas = this.totalPaginas;
+    let inicio: number;
+    let fin: number;
+    
+    if (totalPaginas <= 5) {
+      inicio = 1;
+      fin = totalPaginas;
+    } else {
+      if (this.paginaActual <= 3) {
+        inicio = 1;
+        fin = 5;
+      } else if (this.paginaActual >= totalPaginas - 2) {
+        inicio = totalPaginas - 4;
+        fin = totalPaginas;
+      } else {
+        inicio = this.paginaActual - 2;
+        fin = this.paginaActual + 2;
+      }
+    }
+    
+    for (let i = inicio; i <= fin; i++) {
+      paginas.push(i);
+    }
+    
+    return paginas;
+  }
+
+  // TrackBy function para optimizar rendering
   trackByEquipo(index: number, item: Equipos): string {
-    // Se asume que 'referencia' es un identificador único
-    return item.referencia;
+    return item.referencia; // Asegúrate de que `referencia` sea única
   }
 }

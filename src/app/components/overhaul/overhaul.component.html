@@ -1,240 +1,117 @@
 <div class="main-container">
-    <div class="content">
-        <h1>OVERHOAL</h1>
+  <div class="content">
+    <h1>OVERHAUL</h1>
 
-
-     <!-- Sección Árbol de Clientes -->
-    <div class="content-tree">
-      <div class="tree">
-        <ng-container >
-          <details>
-            <summary>📂 Clientes con Servicios Regulares</summary>
-            <ng-container *ngFor="let cliente of ClientesRegulares; trackBy: trackBySubcliente">
-              <details>
-                <summary>📂 {{ cliente.nombre }}</summary>
-                <ng-container *ngFor="let local of cliente.locales; trackBy: trackByPlanta">
-                  <div 
-                    class="planta-item" 
-                    (click)="filtrarPorPlanta(local.local)"
-                    [class.selected]="plantaSeleccionada === local.local">
-                    🏢 {{ local.local }}
-                  </div>
-                </ng-container>
-              </details>
-            </ng-container>
-          </details>
-        </ng-container>
-
-        <ng-container >
-          <details>
-            <summary>📂 Clientes con Servicios No-Regulares </summary>
-            <ng-container *ngFor="let cliente of ClientesNoRegulares; trackBy: trackBySubcliente">
-              <details>
-                <summary>📂 {{ cliente.nombre }}</summary>
-                <ng-container *ngFor="let local of cliente.locales; trackBy: trackByPlanta">
-                  <div 
-                    class="planta-item" 
-                    (click)="filtrarPorPlanta(local.local)"
-                    [class.selected]="plantaSeleccionada === local.local">
-                    🏢 {{ local.local }}
-                  </div>
-                </ng-container>
-              </details>
-            </ng-container>
-          </details>
-        </ng-container>
-
-        <ng-container >
-          <details>
-            <summary>📂 Clientes con Servicios Antiguos-Recientes</summary>
-            <ng-container *ngFor="let cliente of ClientesAntiguosRecientes; trackBy: trackBySubcliente">
-              <details>
-                <summary>📂 {{ cliente.nombre }}</summary>
-                <ng-container *ngFor="let local of cliente.locales; trackBy: trackByPlanta">
-                  <div 
-                    class="planta-item" 
-                    (click)="filtrarPorPlanta(local.local)"
-                    [class.selected]="plantaSeleccionada === local.local">
-                    🏢 {{ local.local }}
-                  </div>
-                </ng-container>
-              </details>
-            </ng-container>
-          </details>
-        </ng-container>
-
-        <ng-container >
-          <details>
-            <summary>📂 Clientes con Servicios Antiguos</summary>
-            <ng-container *ngFor="let cliente of ClientesAntiguos; trackBy: trackBySubcliente">
-              <details>
-                <summary>📂 {{ cliente.nombre }}</summary>
-                <ng-container *ngFor="let local of cliente.locales; trackBy: trackByPlanta">
-                  <div 
-                    class="planta-item" 
-                    (click)="filtrarPorPlanta(local.local)"
-                    [class.selected]="plantaSeleccionada === local.local">
-                    🏢 {{ local.local }}
-                  </div>
-                </ng-container>
-              </details>
-            </ng-container>
-          </details>
-        </ng-container>
-
-        <ng-container >
-          <details>
-            <summary>📂 Clientes sin servicios</summary>
-            <ng-container *ngFor="let cliente of ClientesSinServicio; trackBy: trackBySubcliente">
-              <details>
-                <summary>📂 {{ cliente.nombre }}</summary>
-                <ng-container *ngFor="let local of cliente.locales; trackBy: trackByPlanta">
-                  <div 
-                    class="planta-item" 
-                    (click)="filtrarPorPlanta(local.local)"
-                    [class.selected]="plantaSeleccionada === local.local">
-                    🏢 {{ local.local }}
-                  </div>
-                </ng-container>
-              </details>
-            </ng-container>
-          </details>
-        </ng-container>
-
-        <ng-container >
-          <details>
-            <summary>📂 No Es Cliente</summary>
-            <ng-container *ngFor="let cliente of NoEsCliente; trackBy: trackBySubcliente">
-              <details>
-                <summary>📂 {{ cliente.nombre }}</summary>
-                <ng-container *ngFor="let local of cliente.locales; trackBy: trackByPlanta">
-                  <div 
-                    class="planta-item" 
-                    (click)="filtrarPorPlanta(local.local)"
-                    [class.selected]="plantaSeleccionada === local.local">
-                    🏢 {{ local.local }}
-                  </div>
-                </ng-container>
-              </details>
-            </ng-container>
-          </details>
-        </ng-container>
-      </div>
-    </div>
-     
-
-        <h5>📩 Notificacion de Overhoal</h5>
-
-        <!-- Sección de Filtros y Búsqueda -->
+    <!-- Filtros -->
+    <section class="filtros-servicio">
       <div class="search-container">
-        <div class="form-group">
-          <label for="fechaFiltro">Fecha (Año y Mes):</label>
-          <input
-            type="month"
-            id="fechaFiltro"
-            class="form-control custom-select"
-            [(ngModel)]="fechaFiltro"
-          />
-          <button class="btn btn-primary" type="button" (click)="filtrarEquipos()">
-            Filtrar
-          </button>
+        <div class="filtro mb-3">
+          <label for="filtroHoras">Filtrar por horas restantes para Overhaul:</label>
+          <select id="filtroHoras" [(ngModel)]="horasSeleccionadas" (change)="filtrarPorHorasRestantes()" class="form-control">
+            <option [ngValue]="null">Todas las máquinas</option>
+            <option value="3000">Menos de 3,000 horas restantes</option>
+            <option value="2000">Menos de 2,000 horas restantes</option>
+            <option value="1000">Menos de 1,000 horas restantes</option>
+          </select>
+        </div>
+
+        <div class="filtro mb-3">
+          <label for="categoriaCliente">Categoría Clientes:</label>
+          <select id="categoriaCliente" [(ngModel)]="categoriaClienteSeleccionada" (change)="filtrarEquipos()" class="form-control">
+            <option [ngValue]="null" disabled selected>Seleccione una categoría</option>
+            <option value="Clientes con Servicios Regulares">Clientes con Servicios Regulares</option>
+            <option value="Clientes con Servicios No-Regulares">Clientes con Servicios No-Regulares</option>
+            <option value="Clientes con Servicios Antiguos-Recientes">Clientes con Servicios Antiguos-Recientes</option>
+            <option value="Clientes con Servicios Antiguos">Clientes con Servicios Antiguos</option>
+            <option value="Clientes sin servicios">Clientes sin servicios</option>
+            <option value="No Es Cliente">No Es Cliente</option>
+          </select>
+        </div>
+
+        <div class="search-group">
+          <img src="assets/img/iconoSearch.png" alt="Buscar" class="input-search-icon">
+          <input 
+            type="text" 
+            class="form-control custom-search" 
+            placeholder="Busque por cliente, referencia, local o serie"
+            [(ngModel)]="busquedaTexto"
+            (input)="filtrarPorTexto()">
         </div>
       </div>
+    </section>
 
-      <!-- Sección Tabla de Equipos -->
-    <div class="table-container">
-      <table class="table">
+    <!-- Tabla de Equipos -->
+    <section class="table-container">
+      <table class="table" *ngIf="equiposFiltrados.length > 0; else emptyTable">
         <thead>
           <tr>
-            <th>Cliente</th>
-            <th>Local</th>
-            <th>Referencia</th>
-            <th>Serie</th>
-            <th>Estado</th>
-            <th>Estado Mantenimiento</th>
-            <th>Fecha Notificacion</th>
-            <th>Ver Detalles</th>
+            <th (click)="ordenarPor('Cliente')">
+              Cliente <i class="sort-icon" [ngClass]="getSortIcon('Cliente')"></i>
+            </th>
+            <th (click)="ordenarPor('Local')">
+              Local <i class="sort-icon" [ngClass]="getSortIcon('Local')"></i>
+            </th>
+            <th (click)="ordenarPor('referencia')">
+              Referencia <i class="sort-icon" [ngClass]="getSortIcon('referencia')"></i>
+            </th>
+            <th (click)="ordenarPor('serie')">
+              Serie <i class="sort-icon" [ngClass]="getSortIcon('serie')"></i>
+            </th>
+            <th (click)="ordenarPor('estado')">
+              Estado <i class="sort-icon" [ngClass]="getSortIcon('estado')"></i>
+            </th>
+            <th (click)="ordenarPor('estadoMantenimiento')">
+              Estado Mantenimiento <i class="sort-icon" [ngClass]="getSortIcon('estadoMantenimiento')"></i>
+            </th>
+            <th (click)="ordenarPor('fechaProximoOverhoal')">
+              Fecha Proximo Overhoal <i class="sort-icon" [ngClass]="getSortIcon('fechaProximoOverhoal')"></i>
+            </th>
           </tr>
         </thead>
-        <tbody *ngFor="let planta of plantasData?.plantas; trackBy: trackByPlanta">
-          <ng-container *ngIf="planta.nombre === plantaSeleccionada">
-            <!-- Se recorre cada equipo dentro de la planta -->
-            <tr *ngFor="let equipo of equiposFiltrados; trackBy: trackByEquipo">
-              <td>{{ equipo.cliente }}</td>
-              <td>{{ planta.nombre }}</td>
-              <td>{{ equipo.referencia }}</td>
-              <td>{{ equipo.serie }}</td>
-              <td>{{ equipo.estado }}</td>
-              <td>{{ equipo.estado_mantenimiento }}</td>
-              <td>{{ equipo.fecha_notificacion }}</td>
-              <!-- Botón para abrir modal con los detalles -->
-              <td>
-                <button class="btn btn-primary" (click)="abrirModal(equipo)">
-                  Detalles
-                </button>
-              </td>
-            </tr>
-          </ng-container>
+        <tbody>
+          <tr *ngFor="let equipo of equiposFiltrados | slice:(paginaActual-1)*itemsPorPagina:paginaActual*itemsPorPagina; trackBy: trackByEquipo">
+            <td>{{ equipo.cliente }}</td>
+            <td>{{ equipo.planta }}</td>
+            <td>{{ equipo.referencia }}</td>
+            <td>{{ equipo.serie }}</td>
+            <td>
+              <span class="estado-badge" [ngClass]="getBadgeClass(equipo.estado)">
+                {{ getEstadoLabel(equipo.estado) }}
+              </span>
+            </td>
+            <td>
+              <span class="mantenimiento-badge" [ngClass]="getMantenimientoBadgeClass(equipo.estadoMantenimiento)">
+                {{ getMantenimientoLabel(equipo.estadoMantenimiento) }}
+              </span>
+            </td>
+            <td [class.proxima-fecha]="esFechaProxima(equipo.fechaProximoOverhoal)">
+              {{ equipo.fechaProximoOverhoal | date: 'dd/MM/yyyy' }}
+            </td>
+          </tr>
         </tbody>
       </table>
-    </div>
 
-    <!-- Modal: Se muestra cuando selectedEquipo tiene datos -->
-      <div class="modal-overlay" *ngIf="selectedEquipo" (click)="cerrarModal()">
-        <div class="modal" (click)="$event.stopPropagation()">
-          <div class="modal-header">
-            <h2>Detalles del Equipo</h2>
-            <button class="btn btn-secondary" (click)="cerrarModal()">Cerrar</button>
-          </div>
-          <div class="modal-body">
-            <!-- Primera tabla: Datos principales -->
-            <table class="table modal-table">
-              <thead>
-                <tr>
-                  <th>Cliente</th>
-                  <th>Local</th>
-                  <th>Referencia</th>
-                  <th>Serie</th>
-                  <th>Estado</th>
-                  <th>Estado Mantenimiento</th>
-                  <th>Fecha Notificacion</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>{{ selectedEquipo.cliente }}</td>
-                  <!-- Asumimos que 'plantaSeleccionada' es el local -->
-                  <td>{{ plantaSeleccionada }}</td>
-                  <td>{{ selectedEquipo.referencia }}</td>
-                  <td>{{ selectedEquipo.serie }}</td>
-                  <td>{{ selectedEquipo.estado }}</td>
-                  <td>{{ selectedEquipo.estado_mantenimiento }}</td>
-                  <td>{{ selectedEquipo.fecha_notificacion }}</td>
-                </tr>
-              </tbody>
-            </table>
-
-            <!-- Segunda tabla: Datos adicionales -->
-            <table class="table modal-table" style="margin-top: 20px;">
-              <thead>
-                <tr>
-                  <th>Frecuencia Servicio</th>
-                  <th>Fecha Último Servicio</th>
-                  <th>Fecha Próximo Servicio</th>
-                  <th>Horómetro Último Servicio</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>{{ selectedEquipo.frecuenciaServicio || 'N/A' }}</td>
-                  <td>{{ selectedEquipo.fechaUltimoServicio || 'N/A' }}</td>
-                  <td>{{ selectedEquipo.fechaProximoServicio || 'N/A' }}</td>
-                  <td>{{ selectedEquipo.horometroUltimoServicio || 'N/A' }}</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+      <!-- Mensaje si no hay datos -->
+      <ng-template #emptyTable>
+        <div class="empty-table">
+          <p>Seleccione una Categoria de Clientes.</p>
         </div>
-      </div>
-    </div>
+      </ng-template>
+
+      <!-- Paginación -->
+      <nav class="pagination" *ngIf="equiposFiltrados.length > itemsPorPagina">
+        <button class="page-button" [disabled]="paginaActual === 1" (click)="cambiarPagina(1)">«</button>
+        <button class="page-button" [disabled]="paginaActual === 1" (click)="cambiarPagina(paginaActual - 1)">‹</button>
+        <button 
+          class="page-button" 
+          *ngFor="let pagina of getPaginas()" 
+          [class.active]="pagina === paginaActual"
+          (click)="cambiarPagina(pagina)">
+          {{ pagina }}
+        </button>
+        <button class="page-button" [disabled]="paginaActual === totalPaginas" (click)="cambiarPagina(paginaActual + 1)">›</button>
+        <button class="page-button" [disabled]="paginaActual === totalPaginas" (click)="cambiarPagina(totalPaginas)">»</button>
+      </nav>
+    </section>
+  </div>
 </div>

@@ -2,60 +2,40 @@
   <div class="content">
     <h1>PRÓXIMO SERVICIO</h1>
 
-    <!-- Árbol de Clientes -->
-    <section class="content-tree">
-      <header class="tree-header">
-        <span>Árbol de Clientes</span>
-        <div>
-          <span class="expand-all" (click)="expandirTodo()">Expandir Todo</span> | 
-          <span class="collapse-all" (click)="colapsarTodo()">Colapsar Todo</span>
-        </div>
-      </header>
-
-      <div class="tree">
-        <ng-container *ngFor="let category of clienteCategories">
-          <details #categoryDetails>
-            <summary>
-              <img src="assets/img/folder-icon.png" alt="Carpeta" class="icono-arbol">
-              {{ category.title }}
-              <span class="cliente-count">({{ category.clientes?.length || 0 }})</span>
-            </summary>
-
-            <ng-container *ngFor="let cliente of category.clientes; trackBy: trackByCliente">
-              <details #clienteDetails>
-                <summary>
-                  <img src="assets/img/user-icon.png" alt="Cliente" class="icono-arbol">
-                  {{ cliente.nombre }}
-                  <span class="local-count">({{ cliente.locales?.length || 0 }})</span>
-                </summary>
-
-                <div
-                  *ngFor="let local of cliente.locales; trackBy: trackByPlanta"
-                  class="planta-item"
-                  (click)="filtrarPorCliente(cliente.nombre, local.local)"
-                  [class.selected]="plantaSeleccionada === local.local">
-                  <img src="assets/img/building-icon.png" alt="Local" class="icono-arbol">
-                  {{ local.local }}
-                </div>
-              </details>
-            </ng-container>
-          </details>
-        </ng-container>
-      </div>
-    </section>
-
     <!-- Filtros -->
     <section class="filtros-servicio">
-      <h5>📩 Notificaciones de Próximo Servicio</h5>
       <div class="search-container">
         <div class="form-group">
-          <label for="fechaFiltro">Fecha (Año y Mes):</label>
+          <label for="fechaInicio">Desde:</label>
           <input
-            id="fechaFiltro"
-            type="month"
-            class="form-control custom-select"
-            [(ngModel)]="fechaFiltro">
-          <button class="btn btn-primary" type="button" (click)="filtrarEquipos()">Filtrar</button>
+            id="fechaInicio"
+            type="date"
+            class="form-control"
+            [(ngModel)]="fechaInicio"
+            (change)="filtrarPorFechas()">
+        
+          <label for="fechaFin">Hasta:</label>
+          <input
+            id="fechaFin"
+            type="date"
+            class="form-control"
+            [(ngModel)]="fechaFin"
+            (change)="filtrarPorFechas()">
+        
+          <button class="btn btn-primary mt-2" type="button" (click)="filtrarPorFechas()">Filtrar</button>
+        </div>
+
+        <div class="filtro mb-3">
+          <label for="categoriaCliente">Categoría Clientes:</label>
+          <select id="categoriaCliente" [(ngModel)]="categoriaClienteSeleccionada" (change)="filtrarEquipos()" class="form-control">
+            <option [ngValue]="null" disabled selected>Seleccione una categoría</option>
+            <option value="Clientes con Servicios Regulares">Clientes con Servicios Regulares</option>
+            <option value="Clientes con Servicios No-Regulares">Clientes con Servicios No-Regulares</option>
+            <option value="Clientes con Servicios Antiguos-Recientes">Clientes con Servicios Antiguos-Recientes</option>
+            <option value="Clientes con Servicios Antiguos">Clientes con Servicios Antiguos</option>
+            <option value="Clientes sin servicios">Clientes sin servicios</option>
+            <option value="No Es Cliente">No Es Cliente</option>
+          </select>
         </div>
 
         <div class="search-group">
@@ -63,9 +43,9 @@
           <input 
             type="text" 
             class="form-control custom-search" 
-            placeholder="Busque por referencia, cliente o serie"
+            placeholder="Busque por cliente, referencia, local o serie"
             [(ngModel)]="busquedaTexto"
-            (input)="filtrarEquipos()">
+            (input)="filtrarPorTexto()">
         </div>
       </div>
     </section>
@@ -101,7 +81,7 @@
         <tbody>
           <tr *ngFor="let equipo of equiposFiltrados | slice:(paginaActual-1)*itemsPorPagina:paginaActual*itemsPorPagina; trackBy: trackByEquipo">
             <td>{{ equipo.cliente }}</td>
-            <td>{{ plantaSeleccionada }}</td>
+            <td>{{ equipo.planta }}</td>
             <td>{{ equipo.referencia }}</td>
             <td>{{ equipo.serie }}</td>
             <td>
@@ -124,7 +104,7 @@
       <!-- Mensaje si no hay datos -->
       <ng-template #emptyTable>
         <div class="empty-table">
-          <p>No se encontraron registros que coincidan con los criterios de búsqueda.</p>
+          <p>Seleccione una Categoria de Clientes.</p>
         </div>
       </ng-template>
 

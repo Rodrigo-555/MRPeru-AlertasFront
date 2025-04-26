@@ -23,10 +23,9 @@ export class ProximoServicioService {
         return throwError(() => new Error('Error en la solicitud; por favor, inténtelo de nuevo más tarde.'));
   }
 
-  getProximoServicio(NombreCliente: string, NombrePlanta: string): Observable<Equipos[]> {
+  getProximoServicio(CategoriaDesc: string): Observable<Equipos[]> {
     const params = new HttpParams()
-      .set('NombreCliente', NombreCliente)
-      .set('NombrePlanta', NombrePlanta);
+      .set('CategoriaDesc', CategoriaDesc);
   
     console.log('Llamando a API con parámetros:', params.toString());
   
