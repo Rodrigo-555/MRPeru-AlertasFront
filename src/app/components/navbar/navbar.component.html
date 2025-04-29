@@ -6,11 +6,24 @@
     </nav>
     
     <div class="menu-options-container">
-      <h1 class="inicio">Inicio</h1>
-      <h1 class="busqueda">Buscar</h1>
-      <div class="circulo-user">
-        <h1>US</h1> 
-      </div>
+      <div class="menu-container">
+        <button routerLink="/frecuenciaServicios" 
+                routerLinkActive="active" 
+                [routerLinkActiveOptions]="{ exact: true }">
+            📅 Notificacion de Servicios
+        </button>
+        <button routerLink="/proximoServicio" 
+                routerLinkActive="active" 
+                [routerLinkActiveOptions]="{ exact: true }">
+            🔜 Próximo Servicio
+        </button>
+        <button routerLink="/overhaul" 
+                routerLinkActive="active" 
+                [routerLinkActiveOptions]="{ exact: true }">
+            📜 Overhaul
+        </button>
     </div>
   </div>
+</div>
+
 

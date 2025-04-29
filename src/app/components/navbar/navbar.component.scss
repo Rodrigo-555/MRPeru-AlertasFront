@@ -1,75 +1,167 @@
 .navbar-container {
-    width: 100%;
-    height: 80px;
-    position: fixed;
-    top: 0;
-    left: 0;
-    z-index: 1000;
-    background-color: #e9eff7;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 20px;
-    box-shadow: 0px 3px 10px rgba(0, 0, 0, 0.3);
+  width: 100%;
+  height: 80px;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1000;
+  background-color: #f0f5fc; /* Fondo más claro */
+  display: flex;
+  align-items: center;
+  justify-content: center; /* Centrar todo el contenido */
+  padding: 0 20px;
+  box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.1); /* Sombra más suave */
+}
+
+.navbar {
+  position: absolute;
+  left: 20px;
+  display: flex;
+  align-items: center;
+}
+
+.navbar-brand img {
+  width: 120px; /* Logo un poco más grande */
+  height: auto;
+  transition: transform 0.3s ease; /* Transición para efecto hover */
+}
+
+.navbar-brand img:hover {
+  transform: scale(1.05); /* Ligero zoom al pasar el ratón */
+}
+
+.search-container {
+  flex-grow: 1;
+  display: flex;
+  justify-content: center;
+}
+
+.menu-options-container {
+  display: flex;
+  align-items: center;
+  justify-content: center; /* Centrar los botones */
+  width: 100%; /* Ocupar todo el ancho disponible */
+}
+
+.menu-container {
+  display: flex;
+  gap: 15px; /* Espacio entre botones */
+  justify-content: center; /* Centrar los botones horizontalmente */
+}
+
+/* Estilos para los botones de navegación */
+.menu-container button {
+  background: linear-gradient(to bottom, #ffffff, #f5f8ff); /* Gradiente sutil */
+  color: #2c3e50; /* Color de texto más oscuro */
+  border: 1px solid #e1e8f0;
+  border-radius: 8px; /* Bordes más redondeados */
+  padding: 10px 18px;
+  font-size: 14px;
+  font-weight: 600; /* Texto semi-negrita */
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.menu-container button:hover {
+  background: linear-gradient(to bottom, #f5f8ff, #e9f0ff);
+  transform: translateY(-2px); /* Efecto de elevación */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Estilo del botón activo */
+.menu-container button.active {
+  background: linear-gradient(to bottom, #e6f0ff, #c9dfff);
+  border-color: #b8d0f9;
+  color: #1e5bb0;
+  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+/* Efecto para los íconos en los botones */
+.menu-container button:before {
+  margin-right: 8px;
+  font-size: 16px;
+}
+
+.inicio, .busqueda {
+  font-size: 18px;
+  font-weight: bold;
+  cursor: pointer;
+  margin: 0;
+}
+
+.circulo-user {
+  width: 45px;
+  height: 45px;
+  background: linear-gradient(135deg, #03c3d8, #0396a6); /* Gradiente más atractivo */
+  border-radius: 50%;
+  box-shadow: 0px 3px 10px rgba(3, 195, 216, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.circulo-user:hover {
+  transform: scale(1.08); /* Efecto de zoom al hover */
+  box-shadow: 0px 5px 15px rgba(3, 195, 216, 0.4);
+}
+
+.circulo-user h1 {
+  font-size: 22px;
+  color: white;
+  margin: 0;
+  font-weight: 500;
+}
+
+/* Ajuste para dispositivos pequeños */
+@media (max-width: 1024px) {
+  .menu-container {
+    gap: 8px; /* Menos espacio entre botones */
   }
   
-  .navbar {
-    width: 100%;
-    display: flex;
-    align-items: center; 
-  }
-  
-  .navbar-brand img {
-    width: 100px; 
-    height: auto;
-    margin-right: 20px; 
-    align-self: flex-start; 
-  }
-  
-  .search-container {
-    flex-grow: 1;
-    display: flex;
-    justify-content: center;
+  .menu-container button {
+    padding: 8px 12px;
+    font-size: 13px;
   }
   
   .menu-options-container {
+    margin-right: 10px;
+  }
+  
+  .navbar-brand img {
+    width: 100px;
+  }
+}
+
+/* Para pantallas muy pequeñas */
+@media (max-width: 768px) {
+  .navbar-container {
+    height: auto;
+    padding: 10px;
+    flex-direction: column;
+    position: relative; /* Cambiar a relativa para móviles */
+  }
+  
+  .navbar {
+    position: relative; /* Restablecer posición para móviles */
+    left: 0;
+    justify-content: center;
+    margin-bottom: 15px;
+  }
+  
+  .menu-container {
     display: flex;
-    align-items: center;
-    gap: 20px;
-    margin-right: 30px; /* Ajusta este valor según sea necesario */
+    flex-direction: column;
+    width: 100%;
+    margin-top: 60px; /* Espacio para el logo */
   }
   
-  .inicio, .busqueda {
-    font-size: 18px;
-    font-weight: bold;
-    cursor: pointer;
-    margin: 0;
+  .menu-container button {
+    width: 100%;
+    margin-bottom: 5px;
+    justify-content: center;
   }
-  
-  /* Ajuste adicional para dispositivos pequeños */
-  @media (max-width: 1024px) {
-    .menu-options-container {
-      gap: 10px;
-      margin-right: 10px; /* Reduce el margen en pantallas pequeñas */
-    }
-  }
-  
-  
-  .circulo-user {
-    width: 45px; 
-    height: 45px; 
-    background: rgba(3, 195, 216, 0.601); 
-    border-radius: 50%;
-    box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.5);
-    display: flex; 
-    align-items: center;
-    justify-content: center; 
-  
-    h1 {
-      font-size: 25px;
-      color: white;
-      margin: 0; 
-    }
-  }
-  
-  
+}
