@@ -38,6 +38,13 @@
           </select>
         </div>
 
+        <!-- Botón para exportar a Excel -->
+        <div class="export-button-container">
+          <button class="btn btn-success" (click)="exportarAExcel()">
+            <i class="fas fa-file-excel"></i> Realizar Reporte
+          </button>
+        </div>
+
         <div class="search-group">
           <img src="assets/img/iconoSearch.png" alt="Buscar" class="input-search-icon">
           <input 
@@ -47,6 +54,7 @@
             [(ngModel)]="busquedaTexto"
             (input)="filtrarPorTexto()">
         </div>
+        
       </div>
     </section>
 
@@ -67,6 +75,12 @@
             <th (click)="ordenarPor('serie')">
               Serie <i class="sort-icon" [ngClass]="getSortIcon('serie')"></i>
             </th>
+            <th (click)="ordenarPor('modelo')">
+              Modelo<i class="sort-icon" [ngClass]="getSortIcon('modelo')"></i>
+            </th>
+            <th (click)="ordenarPor('tipoEquipo')">
+              Tipo de Equipo <i class="sort-icon" [ngClass]="getSortIcon('tipoEquipo')"></i>
+            </th>
             <th (click)="ordenarPor('estado')">
               Estado <i class="sort-icon" [ngClass]="getSortIcon('estado')"></i>
             </th>
@@ -84,6 +98,8 @@
             <td>{{ equipo.planta }}</td>
             <td>{{ equipo.referencia }}</td>
             <td>{{ equipo.serie }}</td>
+            <td>{{ equipo.modelo }}</td>
+            <td>{{ equipo.tipoEquipo }}</td>
             <td>
               <span class="estado-badge" [ngClass]="getBadgeClass(equipo.estado)">
                 {{ getEstadoLabel(equipo.estado) }}

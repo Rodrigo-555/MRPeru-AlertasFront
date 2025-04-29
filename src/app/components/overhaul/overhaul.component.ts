@@ -4,6 +4,7 @@ import { Equipos } from '../../interface/equipos.interface.o';
 import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { OverhoalService } from '../../service/Overhoal/overhoal.service';
+import * as XLSX from 'xlsx';
 
 @Component({
   selector: 'app-overhaul',
@@ -22,6 +23,8 @@ export class OverhaulComponent implements OnInit {
   horasSeleccionadas: string | null = null;
   busquedaTexto: string = '';
   categoriaClienteSeleccionada: string | null = null;
+  fechaInicio: string = '';
+  fechaFin: string = '';
 
   // Variables para ordenamiento
   campoOrdenamiento: string = '';
@@ -249,12 +252,12 @@ filtrarEquipos(): void {
   // Obtener etiqueta de estado de mantenimiento
   getMantenimientoLabel(estadoMantenimiento: string): string {
     switch (estadoMantenimiento) {
-      case 'A': return '⚠️';
+      case 'A': return 'Requiere Servicio';
       case 'E': return '(Por Configurar)';
       case 'I': return 'Equipo Inactivo o de Baja';
-      case 'V': return '🟢';
+      case 'V': return 'Aun No Requiere Servicio';
       case 'N': return '(Sin Reportes de Servicio)';
-      case 'R': return '🔴';
+      case 'R': return 'Sin servicio más de 1 año';
       default: return estadoMantenimiento;
     }
   }
@@ -308,6 +311,89 @@ filtrarEquipos(): void {
     }
     
     return paginas;
+  }
+
+  filtrarPorFechas(): void {
+    // Verificar que ambas fechas estén seleccionadas
+    if (this.fechaInicio && this.fechaFin) {
+      const inicio = new Date(this.fechaInicio);
+      const fin = new Date(this.fechaFin);
+  
+      // Ajustar fin para incluir todo el día
+      fin.setHours(23, 59, 59, 999);
+  
+      this.equiposFiltrados = this.equiposOriginales.filter(equipo => {
+        if (!equipo.fechaProximoOverhoal) return false;
+        
+        const fechaEquipo = new Date(equipo.fechaProximoOverhoal);
+        return fechaEquipo >= inicio && fechaEquipo <= fin;
+      });
+  
+      // También aplicar el filtro de texto si existe
+      if (this.busquedaTexto) {
+        this.filtrarPorTextoEnResultadosActuales();
+      }
+    } else if (!this.fechaInicio && !this.fechaFin) {
+      // Si no hay fechas seleccionadas, restaurar lista original
+      this.equiposFiltrados = [...this.equiposOriginales];
+      
+      // Aplicar solo filtro de texto si existe
+      if (this.busquedaTexto) {
+        this.filtrarPorTextoEnResultadosActuales();
+      }
+    }
+    
+    // Resetear a la primera página
+    this.paginaActual = 1;
+  }
+
+  exportarAExcel(): void {
+    try {
+      // Preparar los datos para exportar
+      const datosParaExportar = this.equiposFiltrados.map(equipo => {
+        return {
+          'Cliente': equipo.cliente,
+          'Local/Planta': equipo.planta,
+          'Referencia': equipo.referencia,
+          'Serie': equipo.serie,
+          'Modelo': equipo.modelo,
+          'Tipo de Equipo': equipo.tipoEquipo,
+          'Estado': this.getEstadoLabel(equipo.estado),
+          'Estado de Mantenimiento': this.getMantenimientoLabel(equipo.estadoMantenimiento),
+          'Fecha Próximo Overhaul': equipo.fechaProximoOverhoal ? new Date(equipo.fechaProximoOverhoal).toLocaleDateString() : ''
+        };
+      });
+  
+      // Crear el libro de trabajo de Excel
+      const libro = XLSX.utils.book_new();
+      const hoja = XLSX.utils.json_to_sheet(datosParaExportar);
+  
+      // Añadir la hoja al libro
+      XLSX.utils.book_append_sheet(libro, hoja, 'Overhaul');
+  
+      // Generar el archivo y descargarlo
+      const fechaActual = new Date().toISOString().split('T')[0];
+      let nombreArchivo = 'Reporte_Overhaul_' + fechaActual;
+  
+      // Agregar información de filtros al nombre si existen
+      if (this.categoriaClienteSeleccionada) {
+        nombreArchivo += '_' + this.categoriaClienteSeleccionada.replace(/\s+/g, '_');
+      }
+  
+      if (this.fechaInicio && this.fechaFin) {
+        nombreArchivo += '_' + this.fechaInicio + '_a_' + this.fechaFin;
+      }
+  
+      nombreArchivo += '.xlsx';
+  
+      // Guardar el archivo
+      XLSX.writeFile(libro, nombreArchivo);
+  
+      console.log('Archivo Excel generado exitosamente');
+    } catch (error) {
+      console.error('Error al generar el archivo Excel:', error);
+      alert('Ocurrió un error al generar el reporte. Por favor, inténtelo de nuevo.');
+    }
   }
 
   // TrackBy function para optimizar rendering

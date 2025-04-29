@@ -3,6 +3,8 @@ export interface Equipos {
   planta: string; 
   referencia: string;
   serie: string;
+  modelo: string;
+  tipoEquipo: string;
   estado: string;
   estadoMantenimiento: string;
   fechaProximoServicio: string | null; 

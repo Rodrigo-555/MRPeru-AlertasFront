@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectorRef, Component, OnInit, QueryList, ViewChildren, ElementRef } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, QueryList, ViewChildren, ElementRef, Renderer2 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { Equipos, Planta } from '../../interface/equipos.interface.fs';
@@ -19,8 +19,8 @@ export class FrecuenciaServiciosComponent implements OnInit {
   @ViewChildren('categoryDetails') categoryDetails!: QueryList<ElementRef>;
   @ViewChildren('clienteDetails') clienteDetails!: QueryList<ElementRef>;
 
-
   clienteCategories: any[] = [];
+  clientesCategoriesOriginal: any[] = []; // Guardar copia original de los clientes
   equiposOriginales: Equipos[] = [];
   equiposFiltrados: Equipos[] = [];
 
@@ -28,6 +28,7 @@ export class FrecuenciaServiciosComponent implements OnInit {
   estadoSeleccionado: string = '';
   estadoMantenimientoSeleccionado: string = '';
   busquedaContacto: string = '';
+  busquedaClientes: string = '';
   plantaSeleccionada: string | null = null;
 
   campoOrdenamiento: string = '';
@@ -40,7 +41,8 @@ export class FrecuenciaServiciosComponent implements OnInit {
     private http: HttpClient, 
     private cdr: ChangeDetectorRef, 
     private clienteService: ClienteService, 
-    private frecuenciaServicioService: FrecuenciaServicioService
+    private frecuenciaServicioService: FrecuenciaServicioService,
+    private renderer: Renderer2
   ) {}
 
   ngOnInit() {
@@ -57,17 +59,29 @@ export class FrecuenciaServiciosComponent implements OnInit {
       { name: "No Es Cliente", title: "No Es Cliente" },
     ];
 
+    let categoriesLoaded = 0;
     
-    
-
     categories.forEach(category => {
       this.clienteService.getClientes(category.name).subscribe(
         (data: Cliente[]) => {
-          this.clienteCategories.push({ title: category.title, clientes: data });
+          const categoryData = { title: category.title, clientes: data };
+          this.clienteCategories.push(categoryData);
+          
+          categoriesLoaded++;
+          if (categoriesLoaded === categories.length) {
+            // Crear copia de seguridad cuando todos estén cargados
+            this.clientesCategoriesOriginal = JSON.parse(JSON.stringify(this.clienteCategories));
+          }
+          
           this.cdr.detectChanges();
         },
         error => {
           console.error(`Error al cargar los clientes de ${category.name}:`, error);
+          
+          categoriesLoaded++;
+          if (categoriesLoaded === categories.length) {
+            this.clientesCategoriesOriginal = JSON.parse(JSON.stringify(this.clienteCategories));
+          }
         }
       );
     });
@@ -87,8 +101,6 @@ export class FrecuenciaServiciosComponent implements OnInit {
       });
     });
   }
-
-  
   
   // Función para colapsar todos los nodos
   colapsarTodo(): void {
@@ -131,8 +143,8 @@ export class FrecuenciaServiciosComponent implements OnInit {
     this.paginaActual = 1; // Regresar a la primera página después de ordenar
   }
 
-   // Obtener ícono de ordenamiento
-   getSortIcon(campo: string): string {
+  // Obtener ícono de ordenamiento
+  getSortIcon(campo: string): string {
     if (this.campoOrdenamiento !== campo) return 'fas fa-sort';
     return this.ordenAscendente ? 'fas fa-sort-up' : 'fas fa-sort-down';
   }
@@ -154,9 +166,8 @@ export class FrecuenciaServiciosComponent implements OnInit {
     
     return diferenciaDias >= 0 && diferenciaDias <= 30;
   }
-  
 
-    // Obtener etiqueta de estado
+  // Obtener etiqueta de estado
   getEstadoLabel(estado: string): string {
     switch (estado) {
       case 'A': return '🟢';
@@ -171,9 +182,9 @@ export class FrecuenciaServiciosComponent implements OnInit {
   // Obtener clase CSS para badge de estado
   getBadgeClass(estado: string): string {
     switch (estado) {
-      case 'A': return 'estado-Activo';
+      case 'A': return 'estado-🟢';
       case 'C': return 'estado-Por Cotizar';
-      case 'I': return 'estado-Inactivo';
+      case 'I': return 'estado-🔴';
       case 'R': return 'estado-En Reparación';
       case 'X': return 'estado-Malogrado';
       default: return '';
@@ -183,12 +194,12 @@ export class FrecuenciaServiciosComponent implements OnInit {
   // Obtener etiqueta de estado de mantenimiento
   getMantenimientoLabel(estadoMantenimiento: string): string {
     switch (estadoMantenimiento) {
-      case 'A': return '⚠️';
+      case 'A': return 'Requiere Servicio';
       case 'E': return '(Por Configurar)';
       case 'I': return 'Equipo Inactivo o de Baja';
-      case 'V': return '🟢';
+      case 'V': return 'Aun No Requiere Servicio';
       case 'N': return '(Sin Reportes de Servicio)';
-      case 'R': return '🔴';
+      case 'R': return 'Sin servicio más de 1 año';
       default: return estadoMantenimiento;
     }
   }
@@ -276,13 +287,167 @@ export class FrecuenciaServiciosComponent implements OnInit {
       
       return coincideEstado && coincideMantenimiento && coincideContacto;
     });
-    
+      
     // Si hay un campo de ordenamiento activo, mantener el orden
     if (this.campoOrdenamiento) {
       this.ordenarPor(this.campoOrdenamiento);
     }
-    
+      
     this.paginaActual = 1; // Regresar a la primera página después de filtrar
+  }
+
+  // Función de filtrado de clientes mejorada
+  filtrarClientes(): void {
+    // Remover resaltados anteriores si existen
+    this.limpiarResaltados();
+    
+    // Si la búsqueda está vacía, restaurar la estructura original
+    if (!this.busquedaClientes || this.busquedaClientes.trim() === '') {
+      this.clienteCategories = JSON.parse(JSON.stringify(this.clientesCategoriesOriginal));
+      this.colapsarTodo();
+      this.cdr.detectChanges();
+      return;
+    }
+    
+    const terminoBusqueda = this.busquedaClientes.toLowerCase().trim();
+    let categoriesWithMatches: any[] = [];
+    let firstMatch: { category: any, cliente: Cliente, index: number } | null = null;
+    
+    // Filtrar y encontrar coincidencias
+    this.clientesCategoriesOriginal.forEach(category => {
+      const clientesCoincidentes = category.clientes.filter((cliente: Cliente) => 
+        cliente.nombre.toLowerCase().includes(terminoBusqueda)
+      );
+      
+      if (clientesCoincidentes.length > 0) {
+        // Guardar la primera coincidencia para navegación automática
+        if (!firstMatch) {
+          firstMatch = {
+            category: category,
+            cliente: clientesCoincidentes[0],
+            index: category.clientes.findIndex((c: Cliente) => c === clientesCoincidentes[0])
+          };
+        }
+        
+        // Crear copia de la categoría solo con clientes coincidentes
+        const categoryWithMatches = {
+          ...category,
+          clientes: clientesCoincidentes
+        };
+        
+        categoriesWithMatches.push(categoryWithMatches);
+      }
+    });
+    
+    // Actualizar el árbol con los resultados filtrados
+    if (categoriesWithMatches.length > 0) {
+      this.clienteCategories = categoriesWithMatches;
+      this.cdr.detectChanges();
+      
+      // Expandir categorías con coincidencias
+      setTimeout(() => {
+        this.expandirCategorias();
+        
+        // Resaltar los clientes coincidentes
+        this.resaltarCoincidencias(terminoBusqueda);
+        
+        // Navegar a la primera coincidencia si existe
+        if (firstMatch) {
+          this.navegarACliente(firstMatch);
+        }
+      }, 100);
+    } else {
+      // No hay coincidencias, mostrar mensaje (opcional)
+      this.clienteCategories = [{
+        title: "Sin coincidencias",
+        clientes: []
+      }];
+      this.cdr.detectChanges();
+    }
+  }
+  
+  // Método para expandir todas las categorías que contienen coincidencias
+  private expandirCategorias(): void {
+    this.categoryDetails.forEach(item => {
+      (item.nativeElement as HTMLDetailsElement).open = true;
+    });
+    
+    this.clienteDetails.forEach(item => {
+      (item.nativeElement as HTMLDetailsElement).open = true;
+    });
+  }
+  
+  // Método para resaltar las coincidencias en el árbol
+  private resaltarCoincidencias(terminoBusqueda: string): void {
+    const elementos = document.querySelectorAll('.tree summary');
+    
+    elementos.forEach(el => {
+      const textoOriginal = el.textContent || '';
+      
+      if (textoOriginal.toLowerCase().includes(terminoBusqueda)) {
+        // Solo modificamos el texto del nodo, no los hijos (iconos, etc.)
+        el.childNodes.forEach(node => {
+          if (node.nodeType === Node.TEXT_NODE) {
+            const texto = node.textContent || '';
+            const indice = texto.toLowerCase().indexOf(terminoBusqueda);
+            
+            if (indice >= 0) {
+              const span = document.createElement('span');
+              span.innerHTML = texto.substring(0, indice) +
+                               '<span class="cliente-highlight">' + 
+                               texto.substring(indice, indice + terminoBusqueda.length) + 
+                               '</span>' + 
+                               texto.substring(indice + terminoBusqueda.length);
+              
+              // Reemplazamos el nodo de texto con nuestro span
+              if (node.parentNode) {
+                node.parentNode.replaceChild(span, node);
+              }
+            }
+          }
+        });
+      }
+    });
+  }
+  
+  // Método para limpiar resaltados previos
+  private limpiarResaltados(): void {
+    const resaltados = document.querySelectorAll('.cliente-highlight');
+    resaltados.forEach(el => {
+      const parent = el.parentNode;
+      if (parent) {
+        const texto = parent.textContent || '';
+        const nuevoNodo = document.createTextNode(texto);
+        if (parent.parentNode) {
+          parent.parentNode.replaceChild(nuevoNodo, parent);
+        }
+      }
+    });
+  }
+  
+  // Método para navegar al primer cliente encontrado
+  private navegarACliente(match: { category: any, cliente: Cliente, index: number }): void {
+    setTimeout(() => {
+      // Buscar el elemento del cliente en el DOM
+      const clienteElements = document.querySelectorAll('.tree summary');
+      let elementoEncontrado: HTMLElement | null = null;
+      
+      clienteElements.forEach(el => {
+        if (el.textContent?.includes(match.cliente.nombre)) {
+          elementoEncontrado = el as HTMLElement;
+        }
+      });
+      
+      // Hacer scroll al elemento
+      if (elementoEncontrado) {
+        const el = elementoEncontrado as HTMLElement;
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        el.classList.add('cliente-encontrado');
+        setTimeout(() => {
+          el.classList.remove('cliente-encontrado');
+        }, 2000);
+      }
+    }, 300);
   }
 
   trackByCliente(index: number, item: Cliente): string {

@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
 import { Equipos } from '../../interface/equipos.interface.ps';
 import { ProximoServicioService } from '../../service/ProximoServicio/proximo-servicio.service';
+import * as XLSX from 'xlsx';
 
 @Component({
   selector: 'app-proximo-servicio',
@@ -66,109 +67,109 @@ export class ProximoServicioComponent implements OnInit {
     );
   }
 
- // Método específico para filtrar por rango de fechas
-filtrarPorFechas(): void {
-  // Verificar que ambas fechas estén seleccionadas
-  if (this.fechaInicio && this.fechaFin) {
-    const inicio = new Date(this.fechaInicio);
-    const fin = new Date(this.fechaFin);
+  // Método específico para filtrar por rango de fechas
+  filtrarPorFechas(): void {
+    // Verificar que ambas fechas estén seleccionadas
+    if (this.fechaInicio && this.fechaFin) {
+      const inicio = new Date(this.fechaInicio);
+      const fin = new Date(this.fechaFin);
 
-    // Ajustar fin para incluir todo el día
-    fin.setHours(23, 59, 59, 999);
+      // Ajustar fin para incluir todo el día
+      fin.setHours(23, 59, 59, 999);
 
-    this.equiposFiltrados = this.equiposOriginales.filter(equipo => {
-      if (!equipo.fechaProximoServicio) return false;
+      this.equiposFiltrados = this.equiposOriginales.filter(equipo => {
+        if (!equipo.fechaProximoServicio) return false;
+        
+        const fechaEquipo = new Date(equipo.fechaProximoServicio);
+        return fechaEquipo >= inicio && fechaEquipo <= fin;
+      });
+
+      // También aplicar el filtro de texto si existe
+      if (this.busquedaTexto) {
+        this.filtrarPorTextoEnResultadosActuales();
+      }
+    } else if (!this.fechaInicio && !this.fechaFin) {
+      // Si no hay fechas seleccionadas, restaurar lista original
+      this.equiposFiltrados = [...this.equiposOriginales];
       
-      const fechaEquipo = new Date(equipo.fechaProximoServicio);
-      return fechaEquipo >= inicio && fechaEquipo <= fin;
-    });
-
-    // También aplicar el filtro de texto si existe
-    if (this.busquedaTexto) {
-      this.filtrarPorTextoEnResultadosActuales();
+      // Aplicar solo filtro de texto si existe
+      if (this.busquedaTexto) {
+        this.filtrarPorTextoEnResultadosActuales();
+      }
     }
-  } else if (!this.fechaInicio && !this.fechaFin) {
-    // Si no hay fechas seleccionadas, restaurar lista original
-    this.equiposFiltrados = [...this.equiposOriginales];
     
-    // Aplicar solo filtro de texto si existe
-    if (this.busquedaTexto) {
-      this.filtrarPorTextoEnResultadosActuales();
-    }
+    // Resetear a la primera página
+    this.paginaActual = 1;
   }
-  
-  // Resetear a la primera página
-  this.paginaActual = 1;
-}
 
-// Método auxiliar para filtrar por texto solo en los resultados actuales
-private filtrarPorTextoEnResultadosActuales(): void {
-  const termino = this.busquedaTexto.toLowerCase();
-  this.equiposFiltrados = this.equiposFiltrados.filter(equipo =>
-    equipo.cliente.toLowerCase().includes(termino) ||
-    equipo.referencia.toLowerCase().includes(termino) ||
-    equipo.serie.toLowerCase().includes(termino) ||
-    equipo.planta.toLowerCase().includes(termino)
-  );
-}
-
-// También necesitamos actualizar filtrarPorTexto para respetar los filtros de fecha
-filtrarPorTexto(): void {
-  // Comenzar con todos los equipos o los filtrados por fecha
-  let baseEquipos = [...this.equiposOriginales];
-  
-  // Aplicar filtro de fecha si existe
-  if (this.fechaInicio && this.fechaFin) {
-    const inicio = new Date(this.fechaInicio);
-    const fin = new Date(this.fechaFin);
-    fin.setHours(23, 59, 59, 999);
-    
-    baseEquipos = baseEquipos.filter(equipo => {
-      if (!equipo.fechaProximoServicio) return false;
-      const fechaEquipo = new Date(equipo.fechaProximoServicio);
-      return fechaEquipo >= inicio && fechaEquipo <= fin;
-    });
-  }
-  
-  // Aplicar filtro de texto
-  if (this.busquedaTexto) {
+  // Método auxiliar para filtrar por texto solo en los resultados actuales
+  private filtrarPorTextoEnResultadosActuales(): void {
     const termino = this.busquedaTexto.toLowerCase();
-    this.equiposFiltrados = baseEquipos.filter(equipo =>
+    this.equiposFiltrados = this.equiposFiltrados.filter(equipo =>
       equipo.cliente.toLowerCase().includes(termino) ||
       equipo.referencia.toLowerCase().includes(termino) ||
       equipo.serie.toLowerCase().includes(termino) ||
       equipo.planta.toLowerCase().includes(termino)
     );
-  } else {
-    // Si no hay texto, usar los equipos base (ya filtrados por fecha si aplica)
-    this.equiposFiltrados = baseEquipos;
   }
-  
-  this.paginaActual = 1;
-}
 
-// El método general filtrarEquipos ahora coordina todos los filtros
-filtrarEquipos(): void {
-  // Si cambia la categoría, volver a cargar los datos desde la API
-  if (this.categoriaClienteSeleccionada) {
-    this.cargarEquipos(this.categoriaClienteSeleccionada);
-    return;
+  // También necesitamos actualizar filtrarPorTexto para respetar los filtros de fecha
+  filtrarPorTexto(): void {
+    // Comenzar con todos los equipos o los filtrados por fecha
+    let baseEquipos = [...this.equiposOriginales];
+    
+    // Aplicar filtro de fecha si existe
+    if (this.fechaInicio && this.fechaFin) {
+      const inicio = new Date(this.fechaInicio);
+      const fin = new Date(this.fechaFin);
+      fin.setHours(23, 59, 59, 999);
+      
+      baseEquipos = baseEquipos.filter(equipo => {
+        if (!equipo.fechaProximoServicio) return false;
+        const fechaEquipo = new Date(equipo.fechaProximoServicio);
+        return fechaEquipo >= inicio && fechaEquipo <= fin;
+      });
+    }
+    
+    // Aplicar filtro de texto
+    if (this.busquedaTexto) {
+      const termino = this.busquedaTexto.toLowerCase();
+      this.equiposFiltrados = baseEquipos.filter(equipo =>
+        equipo.cliente.toLowerCase().includes(termino) ||
+        equipo.referencia.toLowerCase().includes(termino) ||
+        equipo.serie.toLowerCase().includes(termino) ||
+        equipo.planta.toLowerCase().includes(termino)
+      );
+    } else {
+      // Si no hay texto, usar los equipos base (ya filtrados por fecha si aplica)
+      this.equiposFiltrados = baseEquipos;
+    }
+    
+    this.paginaActual = 1;
   }
-  
-  // Restablecer a equipos originales
-  this.equiposFiltrados = [...this.equiposOriginales];
-  
-  // Aplicar filtros en orden
-  if (this.fechaInicio && this.fechaFin) {
-    this.filtrarPorFechas();
+
+  // El método general filtrarEquipos ahora coordina todos los filtros
+  filtrarEquipos(): void {
+    // Si cambia la categoría, volver a cargar los datos desde la API
+    if (this.categoriaClienteSeleccionada) {
+      this.cargarEquipos(this.categoriaClienteSeleccionada);
+      return;
+    }
+    
+    // Restablecer a equipos originales
+    this.equiposFiltrados = [...this.equiposOriginales];
+    
+    // Aplicar filtros en orden
+    if (this.fechaInicio && this.fechaFin) {
+      this.filtrarPorFechas();
+    }
+    
+    if (this.busquedaTexto) {
+      this.filtrarPorTexto();
+    }
+    
+    this.paginaActual = 1;
   }
-  
-  if (this.busquedaTexto) {
-    this.filtrarPorTexto();
-  }
-  
-  this.paginaActual = 1;
-}
 
   /**
    * Ordena los equipos filtrados por el campo especificado.
@@ -246,12 +247,12 @@ filtrarEquipos(): void {
   // Obtener etiqueta de estado de mantenimiento
   getMantenimientoLabel(estadoMantenimiento: string): string {
     switch (estadoMantenimiento) {
-      case 'A': return '⚠️';
+      case 'A': return 'Requiere Servicio';
       case 'E': return '(Por Configurar)';
       case 'I': return 'Equipo Inactivo o de Baja';
-      case 'V': return '🟢';
+      case 'V': return 'Aun No Requiere Servicio';
       case 'N': return '(Sin Reportes de Servicio)';
-      case 'R': return '🔴';
+      case 'R': return 'Sin servicio más de 1 año';
       default: return estadoMantenimiento;
     }
   }
@@ -310,5 +311,57 @@ filtrarEquipos(): void {
   // TrackBy function para optimizar rendering
   trackByEquipo(index: number, item: Equipos): string {
     return item.referencia; // Asegúrate de que `referencia` sea única
+  }
+
+  /**
+   * Exporta los datos filtrados actuales a un archivo Excel
+   */
+  exportarAExcel(): void {
+    try {
+      // Preparar los datos para exportar
+      const datosParaExportar = this.equiposFiltrados.map(equipo => {
+        return {
+          'Cliente': equipo.cliente,
+          'Local/Planta': equipo.planta,
+          'Referencia': equipo.referencia,
+          'Serie': equipo.serie,
+          'Modelo': equipo.modelo,
+          'Tipo de Equipo': equipo.tipoEquipo,
+          'Estado': this.getEstadoLabel(equipo.estado),
+          'Estado de Mantenimiento': this.getMantenimientoLabel(equipo.estadoMantenimiento),
+          'Fecha Próximo Servicio': equipo.fechaProximoServicio ? new Date(equipo.fechaProximoServicio).toLocaleDateString() : ''
+        };
+      });
+
+      // Crear el libro de trabajo de Excel
+      const libro = XLSX.utils.book_new();
+      const hoja = XLSX.utils.json_to_sheet(datosParaExportar);
+
+      // Añadir la hoja al libro
+      XLSX.utils.book_append_sheet(libro, hoja, 'Próximo Servicio');
+
+      // Generar el archivo y descargarlo
+      const fechaActual = new Date().toISOString().split('T')[0];
+      let nombreArchivo = 'Reporte_Proximo_Servicio_' + fechaActual;
+      
+      // Agregar información de filtros al nombre si existen
+      if (this.categoriaClienteSeleccionada) {
+        nombreArchivo += '_' + this.categoriaClienteSeleccionada.replace(/\s+/g, '_');
+      }
+      
+      if (this.fechaInicio && this.fechaFin) {
+        nombreArchivo += '_' + this.fechaInicio + '_a_' + this.fechaFin;
+      }
+      
+      nombreArchivo += '.xlsx';
+      
+      // Guardar el archivo
+      XLSX.writeFile(libro, nombreArchivo);
+      
+      console.log('Archivo Excel generado exitosamente');
+    } catch (error) {
+      console.error('Error al generar el archivo Excel:', error);
+      alert('Ocurrió un error al generar el reporte. Por favor, inténtelo de nuevo.');
+    }
   }
 }

@@ -5,6 +5,27 @@
     <!-- Filtros -->
     <section class="filtros-servicio">
       <div class="search-container">
+
+        <div class="form-group">
+          <label for="fechaInicio">Desde:</label>
+          <input
+            id="fechaInicio"
+            type="date"
+            class="form-control"
+            [(ngModel)]="fechaInicio"
+            (change)="filtrarPorFechas()">
+        
+          <label for="fechaFin">Hasta:</label>
+          <input
+            id="fechaFin"
+            type="date"
+            class="form-control"
+            [(ngModel)]="fechaFin"
+            (change)="filtrarPorFechas()">
+        
+          <button class="btn btn-primary mt-2" type="button" (click)="filtrarPorFechas()">Filtrar</button>
+        </div>
+
         <div class="filtro mb-3">
           <label for="filtroHoras">Filtrar por horas restantes para Overhaul:</label>
           <select id="filtroHoras" [(ngModel)]="horasSeleccionadas" (change)="filtrarPorHorasRestantes()" class="form-control">
@@ -26,6 +47,12 @@
             <option value="Clientes sin servicios">Clientes sin servicios</option>
             <option value="No Es Cliente">No Es Cliente</option>
           </select>
+        </div>
+
+        <div class="export-button-container">
+          <button class="btn btn-success" (click)="exportarAExcel()">
+            <i class="fas fa-file-excel"></i> Realizar Reporte
+          </button>
         </div>
 
         <div class="search-group">
@@ -57,6 +84,12 @@
             <th (click)="ordenarPor('serie')">
               Serie <i class="sort-icon" [ngClass]="getSortIcon('serie')"></i>
             </th>
+            <th (click)="ordenarPor('modelo')">
+              Modelo <i class="sort-icon" [ngClass]="getSortIcon('modelo')"></i>
+            </th>
+            <th (click)="ordenarPor('tipoEquipo')">
+              Tipo de Equipo <i class="sort-icon" [ngClass]="getSortIcon('tipoEquipo')"></i>
+            </th>
             <th (click)="ordenarPor('estado')">
               Estado <i class="sort-icon" [ngClass]="getSortIcon('estado')"></i>
             </th>
@@ -74,6 +107,8 @@
             <td>{{ equipo.planta }}</td>
             <td>{{ equipo.referencia }}</td>
             <td>{{ equipo.serie }}</td>
+            <td>{{ equipo.modelo }}</td>
+            <td>{{ equipo.tipoEquipo }}</td>
             <td>
               <span class="estado-badge" [ngClass]="getBadgeClass(equipo.estado)">
                 {{ getEstadoLabel(equipo.estado) }}
