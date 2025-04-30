@@ -6,6 +6,7 @@ import { Equipos, Planta } from '../../interface/equipos.interface.fs';
 import { ClienteService } from '../../service/Clientes/cliente.service';
 import { FrecuenciaServicioService } from '../../service/FrecuenciaServicio/frecuencia-servicio.service';
 import { Cliente } from '../../interface/clientes.interface.';
+import { EquiposServiceService } from '../../service/Equipos/equipos-service.service';
 
 @Component({
   selector: 'app-frecuencia-servicios',
@@ -19,7 +20,9 @@ export class FrecuenciaServiciosComponent implements OnInit {
   @ViewChildren('categoryDetails') categoryDetails!: QueryList<ElementRef>;
   @ViewChildren('clienteDetails') clienteDetails!: QueryList<ElementRef>;
 
+
   clienteCategories: any[] = [];
+  EquiposPlantas: string[] = [];
   clientesCategoriesOriginal: any[] = []; // Guardar copia original de los clientes
   equiposOriginales: Equipos[] = [];
   equiposFiltrados: Equipos[] = [];
@@ -37,16 +40,74 @@ export class FrecuenciaServiciosComponent implements OnInit {
   paginaActual: number = 1;
   itemsPorPagina: number = 10;
 
+  clienteSeleccionado: string | null = null;
+  localSeleccionado: string | null = null;
+
   constructor(
     private http: HttpClient, 
     private cdr: ChangeDetectorRef, 
     private clienteService: ClienteService, 
     private frecuenciaServicioService: FrecuenciaServicioService,
-    private renderer: Renderer2
+    private renderer: Renderer2,
+    private equipoService: EquiposServiceService,
   ) {}
 
   ngOnInit() {
     this.loadClientes();
+  }
+
+  // Método modificado para cargar los equipos de una planta específica
+  mostrarEquiposPlanta(event: Event, razon: string, nombreLocal: string): void {
+    // Es importante detener la propagación primero para evitar problemas con el details
+    event.preventDefault();
+    event.stopPropagation();
+    
+    // Encuentra el elemento details
+    const detailsElement = (event.target as HTMLElement).closest('details');
+    
+    // Nueva lógica de toggle: comprobamos si estamos en la misma planta y cliente
+    if (this.clienteSeleccionado === razon && this.localSeleccionado === nombreLocal) {
+      console.log('Mismo cliente y local, haciendo toggle');
+      
+      // Invertimos el estado del details manualmente
+      if (detailsElement) {
+        detailsElement.open = !detailsElement.open;
+        
+        // Si lo estamos cerrando, limpiamos selección
+        if (!detailsElement.open) {
+          this.clienteSeleccionado = null;
+          this.localSeleccionado = null;
+          this.EquiposPlantas = [];
+          console.log('Details cerrado, limpiando selección');
+        } else {
+          // Si lo estamos abriendo, nos aseguramos de cargar los equipos
+          this.cargarEquiposPlantas(razon, nombreLocal);
+          console.log('Details abierto, recargando equipos');
+        }
+      }
+    } else {
+      // Es una planta o cliente diferente
+      console.log('Diferente cliente o local, cargando nuevos equipos');
+      
+      // Limpiamos los equipos actuales
+      this.EquiposPlantas = [];
+      
+      // Establecemos el nuevo cliente y local
+      this.clienteSeleccionado = razon;
+      this.localSeleccionado = nombreLocal;
+      
+      // Aseguramos que el details esté abierto
+      if (detailsElement) {
+        detailsElement.open = true;
+      }
+      
+      // Cargamos los nuevos equipos
+      this.cargarEquiposPlantas(razon, nombreLocal);
+    }
+    
+    // Agregamos logs después de establecer las variables
+    console.log('Estado final - Cliente:', this.clienteSeleccionado);
+    console.log('Estado final - Local:', this.localSeleccionado);
   }
 
   private loadClientes(): void {
@@ -250,6 +311,24 @@ export class FrecuenciaServiciosComponent implements OnInit {
     
     return paginas;
   }
+
+  private cargarEquiposPlantas(Razon: string, NombreLocal: string): void {
+  console.log(`Cargando equipos para Razon: ${Razon}, Local: ${NombreLocal}`);
+  this.EquiposPlantas = [];
+  
+  this.equipoService.getEquipos(Razon, NombreLocal).subscribe({
+    next: (data: string[]) => {
+      console.log(`Recibidos ${data.length} equipos para ${Razon}, ${NombreLocal}`);
+      this.EquiposPlantas = data;
+      this.cdr.detectChanges();
+    },
+    error: (error) => {
+      console.error(`Error al cargar equipos para ${Razon}, ${NombreLocal}:`, error);
+      this.EquiposPlantas = []; 
+    }
+  });
+}
+
 
   private cargarEquiposFrecuenciaServicio(nombrePlanta: string): void {
     this.frecuenciaServicioService.getFrecuenciaServicio(nombrePlanta).subscribe(

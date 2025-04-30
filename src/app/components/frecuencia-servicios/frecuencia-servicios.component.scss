@@ -643,3 +643,32 @@ h1 {
   }
 }
 
+.equipo-item {
+  cursor: pointer;
+  font-weight: normal;
+  padding: 5px 10px 5px 35px;
+  margin-left: 25px;
+  border-radius: 4px;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+
+  &:hover {
+    background-color: #e9f3ff;
+    color: #007bff;
+  }
+
+  &.selected {
+    background-color: #dbeeff;
+    color: #007bff;
+    font-weight: bold;
+  }
+}
+
+/* Estilo para mensaje de carga */
+.cargando-equipos {
+  font-style: italic;
+  color: #6c757d;
+  padding: 5px 10px 5px 35px;
+  margin-left: 25px;
+}

@@ -41,13 +41,29 @@
                         <span class="local-count">({{ cliente.locales?.length || 0 }})</span>
                       </summary>
                       <ng-container *ngFor="let local of cliente.locales; trackBy: trackByPlanta">
-                        <div
-                          class="planta-item"
-                          (click)="seleccionarPlanta(local.local)"
-                          [class.selected]="plantaSeleccionada === local.local">
-                          <img src="assets/img/building-icon.png" alt="Local" class="icono-arbol">
-                          {{ local.local }}
-                        </div>
+                        <details>
+                          <summary
+                            class="planta-item"
+                            (click)="mostrarEquiposPlanta($event, cliente.nombre, local.local); $event.preventDefault()">
+                            <img src="assets/img/building-icon.png" alt="Local" class="icono-arbol">
+                            {{ local.local }}
+                          </summary>
+                          <!-- Nueva sección para equipos -->
+                          <div *ngIf="localSeleccionado === local.local && clienteSeleccionado === cliente.nombre">
+                            <ng-container *ngIf="EquiposPlantas.length > 0; else cargandoEquipos">
+                              <div 
+                                *ngFor="let equipo of EquiposPlantas" 
+                                class="equipo-item"
+                                (click)="seleccionarPlanta(local.local)">
+                                <img src="assets/img/machine-icon.png" alt="Equipo" class="icono-arbol">
+                                {{ equipo }}
+                              </div>
+                            </ng-container>
+                            <ng-template #cargandoEquipos>
+                              <div class="cargando-equipos">Sin Equipos</div>
+                            </ng-template>
+                          </div>
+                        </details>
                       </ng-container>
                     </details>
                   </ng-container>
