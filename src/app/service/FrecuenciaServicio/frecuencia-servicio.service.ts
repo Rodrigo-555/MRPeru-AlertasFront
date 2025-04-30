@@ -31,6 +31,16 @@ export class FrecuenciaServicioService {
           this.equiposCache = [...response];
            return response; // Devolver la respuesta sin modificarla
         }), catchError(this.handleError)
-      );
+    );
+  }
+
+  getEquipoDetalle(nombrePlanta: string, equipoId: string): Observable<Equipos> {
+    return this.http.get<Equipos>(
+      `${this.apiUrl}/equipos/${encodeURIComponent(nombrePlanta)}/${encodeURIComponent(equipoId)}`
+    );
+  }
+
+  getAllEquiposByCliente(clienteId: string): Observable<Equipos[]> {
+    return this.http.get<Equipos[]>(`${this.apiUrl}/cliente-equipos/${encodeURIComponent(clienteId)}`);
   }
 }

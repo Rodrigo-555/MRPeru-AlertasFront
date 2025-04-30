@@ -11,10 +11,25 @@
             <input 
               type="text" 
               class="form-control custom-search" 
-              placeholder="Buscar cliente..."
+              placeholder="Buscar cliente o RUC..."
               [(ngModel)]="busquedaClientes"
-              (input)="filtrarClientes()"
+              (keyup)="manejarCambioEnBusqueda($event)"
+              (keyup.enter)="buscarYNavegar()"
               aria-label="Buscar clientes">
+            <!-- Botón para limpiar la búsqueda -->
+            <button 
+              *ngIf="busquedaClientes"
+              class="btn-clear" 
+              (click)="limpiarBusqueda()" 
+              title="Limpiar búsqueda">
+              <i class="fas fa-times"></i>
+            </button>
+            <button 
+              class="btn-search" 
+              (click)="buscarYNavegar()" 
+              title="Buscar y navegar al cliente">
+              <i class="fas fa-search"></i>
+            </button>
           </div>
         </div>
         
@@ -28,7 +43,7 @@
             </div>
           </div>
           <div class="tree">
-            <ng-container *ngFor="let category of clienteCategories">
+            <ng-container *ngFor="let category of clienteCategories | slice:0:15; trackBy: trackByCategoryFn">
               <details #categoryDetails class="category-details">
                 <summary>
                   <div class="summary-content">
@@ -63,7 +78,8 @@
                                   <div 
                                     *ngFor="let equipo of EquiposPlantas" 
                                     class="equipo-item"
-                                    (click)="seleccionarPlanta(local.local)">
+                                    [class.equipo-selected]="equipoSeleccionado === equipo"
+                                    (click)="seleccionarEquipo(equipo)">
                                     <img src="assets/img/machine-icon.png" alt="Equipo" class="icono-arbol">
                                     {{ equipo }}
                                   </div>
@@ -115,6 +131,10 @@
         <div *ngIf="!localSeleccionado && clienteSeleccionado && !mostrandoTodosEquipos" class="client-help-text">
           <p>Seleccione un local en el árbol para ver sus equipos.</p>
         </div>
+
+        <div *ngIf="mostrandoDetalleEquipo" class="equipment-detail-info">
+          <h4>Mostrando detalles del equipo: {{ equipoSeleccionado }}</h4>
+        </div>
         
         <!-- Sección de Filtros y Búsqueda -->
         <div class="search-container">
@@ -159,7 +179,8 @@
             <table class="table" *ngIf="equiposFiltrados.length > 0; else emptyTable">
               <thead>
                 <tr>
-                  <th (click)="ordenarPor('local')">
+                  <!-- Columna 'Local' visible solo cuando se muestra todos los equipos del cliente -->
+                  <th *ngIf="mostrandoTodosEquipos" (click)="ordenarPor('local')">
                     Local <i class="sort-icon" [ngClass]="getSortIcon('local')"></i>
                   </th>
                   <th (click)="ordenarPor('contacto')">
@@ -194,7 +215,8 @@
               <tbody>
                 <ng-container *ngFor="let equipo of equiposPaginados; trackBy: trackByEquipo">
                   <tr>
-                    <td>{{ mostrandoTodosEquipos ? equipo.local : (localSeleccionado || '') }}</td>
+                    <!-- Columna 'Local' visible solo cuando se muestra todos los equipos del cliente -->
+                    <td *ngIf="mostrandoTodosEquipos">{{ equipo.local }}</td>
                     <td>{{ equipo.contacto }}</td>
                     <td>
                       <a [href]="'mailto:' + equipo.email" class="email-link">{{ equipo.email }}</a>
