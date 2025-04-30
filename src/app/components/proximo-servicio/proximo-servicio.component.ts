@@ -308,6 +308,42 @@ export class ProximoServicioComponent implements OnInit {
     return paginas;
   }
 
+  getPaginasVisibles(): number[] {
+    const paginas: number[] = [];
+    const totalPaginas = this.totalPaginas;
+    const paginaActual = this.paginaActual;
+    
+    // Mostrar 5 páginas alrededor de la actual
+    const inicio = Math.max(paginaActual - 2, 1);
+    const fin = Math.min(paginaActual + 2, totalPaginas);
+    
+    for (let i = inicio; i <= fin; i++) {
+      paginas.push(i);
+    }
+    
+    return paginas;
+  }
+
+  mostrarElipsis(posicion: 'antes' | 'despues'): boolean {
+    if (this.totalPaginas <= 7) return false;
+    
+    if (posicion === 'antes') {
+      return this.paginaActual > 4;
+    } else {
+      return this.paginaActual < this.totalPaginas - 3;
+    }
+  }
+
+  esPaginaVisible(pagina: number): boolean {
+    // Primera y última página siempre visibles
+    if (pagina === 1 || pagina === this.totalPaginas) return true;
+    
+    // Páginas cercanas a la actual (±2)
+    if (Math.abs(this.paginaActual - pagina) <= 2) return true;
+    
+    return false;
+  }
+
   // TrackBy function para optimizar rendering
   trackByEquipo(index: number, item: Equipos): string {
     return item.referencia; // Asegúrate de que `referencia` sea única

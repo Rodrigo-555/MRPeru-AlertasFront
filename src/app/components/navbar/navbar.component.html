@@ -1,30 +1,27 @@
 <div class="navbar-container">
-    <nav class="navbar navbar-expand-lg navbar-light">
-      <a class="navbar-brand" href="/">
-        <img src="assets/img/LogoMRPERU.png" alt="Logo">
-      </a>
-    </nav>
-    
-    <div class="menu-options-container">
-      <div class="menu-container">
-        <button routerLink="/frecuenciaServicios" 
-                routerLinkActive="active" 
-                [routerLinkActiveOptions]="{ exact: true }">
-            📅 Notificacion de Servicios
-        </button>
-        <button routerLink="/proximoServicio" 
-                routerLinkActive="active" 
-                [routerLinkActiveOptions]="{ exact: true }">
-            🔜 Próximo Servicio
-        </button>
-        <button routerLink="/overhaul" 
-                routerLinkActive="active" 
-                [routerLinkActiveOptions]="{ exact: true }">
-            📜 Overhaul
-        </button>
+  <nav class="navbar">
+    <a class="navbar-brand" href="/">
+      <img src="assets/img/LogoMRPERU.png" alt="MR Peru Logo">
+    </a>
+  </nav>
+  
+  <div class="menu-options-container">
+    <div class="menu-container">
+      <button routerLink="/frecuenciaServicios" 
+              routerLinkActive="active" 
+              [routerLinkActiveOptions]="{ exact: true }">
+          <span class="icon">📅</span> Notificaciones de Servicios
+      </button>
+      <button routerLink="/proximoServicio" 
+              routerLinkActive="active" 
+              [routerLinkActiveOptions]="{ exact: true }">
+          <span class="icon">🔜</span> Próximo Servicio
+      </button>
+      <button routerLink="/overhaul" 
+              routerLinkActive="active" 
+              [routerLinkActiveOptions]="{ exact: true }">
+          <span class="icon">📜</span> Overhaul
+      </button>
     </div>
   </div>
 </div>
-
-
-

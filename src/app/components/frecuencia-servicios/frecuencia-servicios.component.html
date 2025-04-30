@@ -6,71 +6,82 @@
       <!-- Columna Izquierda: Árbol de Clientes -->
       <div class="left-column">
         <div class="search-container">
-          <img src="assets/img/iconoSearch.png" alt="Buscar" class="input-search-icon">
-          <input 
-            type="text" 
-            class="form-control custom-search" 
-            placeholder="Busque el Cliente"
-            [(ngModel)]="busquedaClientes"
-            (input)="filtrarClientes()"
-            aria-label="Buscar clientes">
+          <div class="search-group">
+            <img src="assets/img/iconoSearch.png" alt="Buscar" class="input-search-icon">
+            <input 
+              type="text" 
+              class="form-control custom-search" 
+              placeholder="Buscar cliente..."
+              [(ngModel)]="busquedaClientes"
+              (input)="filtrarClientes()"
+              aria-label="Buscar clientes">
+          </div>
         </div>
+        
         <!-- Sección Árbol de Clientes -->
         <div class="content-tree" [class.search-active]="busquedaClientes">
           <div class="tree-header">
             <span>Árbol de Clientes</span>
             <div>
-              <span class="expand-all" (click)="expandirTodo()">Expandir Todo</span> | 
-              <span class="collapse-all" (click)="colapsarTodo()">Colapsar Todo</span>
+              <span class="expand-all" (click)="expandirTodo()">Expandir</span> | 
+              <span class="collapse-all" (click)="colapsarTodo()">Colapsar</span>
             </div>
           </div>
           <div class="tree">
             <ng-container *ngFor="let category of clienteCategories">
-              <details #categoryDetails>
+              <details #categoryDetails class="category-details">
                 <summary>
-                  <img src="assets/img/folder-icon.png" alt="Carpeta" class="icono-arbol">
-                  {{ category.title }} 
-                  <span class="cliente-count">({{ category.clientes?.length || 0 }})</span>
+                  <div class="summary-content">
+                    <img src="assets/img/folder-icon.png" alt="Carpeta" class="icono-arbol">
+                    {{ category.title }} 
+                    <span class="cliente-count">{{ category.clientes?.length || 0 }}</span>
+                  </div>
                 </summary>
-                <ng-container *ngIf="category.clientes?.length > 0; else noClientes">
-                  <ng-container *ngFor="let cliente of category.clientes; trackBy: trackByCliente">
-                    <details #clienteDetails>
-                      <summary>
-                        <img src="assets/img/user-icon.png" alt="Cliente" class="icono-arbol">
-                        {{ cliente.nombre }}
-                        <span class="local-count">({{ cliente.locales?.length || 0 }})</span>
-                      </summary>
-                      <ng-container *ngFor="let local of cliente.locales; trackBy: trackByPlanta">
-                        <details>
-                          <summary
-                            class="planta-item"
-                            (click)="mostrarEquiposPlanta($event, cliente.nombre, local.local); $event.preventDefault()">
-                            <img src="assets/img/building-icon.png" alt="Local" class="icono-arbol">
-                            {{ local.local }}
-                          </summary>
-                          <!-- Nueva sección para equipos -->
-                          <div *ngIf="localSeleccionado === local.local && clienteSeleccionado === cliente.nombre">
-                            <ng-container *ngIf="EquiposPlantas.length > 0; else cargandoEquipos">
-                              <div 
-                                *ngFor="let equipo of EquiposPlantas" 
-                                class="equipo-item"
-                                (click)="seleccionarPlanta(local.local)">
-                                <img src="assets/img/machine-icon.png" alt="Equipo" class="icono-arbol">
-                                {{ equipo }}
-                              </div>
-                            </ng-container>
-                            <ng-template #cargandoEquipos>
-                              <div class="cargando-equipos">Sin Equipos</div>
-                            </ng-template>
+                <div class="cliente-container">
+                  <ng-container *ngIf="category.clientes?.length > 0; else noClientes">
+                    <ng-container *ngFor="let cliente of category.clientes; trackBy: trackByCliente">
+                      <details #clienteDetails class="cliente-details">
+                        <summary (click)="seleccionarCliente($event, cliente.nombre)">
+                          <div class="summary-content">
+                            <img src="assets/img/user-icon.png" alt="Cliente" class="icono-arbol">
+                            {{ cliente.nombre }}
+                            <span class="local-count">{{ cliente.locales?.length || 0 }}</span>
                           </div>
-                        </details>
-                      </ng-container>
-                    </details>
+                        </summary>
+                        <div class="local-container">
+                          <ng-container *ngFor="let local of cliente.locales; trackBy: trackByPlanta">
+                            <details class="local-details">
+                              <summary
+                                class="planta-item"
+                                (click)="mostrarEquiposPlanta($event, cliente.nombre, local.local); $event.preventDefault()">
+                                <img src="assets/img/building-icon.png" alt="Local" class="icono-arbol">
+                                {{ local.local }}
+                              </summary>
+                              <!-- Sección para equipos -->
+                              <div *ngIf="localSeleccionado === local.local && clienteSeleccionado === cliente.nombre" class="equipos-container">
+                                <ng-container *ngIf="EquiposPlantas.length > 0; else cargandoEquipos">
+                                  <div 
+                                    *ngFor="let equipo of EquiposPlantas" 
+                                    class="equipo-item"
+                                    (click)="seleccionarPlanta(local.local)">
+                                    <img src="assets/img/machine-icon.png" alt="Equipo" class="icono-arbol">
+                                    {{ equipo }}
+                                  </div>
+                                </ng-container>
+                                <ng-template #cargandoEquipos>
+                                  <div class="cargando-equipos">Sin equipos disponibles</div>
+                                </ng-template>
+                              </div>
+                            </details>
+                          </ng-container>
+                        </div>
+                      </details>
+                    </ng-container>
                   </ng-container>
-                </ng-container>
-                <ng-template #noClientes>
-                  <div class="no-results">No hay clientes para mostrar</div>
-                </ng-template>
+                  <ng-template #noClientes>
+                    <div class="no-results">No hay clientes para mostrar</div>
+                  </ng-template>
+                </div>
               </details>
             </ng-container>
             <div *ngIf="clienteCategories.length === 0" class="no-results">
@@ -83,13 +94,32 @@
       <!-- Sección Tabla de Equipos Mejorada -->
       <div class="right-column">
 
-        <h2>Nombre planta - RUC</h2>
-        <h4>Nro Equipos</h4> 
-        <h4>Si se selecciona un equipo, mostrar nonmbre del equipo, serie, modelo</h4>
+        <!-- Información del cliente seleccionado -->
+        <h2 *ngIf="clienteSeleccionado">
+          {{ clienteSeleccionado }} <span *ngIf="clienteRucSeleccionado" class="client-ruc">RUC: {{ clienteRucSeleccionado }}</span>
+        </h2>
+      
+        <!-- Información de estadísticas cuando se muestran todos los equipos -->
+        <div *ngIf="clienteSeleccionado && mostrandoTodosEquipos" class="client-info">
+          <h3>Total de Equipos del Cliente: {{ totalEquiposCliente }}</h3>
+          <h4>Equipos mostrados: {{ equiposFiltrados.length }}</h4>
+        </div>
+
+        <!-- Información del local seleccionado -->
+        <div *ngIf="localSeleccionado" class="local-info">
+          <h3>Local: {{ localSeleccionado }}</h3>
+          <h4>Total de Equipos: {{ EquiposPlantas.length }}</h4>
+        </div>
+      
+        <!-- Mensaje de ayuda -->
+        <div *ngIf="!localSeleccionado && clienteSeleccionado && !mostrandoTodosEquipos" class="client-help-text">
+          <p>Seleccione un local en el árbol para ver sus equipos.</p>
+        </div>
+        
         <!-- Sección de Filtros y Búsqueda -->
         <div class="search-container">
           <div class="form-group">
-            <label for="estadoSelect">Estados:</label>
+            <label for="estadoSelect">Estado:</label>
             <select
               id="estadoSelect"
               class="form-select custom-select"
@@ -108,8 +138,8 @@
               [(ngModel)]="estadoMantenimientoSeleccionado"
               (change)="filtrarEquipos()">
               <option value="">Todos</option>
-              <option value="V">Aun no requiere servicio 🟢</option>
-              <option value="A">Requiere Servicio ⚠️</option>
+              <option value="V">No requiere servicio 🟢</option>
+              <option value="A">Requiere servicio ⚠️</option>
             </select>
           </div>
           <div class="search-group">
@@ -117,7 +147,7 @@
             <input 
               type="text" 
               class="form-control custom-search" 
-              placeholder="Busque el contacto"
+              placeholder="Buscar por contacto o referencia..."
               [(ngModel)]="busquedaContacto"
               (input)="filtrarEquipos()">
           </div>
@@ -157,36 +187,37 @@
                     Estado <i class="sort-icon" [ngClass]="getSortIcon('estado')"></i>
                   </th>
                   <th (click)="ordenarPor('estadoMantenimiento')">
-                    Estado Mantenimiento <i class="sort-icon" [ngClass]="getSortIcon('estadoMantenimiento')"></i>
+                    Mantenimiento <i class="sort-icon" [ngClass]="getSortIcon('estadoMantenimiento')"></i>
                   </th>
                 </tr>
               </thead>
               <tbody>
-                <tr *ngFor="let equipo of equiposFiltrados | slice:(paginaActual-1)*itemsPorPagina:paginaActual*itemsPorPagina; trackBy: trackByEquipo">
-                  <td>{{ plantaSeleccionada }}</td>
-                  <td>{{ equipo.contacto }}</td>
-                  <td>
-                    <a [href]="'mailto:' + equipo.email" class="email-link">{{ equipo.email }}</a>
-                  </td>
-                  <td [class.proxima-fecha]="esFechaProxima(equipo.fechaProximoServicio)">
-                    {{ equipo.fechaProximoServicio ? (equipo.fechaProximoServicio | date: 'dd/MM/yyyy') : "No hay Proximo Servicio" }}
-                  </td>
-                  <td>{{ equipo.referencia }}</td>
-                  <td>{{equipo.serie}}</td>
-                  <td>{{equipo.modelo}}</td>
-                  <td>{{equipo.tipoEquipo}}</td>
-                  <td>
-                    <span class="estado-badge" [ngClass]="getBadgeClass(equipo.estado)">
-                      {{ getEstadoLabel(equipo.estado) }}
-                    </span>
-                  </td>
-                  <td>
-                    <span class="mantenimiento-badge" [ngClass]="getMantenimientoBadgeClass(equipo.estadoMantenimiento)">
-                      {{ getMantenimientoLabel(equipo.estadoMantenimiento) }}
-                    </span>
-                  </td>
-
-                </tr>
+                <ng-container *ngFor="let equipo of equiposPaginados; trackBy: trackByEquipo">
+                  <tr>
+                    <td>{{ mostrandoTodosEquipos ? equipo.local : (localSeleccionado || '') }}</td>
+                    <td>{{ equipo.contacto }}</td>
+                    <td>
+                      <a [href]="'mailto:' + equipo.email" class="email-link">{{ equipo.email }}</a>
+                    </td>
+                    <td [class.proxima-fecha]="esFechaProxima(equipo.fechaProximoServicio)">
+                      {{ equipo.fechaProximoServicio ? (equipo.fechaProximoServicio | date: 'dd/MM/yyyy') : "Sin servicio programado" }}
+                    </td>
+                    <td>{{ equipo.referencia }}</td>
+                    <td>{{ equipo.modelo }}</td>
+                    <td>{{ equipo.serie }}</td>
+                    <td>{{ equipo.tipoEquipo }}</td>
+                    <td>
+                      <span class="estado-badge" [ngClass]="getBadgeClass(equipo.estado)">
+                        {{ getEstadoLabel(equipo.estado) }}
+                      </span>
+                    </td>
+                    <td>
+                      <span class="mantenimiento-badge" [ngClass]="getMantenimientoBadgeClass(equipo.estadoMantenimiento)">
+                        {{ getMantenimientoLabel(equipo.estadoMantenimiento) }}
+                      </span>
+                    </td>
+                  </tr>
+                </ng-container>
               </tbody>
             </table>
             
@@ -224,5 +255,6 @@
           </div>
         </div>
       </div>
+    </div>
   </div>
 </div>

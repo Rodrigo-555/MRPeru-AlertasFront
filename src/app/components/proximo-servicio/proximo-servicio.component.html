@@ -5,6 +5,16 @@
     <!-- Filtros -->
     <section class="filtros-servicio">
       <div class="search-container">
+        <div class="search-group">
+          <img src="assets/img/iconoSearch.png" alt="Buscar" class="input-search-icon">
+          <input 
+            type="text" 
+            class="form-control custom-search" 
+            placeholder="Busque por cliente, referencia, local o serie"
+            [(ngModel)]="busquedaTexto"
+            (input)="filtrarPorTexto()">
+        </div>
+
         <div class="form-group">
           <label for="fechaInicio">Desde:</label>
           <input
@@ -22,122 +32,180 @@
             [(ngModel)]="fechaFin"
             (change)="filtrarPorFechas()">
         
-          <button class="btn btn-primary mt-2" type="button" (click)="filtrarPorFechas()">Filtrar</button>
+          <button class="btn btn-primary" type="button" (click)="filtrarPorFechas()">
+            <i class="fas fa-filter"></i> Filtrar
+          </button>
         </div>
 
-        <div class="filtro mb-3">
+        <div class="filtro">
           <label for="categoriaCliente">Categoría Clientes:</label>
           <select id="categoriaCliente" [(ngModel)]="categoriaClienteSeleccionada" (change)="filtrarEquipos()" class="form-control">
             <option [ngValue]="null" disabled selected>Seleccione una categoría</option>
-            <option value="Clientes con Servicios Regulares">Clientes con Servicios Regulares</option>
-            <option value="Clientes con Servicios No-Regulares">Clientes con Servicios No-Regulares</option>
-            <option value="Clientes con Servicios Antiguos-Recientes">Clientes con Servicios Antiguos-Recientes</option>
-            <option value="Clientes con Servicios Antiguos">Clientes con Servicios Antiguos</option>
-            <option value="Clientes sin servicios">Clientes sin servicios</option>
+            <option value="Clientes con Servicios Regulares">Servicios Regulares</option>
+            <option value="Clientes con Servicios No-Regulares">Servicios No-Regulares</option>
+            <option value="Clientes con Servicios Antiguos-Recientes">Servicios Antiguos-Recientes</option>
+            <option value="Clientes con Servicios Antiguos">Servicios Antiguos</option>
+            <option value="Clientes sin servicios">Sin servicios</option>
             <option value="No Es Cliente">No Es Cliente</option>
           </select>
         </div>
 
-        <!-- Botón para exportar a Excel -->
         <div class="export-button-container">
           <button class="btn btn-success" (click)="exportarAExcel()">
-            <i class="fas fa-file-excel"></i> Realizar Reporte
+            <i class="fas fa-file-excel"></i> Exportar a Excel
           </button>
         </div>
-
-        <div class="search-group">
-          <img src="assets/img/iconoSearch.png" alt="Buscar" class="input-search-icon">
-          <input 
-            type="text" 
-            class="form-control custom-search" 
-            placeholder="Busque por cliente, referencia, local o serie"
-            [(ngModel)]="busquedaTexto"
-            (input)="filtrarPorTexto()">
-        </div>
-        
       </div>
     </section>
 
     <!-- Tabla de Equipos -->
     <section class="table-container">
-      <table class="table" *ngIf="equiposFiltrados.length > 0; else emptyTable">
-        <thead>
-          <tr>
-            <th (click)="ordenarPor('Cliente')">
-              Cliente <i class="sort-icon" [ngClass]="getSortIcon('Cliente')"></i>
-            </th>
-            <th (click)="ordenarPor('Local')">
-              Local <i class="sort-icon" [ngClass]="getSortIcon('Local')"></i>
-            </th>
-            <th (click)="ordenarPor('referencia')">
-              Referencia <i class="sort-icon" [ngClass]="getSortIcon('referencia')"></i>
-            </th>
-            <th (click)="ordenarPor('serie')">
-              Serie <i class="sort-icon" [ngClass]="getSortIcon('serie')"></i>
-            </th>
-            <th (click)="ordenarPor('modelo')">
-              Modelo<i class="sort-icon" [ngClass]="getSortIcon('modelo')"></i>
-            </th>
-            <th (click)="ordenarPor('tipoEquipo')">
-              Tipo de Equipo <i class="sort-icon" [ngClass]="getSortIcon('tipoEquipo')"></i>
-            </th>
-            <th (click)="ordenarPor('estado')">
-              Estado <i class="sort-icon" [ngClass]="getSortIcon('estado')"></i>
-            </th>
-            <th (click)="ordenarPor('estadoMantenimiento')">
-              Estado Mantenimiento <i class="sort-icon" [ngClass]="getSortIcon('estadoMantenimiento')"></i>
-            </th>
-            <th (click)="ordenarPor('fechaProximoServicio')">
-              Fecha Proximo Servicio <i class="sort-icon" [ngClass]="getSortIcon('fechaProximoServicio')"></i>
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let equipo of equiposFiltrados | slice:(paginaActual-1)*itemsPorPagina:paginaActual*itemsPorPagina; trackBy: trackByEquipo">
-            <td>{{ equipo.cliente }}</td>
-            <td>{{ equipo.planta }}</td>
-            <td>{{ equipo.referencia }}</td>
-            <td>{{ equipo.serie }}</td>
-            <td>{{ equipo.modelo }}</td>
-            <td>{{ equipo.tipoEquipo }}</td>
-            <td>
-              <span class="estado-badge" [ngClass]="getBadgeClass(equipo.estado)">
-                {{ getEstadoLabel(equipo.estado) }}
-              </span>
-            </td>
-            <td>
-              <span class="mantenimiento-badge" [ngClass]="getMantenimientoBadgeClass(equipo.estadoMantenimiento)">
-                {{ getMantenimientoLabel(equipo.estadoMantenimiento) }}
-              </span>
-            </td>
-            <td [class.proxima-fecha]="esFechaProxima(equipo.fechaProximoServicio)">
-              {{ equipo.fechaProximoServicio | date: 'dd/MM/yyyy' }}
-            </td>
-          </tr>
-        </tbody>
-      </table>
+      <div class="table-scroll">
+        <table class="table" *ngIf="equiposFiltrados.length > 0; else emptyTable">
+          <thead>
+            <tr>
+              <th (click)="ordenarPor('Cliente')">
+                Cliente <i class="sort-icon" [ngClass]="getSortIcon('Cliente')"></i>
+              </th>
+              <th (click)="ordenarPor('Local')">
+                Local <i class="sort-icon" [ngClass]="getSortIcon('Local')"></i>
+              </th>
+              <th (click)="ordenarPor('referencia')">
+                Referencia <i class="sort-icon" [ngClass]="getSortIcon('referencia')"></i>
+              </th>
+              <th (click)="ordenarPor('serie')">
+                Serie <i class="sort-icon" [ngClass]="getSortIcon('serie')"></i>
+              </th>
+              <th (click)="ordenarPor('modelo')">
+                Modelo <i class="sort-icon" [ngClass]="getSortIcon('modelo')"></i>
+              </th>
+              <th (click)="ordenarPor('tipoEquipo')">
+                Tipo de Equipo <i class="sort-icon" [ngClass]="getSortIcon('tipoEquipo')"></i>
+              </th>
+              <th (click)="ordenarPor('estado')">
+                Estado <i class="sort-icon" [ngClass]="getSortIcon('estado')"></i>
+              </th>
+              <th (click)="ordenarPor('estadoMantenimiento')">
+                Mantenimiento <i class="sort-icon" [ngClass]="getSortIcon('estadoMantenimiento')"></i>
+              </th>
+              <th (click)="ordenarPor('fechaProximoServicio')">
+                Fecha Próximo Servicio <i class="sort-icon" [ngClass]="getSortIcon('fechaProximoServicio')"></i>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let equipo of equiposFiltrados | slice:(paginaActual-1)*itemsPorPagina:paginaActual*itemsPorPagina; trackBy: trackByEquipo">
+              <td>{{ equipo.cliente }}</td>
+              <td>{{ equipo.planta }}</td>
+              <td>{{ equipo.referencia }}</td>
+              <td>{{ equipo.serie }}</td>
+              <td>{{ equipo.modelo }}</td>
+              <td>{{ equipo.tipoEquipo }}</td>
+              <td>
+                <span class="estado-badge" [ngClass]="getBadgeClass(equipo.estado)">
+                  {{ getEstadoLabel(equipo.estado) }}
+                </span>
+              </td>
+              <td>
+                <span class="mantenimiento-badge" [ngClass]="getMantenimientoBadgeClass(equipo.estadoMantenimiento)">
+                  {{ getMantenimientoLabel(equipo.estadoMantenimiento) }}
+                </span>
+              </td>
+              <td [class.proxima-fecha]="esFechaProxima(equipo.fechaProximoServicio)">
+                {{ equipo.fechaProximoServicio | date: 'dd/MM/yyyy' }}
+              </td>
+            </tr>
+          </tbody>
+        </table>
 
-      <!-- Mensaje si no hay datos -->
-      <ng-template #emptyTable>
-        <div class="empty-table">
-          <p>Seleccione una Categoria de Clientes.</p>
+        <!-- Mensaje si no hay datos -->
+        <ng-template #emptyTable>
+          <div class="empty-table">
+            <p>Seleccione una categoría de clientes para visualizar los equipos.</p>
+          </div>
+        </ng-template>
+      </div>
+
+      <!-- Contenedor de paginación -->
+      <section class="pagination-container" *ngIf="equiposFiltrados.length > 0">
+        <!-- Información de paginación -->
+        <div class="pagination-info">
+          <div class="showing-records">
+            <strong>Mostrando:</strong> {{ ((paginaActual-1) * itemsPorPagina) + 1 }} - 
+            {{ paginaActual * itemsPorPagina > equiposFiltrados.length ? equiposFiltrados.length : paginaActual * itemsPorPagina }} 
+            de {{ equiposFiltrados.length }} registros
+          </div>
+          <div *ngIf="totalPaginas > 1" class="total-pages">
+            <strong>Página {{ paginaActual }} de {{ totalPaginas }}</strong>
+          </div>
         </div>
-      </ng-template>
-
-      <!-- Paginación -->
-      <nav class="pagination" *ngIf="equiposFiltrados.length > itemsPorPagina">
-        <button class="page-button" [disabled]="paginaActual === 1" (click)="cambiarPagina(1)">«</button>
-        <button class="page-button" [disabled]="paginaActual === 1" (click)="cambiarPagina(paginaActual - 1)">‹</button>
-        <button 
-          class="page-button" 
-          *ngFor="let pagina of getPaginas()" 
-          [class.active]="pagina === paginaActual"
-          (click)="cambiarPagina(pagina)">
-          {{ pagina }}
-        </button>
-        <button class="page-button" [disabled]="paginaActual === totalPaginas" (click)="cambiarPagina(paginaActual + 1)">›</button>
-        <button class="page-button" [disabled]="paginaActual === totalPaginas" (click)="cambiarPagina(totalPaginas)">»</button>
-      </nav>
+      
+        <!-- Paginación mejorada -->
+        <nav class="pagination" *ngIf="equiposFiltrados.length > itemsPorPagina">
+          <span class="pagination-label">Páginas:</span>
+          
+          <button class="page-button page-navigation" [disabled]="paginaActual === 1" (click)="cambiarPagina(1)" title="Primera página">
+            «
+          </button>
+          
+          <button class="page-button page-navigation" [disabled]="paginaActual === 1" (click)="cambiarPagina(paginaActual - 1)" title="Página anterior">
+            ‹
+          </button>
+          
+          <ng-container *ngIf="totalPaginas <= 7">
+            <button 
+              class="page-button" 
+              *ngFor="let pagina of getPaginas()" 
+              [class.active]="pagina === paginaActual"
+              (click)="cambiarPagina(pagina)">
+              {{ pagina }}
+            </button>
+          </ng-container>
+          
+          <ng-container *ngIf="totalPaginas > 7">
+            <!-- Primera página siempre visible -->
+            <button 
+              class="page-button" 
+              [class.active]="1 === paginaActual"
+              (click)="cambiarPagina(1)"
+              *ngIf="paginaActual > 3">
+              1
+            </button>
+            
+            <!-- Indicador de páginas omitidas -->
+            <button class="page-button" *ngIf="paginaActual > 4" disabled>...</button>
+            
+            <!-- Páginas alrededor de la actual -->
+            <button 
+              class="page-button" 
+              *ngFor="let pagina of getPaginasVisibles()" 
+              [class.active]="pagina === paginaActual"
+              (click)="cambiarPagina(pagina)">
+              {{ pagina }}
+            </button>
+            
+            <!-- Indicador de páginas omitidas -->
+            <button class="page-button" *ngIf="paginaActual < totalPaginas - 3" disabled>...</button>
+            
+            <!-- Última página siempre visible -->
+            <button 
+              class="page-button" 
+              [class.active]="totalPaginas === paginaActual"
+              (click)="cambiarPagina(totalPaginas)"
+              *ngIf="paginaActual < totalPaginas - 2">
+              {{ totalPaginas }}
+            </button>
+          </ng-container>
+          
+          <button class="page-button page-navigation" [disabled]="paginaActual === totalPaginas" (click)="cambiarPagina(paginaActual + 1)" title="Página siguiente">
+            ›
+          </button>
+          
+          <button class="page-button page-navigation" [disabled]="paginaActual === totalPaginas" (click)="cambiarPagina(totalPaginas)" title="Última página">
+            »
+          </button>
+        </nav>
+      </section>
     </section>
   </div>
 </div>

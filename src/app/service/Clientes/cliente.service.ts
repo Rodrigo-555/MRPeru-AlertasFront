@@ -3,6 +3,7 @@ import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http'
 import { Cliente } from '../../interface/clientes.interface.';
 import { catchError, map, Observable, throwError } from 'rxjs';
 import { response } from 'express';
+import { Detalles } from '../../interface/detalles.interface';
 
 
 @Injectable({
@@ -33,6 +34,22 @@ export class ClienteService {
         this.clientesCache = [...response];
          return response; // Devolver la respuesta sin modificarla
       }), catchError(this.handleError)
+    );
+  }
+
+  getDetallesClientes(Razon: string): Observable<Detalles[]> {
+    console.log(`Solicitando detalles para cliente: ${Razon}`);
+    const params = new HttpParams().set('Razon', Razon);
+    
+    return this.http.get<any>(`${this.apiUrl}/locales`, { params }).pipe(
+      map(response => {
+        console.log('Respuesta completa de la API:', response);
+        return response;
+      }),
+      catchError((error: HttpErrorResponse) => {
+        console.error('Error detallado al obtener detalles del cliente:', error);
+        return throwError(() => error);
+      })
     );
   }
 }

@@ -7,6 +7,7 @@ import { ClienteService } from '../../service/Clientes/cliente.service';
 import { FrecuenciaServicioService } from '../../service/FrecuenciaServicio/frecuencia-servicio.service';
 import { Cliente } from '../../interface/clientes.interface.';
 import { EquiposServiceService } from '../../service/Equipos/equipos-service.service';
+import { Detalles } from '../../interface/detalles.interface';
 
 @Component({
   selector: 'app-frecuencia-servicios',
@@ -34,6 +35,11 @@ export class FrecuenciaServiciosComponent implements OnInit {
   busquedaClientes: string = '';
   plantaSeleccionada: string | null = null;
 
+  // Añadir estas propiedades a la clase
+  private paginasCache: number[] | null = null;
+  private paginasCacheKey: string = '';
+  private clientesRUCCache: Record<string, string> = {};
+
   campoOrdenamiento: string = '';
   ordenAscendente: boolean = true;
 
@@ -41,7 +47,11 @@ export class FrecuenciaServiciosComponent implements OnInit {
   itemsPorPagina: number = 10;
 
   clienteSeleccionado: string | null = null;
+  clienteRucSeleccionado: string | null = null;
   localSeleccionado: string | null = null;
+  totalEquiposCliente: number = 0;
+  todosEquiposCliente: Equipos[] = [];
+  mostrandoTodosEquipos: boolean = false;
 
   constructor(
     private http: HttpClient, 
@@ -56,7 +66,6 @@ export class FrecuenciaServiciosComponent implements OnInit {
     this.loadClientes();
   }
 
-  // Método modificado para cargar los equipos de una planta específica
   mostrarEquiposPlanta(event: Event, razon: string, nombreLocal: string): void {
     // Es importante detener la propagación primero para evitar problemas con el details
     event.preventDefault();
@@ -73,44 +82,60 @@ export class FrecuenciaServiciosComponent implements OnInit {
       if (detailsElement) {
         detailsElement.open = !detailsElement.open;
         
-        // Si lo estamos cerrando, limpiamos selección
+        // Si lo estamos cerrando, volvemos a mostrar todos los equipos del cliente
         if (!detailsElement.open) {
-          this.clienteSeleccionado = null;
           this.localSeleccionado = null;
           this.EquiposPlantas = [];
-          console.log('Details cerrado, limpiando selección');
+          this.mostrandoTodosEquipos = true;
+          
+          // Volver a mostrar todos los equipos del cliente
+          this.equiposOriginales = [...this.todosEquiposCliente];
+          this.equiposFiltrados = [...this.equiposOriginales];
+          this.filtrarEquipos();
+          
+          console.log('Details cerrado, mostrando todos los equipos del cliente');
         } else {
-          // Si lo estamos abriendo, nos aseguramos de cargar los equipos
+          // Si lo estamos abriendo, nos aseguramos de cargar los equipos de esta planta
           this.cargarEquiposPlantas(razon, nombreLocal);
-          console.log('Details abierto, recargando equipos');
+          this.cargarEquiposFrecuenciaServicio(nombreLocal);
+          this.localSeleccionado = nombreLocal;
+          this.mostrandoTodosEquipos = false;
+          console.log('Details abierto, mostrando solo equipos de esta planta');
         }
       }
     } else {
       // Es una planta o cliente diferente
       console.log('Diferente cliente o local, cargando nuevos equipos');
       
-      // Limpiamos los equipos actuales
-      this.EquiposPlantas = [];
+      // Si es un cliente diferente, necesitamos actualizar todo
+      if (this.clienteSeleccionado !== razon) {
+        this.clienteSeleccionado = razon;
+        this.obtenerDetallesCliente(razon);
+        this.cargarTodosEquiposCliente(razon);
+      }
       
-      // Establecemos el nuevo cliente y local
-      this.clienteSeleccionado = razon;
+      // Establecemos el nuevo local y filtramos los equipos para mostrar solo los de esta planta
       this.localSeleccionado = nombreLocal;
+      this.mostrandoTodosEquipos = false;
       
       // Aseguramos que el details esté abierto
       if (detailsElement) {
         detailsElement.open = true;
       }
       
-      // Cargamos los nuevos equipos
+      // Cargamos los equipos de esta planta
       this.cargarEquiposPlantas(razon, nombreLocal);
+      this.cargarEquiposFrecuenciaServicio(nombreLocal);
     }
     
     // Agregamos logs después de establecer las variables
     console.log('Estado final - Cliente:', this.clienteSeleccionado);
     console.log('Estado final - Local:', this.localSeleccionado);
+    console.log('Mostrando todos los equipos:', this.mostrandoTodosEquipos);
   }
 
   private loadClientes(): void {
+    // Cargar solo las categorías inicialmente, sin expandir
     const categories = [
       { name: "Clientes con Servicios Regulares", title: "Clientes con Servicios Regulares" },
       { name: "Clientes con Servicios No-Regulares", title: "Clientes con Servicios No-Regulares" },
@@ -119,32 +144,40 @@ export class FrecuenciaServiciosComponent implements OnInit {
       { name: "Clientes sin servicios", title: "Clientes sin servicios" },
       { name: "No Es Cliente", title: "No Es Cliente" },
     ];
-
-    let categoriesLoaded = 0;
+  
+    // Cargar primero las dos categorías más importantes
+    this.loadCategoryData(categories[0]);
+    this.loadCategoryData(categories[1]);
     
-    categories.forEach(category => {
-      this.clienteService.getClientes(category.name).subscribe(
-        (data: Cliente[]) => {
-          const categoryData = { title: category.title, clientes: data };
-          this.clienteCategories.push(categoryData);
-          
-          categoriesLoaded++;
-          if (categoriesLoaded === categories.length) {
-            // Crear copia de seguridad cuando todos estén cargados
-            this.clientesCategoriesOriginal = JSON.parse(JSON.stringify(this.clienteCategories));
-          }
-          
-          this.cdr.detectChanges();
-        },
-        error => {
-          console.error(`Error al cargar los clientes de ${category.name}:`, error);
-          
-          categoriesLoaded++;
-          if (categoriesLoaded === categories.length) {
-            this.clientesCategoriesOriginal = JSON.parse(JSON.stringify(this.clienteCategories));
-          }
+    // Cargar el resto de categorías después con retraso
+    setTimeout(() => {
+      for (let i = 2; i < categories.length; i++) {
+        // Añadir retraso escalonado para no saturar el servidor
+        setTimeout(() => this.loadCategoryData(categories[i]), (i-2) * 300);
+      }
+    }, 1000);
+  }
+
+  private loadCategoryData(category: {name: string, title: string}): void {
+    this.clienteService.getClientes(category.name).subscribe({
+      next: (data: Cliente[]) => {
+        const categoryData = { title: category.title, clientes: data };
+        this.clienteCategories.push(categoryData);
+        
+        // Guardar copia solo cuando se completa la carga
+        if (!this.clientesCategoriesOriginal.find(cat => cat.title === category.title)) {
+          const copiaSeguridad = JSON.parse(JSON.stringify(categoryData));
+          this.clientesCategoriesOriginal.push(copiaSeguridad);
         }
-      );
+        
+        this.cdr.detectChanges();
+      },
+      error: (error) => {
+        console.error(`Error al cargar los clientes de ${category.name}:`, error);
+        const categoryData = { title: category.title, clientes: [] };
+        this.clienteCategories.push(categoryData);
+        this.clientesCategoriesOriginal.push(JSON.parse(JSON.stringify(categoryData)));
+      }
     });
   }
 
@@ -153,14 +186,28 @@ export class FrecuenciaServiciosComponent implements OnInit {
   }
 
   expandirTodo(): void {
-    setTimeout(() => {
-      this.categoryDetails.forEach(item => {
+    // Implementar con limitador para evitar operaciones DOM masivas
+    const maxNodes = 50;
+    let processedNodes = 0;
+    
+    // Expandir categorías primero
+    this.categoryDetails.forEach(item => {
+      if (processedNodes < maxNodes) {
         (item.nativeElement as HTMLDetailsElement).open = true;
-      });
-      this.clienteDetails.forEach(item => {
-        (item.nativeElement as HTMLDetailsElement).open = true;
-      });
+        processedNodes++;
+      }
     });
+    
+    // Si hay espacio, expandir clientes
+    setTimeout(() => {
+      processedNodes = 0;
+      this.clienteDetails.forEach(item => {
+        if (processedNodes < maxNodes) {
+          (item.nativeElement as HTMLDetailsElement).open = true;
+          processedNodes++;
+        }
+      });
+    }, 100);
   }
   
   // Función para colapsar todos los nodos
@@ -283,33 +330,34 @@ export class FrecuenciaServiciosComponent implements OnInit {
     this.paginaActual = pagina;
   }
   
+  get equiposPaginados(): Equipos[] {
+    const inicio = (this.paginaActual - 1) * this.itemsPorPagina;
+    const fin = inicio + this.itemsPorPagina;
+    return this.equiposFiltrados.slice(inicio, fin);
+  }
+  
   getPaginas(): number[] {
-    const paginas: number[] = [];
-    const totalPaginas = this.totalPaginas;
-    let inicio: number;
-    let fin: number;
-    
-    if (totalPaginas <= 5) {
-      inicio = 1;
-      fin = totalPaginas;
-    } else {
-      if (this.paginaActual <= 3) {
-        inicio = 1;
-        fin = 5;
-      } else if (this.paginaActual >= totalPaginas - 2) {
-        inicio = totalPaginas - 4;
-        fin = totalPaginas;
+    if (!this.paginasCache || this.paginasCacheKey !== `${this.paginaActual},${this.totalPaginas}`) {
+      const paginas: number[] = [];
+      const totalPaginas = this.totalPaginas;
+      
+      if (totalPaginas <= 5) {
+        for (let i = 1; i <= totalPaginas; i++) paginas.push(i);
       } else {
-        inicio = this.paginaActual - 2;
-        fin = this.paginaActual + 2;
+        if (this.paginaActual <= 3) {
+          for (let i = 1; i <= 5; i++) paginas.push(i);
+        } else if (this.paginaActual >= totalPaginas - 2) {
+          for (let i = totalPaginas - 4; i <= totalPaginas; i++) paginas.push(i);
+        } else {
+          for (let i = this.paginaActual - 2; i <= this.paginaActual + 2; i++) paginas.push(i);
+        }
       }
+      
+      this.paginasCache = paginas;
+      this.paginasCacheKey = `${this.paginaActual},${this.totalPaginas}`;
     }
     
-    for (let i = inicio; i <= fin; i++) {
-      paginas.push(i);
-    }
-    
-    return paginas;
+    return this.paginasCache;
   }
 
   private cargarEquiposPlantas(Razon: string, NombreLocal: string): void {
@@ -330,18 +378,31 @@ export class FrecuenciaServiciosComponent implements OnInit {
 }
 
 
-  private cargarEquiposFrecuenciaServicio(nombrePlanta: string): void {
-    this.frecuenciaServicioService.getFrecuenciaServicio(nombrePlanta).subscribe(
-      (data: Equipos[]) => {
-        this.equiposOriginales = data;
-        this.equiposFiltrados = [...this.equiposOriginales];
-        this.cdr.detectChanges();
-      },
-      error => {
-        console.error('Error al cargar los equipos:', error);
+private cargarEquiposFrecuenciaServicio(nombrePlanta: string): void {
+  this.frecuenciaServicioService.getFrecuenciaServicio(nombrePlanta).subscribe({
+    next: (data: Equipos[]) => {
+      // Si tenemos todos los equipos del cliente cargados y estamos filtrando por planta
+      if (this.mostrandoTodosEquipos && this.todosEquiposCliente.length > 0) {
+        // Filtramos los equipos ya cargados para mostrar solo los de esta planta
+        this.equiposOriginales = this.todosEquiposCliente.filter(equipo => equipo.local === nombrePlanta);
+      } else {
+        // Asegurarnos de que todos los equipos tengan el nombre del local
+        this.equiposOriginales = data.map(equipo => ({ ...equipo, local: nombrePlanta }));
       }
-    );
-  }
+      
+      this.equiposFiltrados = [...this.equiposOriginales];
+      this.mostrandoTodosEquipos = false;
+      this.filtrarEquipos();
+      this.cdr.detectChanges();
+    },
+    error: (error) => {
+      console.error('Error al cargar los equipos:', error);
+      this.equiposOriginales = [];
+      this.equiposFiltrados = [];
+      this.cdr.detectChanges();
+    }
+  });
+}
 
   seleccionarPlanta(nombrePlanta: string): void {
     this.plantaSeleccionada = nombrePlanta;
@@ -356,24 +417,187 @@ export class FrecuenciaServiciosComponent implements OnInit {
     }, 100);
   }
 
-  filtrarEquipos(): void {
-    this.equiposFiltrados = this.equiposOriginales.filter(equipo => {
-      const coincideEstado = !this.estadoSeleccionado || equipo.estado === this.estadoSeleccionado;
-      const coincideMantenimiento = !this.estadoMantenimientoSeleccionado || equipo.estadoMantenimiento === this.estadoMantenimientoSeleccionado;
-      const coincideContacto = !this.busquedaContacto || 
-                              equipo.contacto.toLowerCase().includes(this.busquedaContacto.toLowerCase()) ||
-                              (equipo.email && equipo.email.toLowerCase().includes(this.busquedaContacto.toLowerCase()));
+  seleccionarCliente(event: Event, clienteNombre: string): void {
+    event.preventDefault();
+    event.stopPropagation();
+    
+    if (this.clienteSeleccionado === clienteNombre) {
+      // Si es el mismo cliente, hacemos un toggle
+      const detailsElement = (event.target as HTMLElement).closest('details');
+      if (detailsElement) {
+        detailsElement.open = !detailsElement.open;
+        
+        if (!detailsElement.open) {
+          // Si cerramos el detalle, limpiamos todo
+          this.clienteSeleccionado = null;
+          this.clienteRucSeleccionado = null;
+          this.localSeleccionado = null;
+          this.equiposOriginales = [];
+          this.equiposFiltrados = [];
+          this.todosEquiposCliente = [];
+          this.EquiposPlantas = [];
+          this.mostrandoTodosEquipos = false;
+        } else {
+          // Si abrimos el detalle, mostramos todos los equipos
+          this.cargarTodosEquiposCliente(clienteNombre);
+        }
+      }
+    } else {
+      // Es un nuevo cliente
+      // Actualizar la selección de cliente
+      this.clienteSeleccionado = clienteNombre;
       
-      return coincideEstado && coincideMantenimiento && coincideContacto;
-    });
+      // Limpiar la selección de local
+      this.localSeleccionado = null;
+      this.EquiposPlantas = [];
       
-    // Si hay un campo de ordenamiento activo, mantener el orden
-    if (this.campoOrdenamiento) {
-      this.ordenarPor(this.campoOrdenamiento);
+      // Usar la API para obtener el RUC del cliente
+      this.obtenerDetallesCliente(clienteNombre);
+      
+      // Cargar todos los equipos del cliente
+      this.cargarTodosEquiposCliente(clienteNombre);
+      
+      // Opcional: abrir el details del cliente
+      const detailsElement = (event.target as HTMLElement).closest('details');
+      if (detailsElement) {
+        detailsElement.open = true;
+      }
     }
-      
-    this.paginaActual = 1; // Regresar a la primera página después de filtrar
+    
+    console.log(`Cliente seleccionado: ${clienteNombre}, Mostrando todos equipos: ${this.mostrandoTodosEquipos}`);
   }
+
+// Nuevo método para obtener detalles del cliente desde la API
+private obtenerDetallesCliente(nombreCliente: string): void {
+  console.log(`Obteniendo detalles para cliente: ${nombreCliente}`);
+  
+  this.clienteService.getDetallesClientes(nombreCliente).subscribe({
+    next: (data: Detalles[]) => {
+      console.log('Datos recibidos del API de detalles:', data);
+      if (data && data.length > 0) {
+        const detallesCliente = data[0];
+        console.log('Objeto de detalles completo:', detallesCliente);
+        this.clienteRucSeleccionado = detallesCliente.ruc || 'RUC no disponible';
+        this.totalEquiposCliente = detallesCliente.nro_equipos;
+        console.log(`RUC obtenido de API para ${nombreCliente}: ${this.clienteRucSeleccionado}, Total equipos: ${this.totalEquiposCliente}`);
+      } else {
+        this.clienteRucSeleccionado = 'RUC no disponible';
+        this.totalEquiposCliente = 0;
+        console.log(`No se encontraron detalles en la API para ${nombreCliente}`);
+      }
+      this.cdr.detectChanges();
+    },
+    error: (error) => {
+      console.error(`Error al obtener detalles del cliente ${nombreCliente}:`, error);
+      this.clienteRucSeleccionado = 'Error al obtener RUC';
+      this.totalEquiposCliente = 0;
+      this.cdr.detectChanges();
+    }
+  });
+}
+
+private cargarTodosEquiposCliente(Razon: string): void {
+  console.log(`Cargando todos los equipos para el cliente: ${Razon}`);
+  
+  // Primero, buscar todas las plantas del cliente
+  let locales: any[] = [];
+  
+  // Buscar el cliente en todas las categorías más eficientemente
+  for (const category of this.clienteCategories) {
+    if (!category.clientes) continue;
+    
+    const cliente = category.clientes.find((c: Cliente) => c.nombre === Razon);
+    if (cliente) {
+      locales = cliente.locales || [];
+      break;
+    }
+  }
+  
+  if (locales.length === 0) {
+    console.log(`El cliente ${Razon} no tiene locales definidos.`);
+    this.todosEquiposCliente = [];
+    this.equiposOriginales = [];
+    this.equiposFiltrados = [];
+    this.mostrandoTodosEquipos = true;
+    this.cdr.detectChanges();
+    return;
+  }
+  
+  // Mostrar indicador de carga
+  this.todosEquiposCliente = [];
+  this.mostrandoTodosEquipos = true;
+  
+  // Cargar solo los primeros 5 locales inicialmente
+  const maxInitialLocals = Math.min(5, locales.length);
+  let processedLocals = 0;
+  this.todosEquiposCliente = [];
+  
+  // Para cada local, cargar sus equipos
+  for (let i = 0; i < maxInitialLocals; i++) {
+    this.cargarEquiposLocal(Razon, locales[i].local, (equipos) => {
+      processedLocals++;
+      
+      // Actualizar UI cuando se carguen los primeros locales
+      if (processedLocals === maxInitialLocals) {
+        this.equiposOriginales = [...this.todosEquiposCliente];
+        this.equiposFiltrados = [...this.equiposOriginales];
+        this.filtrarEquipos();
+        this.cdr.detectChanges();
+        
+        // Cargar el resto de locales en segundo plano
+        if (locales.length > maxInitialLocals) {
+          setTimeout(() => {
+            for (let j = maxInitialLocals; j < locales.length; j++) {
+              this.cargarEquiposLocal(Razon, locales[j].local, (nuevosEquipos) => {
+                // Cada vez que se cargan más equipos, actualizar la UI
+                this.equiposOriginales = [...this.todosEquiposCliente];
+                this.equiposFiltrados = [...this.equiposOriginales];
+                this.filtrarEquipos();
+                this.cdr.detectChanges();
+              });
+            }
+          }, 500);
+        }
+      }
+    });
+  }
+}
+
+private cargarEquiposLocal(razon: string, local: string, callback: (equipos: Equipos[]) => void): void {
+  this.frecuenciaServicioService.getFrecuenciaServicio(local).subscribe({
+    next: (equipos: Equipos[]) => {
+      const equiposConLocal = equipos.map(equipo => ({ ...equipo, local }));
+      this.todosEquiposCliente = [...this.todosEquiposCliente, ...equiposConLocal];
+      callback(equiposConLocal);
+    },
+    error: (error) => {
+      console.error(`Error al cargar equipos para el local ${local}:`, error);
+      callback([]);
+    }
+  });
+}
+
+filtrarEquipos(): void {
+  // Determinar la fuente de datos para filtrar
+  const source = this.mostrandoTodosEquipos ? this.todosEquiposCliente : this.equiposOriginales;
+  
+  this.equiposFiltrados = source.filter(equipo => {
+    const coincideEstado = !this.estadoSeleccionado || equipo.estado === this.estadoSeleccionado;
+    const coincideMantenimiento = !this.estadoMantenimientoSeleccionado || equipo.estadoMantenimiento === this.estadoMantenimientoSeleccionado;
+    const coincideContacto = !this.busquedaContacto || 
+                           equipo.contacto.toLowerCase().includes(this.busquedaContacto.toLowerCase()) ||
+                           (equipo.email && equipo.email.toLowerCase().includes(this.busquedaContacto.toLowerCase()));
+    
+    return coincideEstado && coincideMantenimiento && coincideContacto;
+  });
+  
+  // Si hay un campo de ordenamiento activo, mantener el orden
+  if (this.campoOrdenamiento) {
+    this.ordenarPor(this.campoOrdenamiento);
+  }
+  
+  this.paginaActual = 1; // Regresar a la primera página después de filtrar
+}
 
   // Función de filtrado de clientes mejorada
   filtrarClientes(): void {
@@ -392,58 +616,108 @@ export class FrecuenciaServiciosComponent implements OnInit {
     let categoriesWithMatches: any[] = [];
     let firstMatch: { category: any, cliente: Cliente, index: number } | null = null;
     
-    // Filtrar y encontrar coincidencias
-    this.clientesCategoriesOriginal.forEach(category => {
-      const clientesCoincidentes = category.clientes.filter((cliente: Cliente) => 
-        cliente.nombre.toLowerCase().includes(terminoBusqueda)
-      );
-      
-      if (clientesCoincidentes.length > 0) {
-        // Guardar la primera coincidencia para navegación automática
-        if (!firstMatch) {
-          firstMatch = {
-            category: category,
-            cliente: clientesCoincidentes[0],
-            index: category.clientes.findIndex((c: Cliente) => c === clientesCoincidentes[0])
+    // Precargar RUCs para todos los clientes si no están ya cargados
+    this.precargarRUCs().then(() => {
+      // Filtrar y encontrar coincidencias
+      this.clientesCategoriesOriginal.forEach(category => {
+        let clientesCoincidentes = category.clientes.filter((cliente: Cliente) => {
+          // Buscar por nombre
+          const coincideNombre = cliente.nombre.toLowerCase().includes(terminoBusqueda);
+          
+          // Buscar por RUC si está disponible
+          const coincideRUC = cliente.ruc && cliente.ruc.toLowerCase().includes(terminoBusqueda);
+          
+          return coincideNombre || coincideRUC;
+        });
+        
+        if (clientesCoincidentes.length > 0) {
+          // Guardar la primera coincidencia para navegación automática
+          if (!firstMatch) {
+            firstMatch = {
+              category: category,
+              cliente: clientesCoincidentes[0],
+              index: category.clientes.findIndex((c: Cliente) => c === clientesCoincidentes[0])
+            };
+          }
+          
+          // Crear copia de la categoría solo con clientes coincidentes
+          const categoryWithMatches = {
+            ...category,
+            clientes: clientesCoincidentes
           };
+          
+          categoriesWithMatches.push(categoryWithMatches);
         }
+      });
+      
+      // Actualizar el árbol con los resultados filtrados
+      if (categoriesWithMatches.length > 0) {
+        this.clienteCategories = categoriesWithMatches;
+        this.cdr.detectChanges();
         
-        // Crear copia de la categoría solo con clientes coincidentes
-        const categoryWithMatches = {
-          ...category,
-          clientes: clientesCoincidentes
-        };
-        
-        categoriesWithMatches.push(categoryWithMatches);
+        // Expandir categorías con coincidencias
+        setTimeout(() => {
+          this.expandirCategorias();
+          
+          // Resaltar los clientes coincidentes
+          this.resaltarCoincidencias(terminoBusqueda);
+          
+          // Navegar a la primera coincidencia si existe
+          if (firstMatch) {
+            this.navegarACliente(firstMatch);
+          }
+        }, 100);
+      } else {
+        // No hay coincidencias, mostrar mensaje
+        this.clienteCategories = [{
+          title: "Sin coincidencias",
+          clientes: []
+        }];
+        this.cdr.detectChanges();
       }
     });
+  }
+
+  private async precargarRUCs(): Promise<void> {
+    // Crear un arreglo para almacenar las promesas
+    const promesas: Promise<void>[] = [];
     
-    // Actualizar el árbol con los resultados filtrados
-    if (categoriesWithMatches.length > 0) {
-      this.clienteCategories = categoriesWithMatches;
-      this.cdr.detectChanges();
-      
-      // Expandir categorías con coincidencias
-      setTimeout(() => {
-        this.expandirCategorias();
-        
-        // Resaltar los clientes coincidentes
-        this.resaltarCoincidencias(terminoBusqueda);
-        
-        // Navegar a la primera coincidencia si existe
-        if (firstMatch) {
-          this.navegarACliente(firstMatch);
+    // Para cada categoría y cada cliente que no tenga RUC, cargar el RUC
+    for (const category of this.clientesCategoriesOriginal) {
+      for (const cliente of category.clientes) {
+        // Solo precargar si no tiene RUC ya asignado
+        if (!cliente.ruc) {
+          const promesa = new Promise<void>((resolve) => {
+            this.clienteService.getDetallesClientes(cliente.nombre).subscribe({
+              next: (data: Detalles[]) => {
+                if (data && data.length > 0) {
+                  // Asignar el RUC al cliente
+                  cliente.ruc = data[0].ruc || '';
+                }
+                resolve();
+              },
+              error: () => {
+                resolve(); // Resolvemos la promesa incluso si hay error
+              }
+            });
+          });
+          
+          promesas.push(promesa);
         }
-      }, 100);
-    } else {
-      // No hay coincidencias, mostrar mensaje (opcional)
-      this.clienteCategories = [{
-        title: "Sin coincidencias",
-        clientes: []
-      }];
-      this.cdr.detectChanges();
+      }
+    }
+    
+    // Esperar a que todas las promesas se resuelvan (con un límite de tiempo para evitar esperas muy largas)
+    try {
+      // Establecer un timeout de 3 segundos para evitar bloquear la UI
+      const timeoutPromise = new Promise<void>((resolve) => setTimeout(resolve, 3000));
+      await Promise.race([Promise.all(promesas), timeoutPromise]);
+    } catch (err) {
+      console.error('Error al precargar RUCs:', err);
     }
   }
+
+  
   
   // Método para expandir todas las categorías que contienen coincidencias
   private expandirCategorias(): void {
@@ -462,31 +736,64 @@ export class FrecuenciaServiciosComponent implements OnInit {
     
     elementos.forEach(el => {
       const textoOriginal = el.textContent || '';
+      const cliente = this.encontrarClientePorNombre(textoOriginal.trim());
       
-      if (textoOriginal.toLowerCase().includes(terminoBusqueda)) {
-        // Solo modificamos el texto del nodo, no los hijos (iconos, etc.)
-        el.childNodes.forEach(node => {
-          if (node.nodeType === Node.TEXT_NODE) {
-            const texto = node.textContent || '';
-            const indice = texto.toLowerCase().indexOf(terminoBusqueda);
-            
-            if (indice >= 0) {
-              const span = document.createElement('span');
-              span.innerHTML = texto.substring(0, indice) +
-                               '<span class="cliente-highlight">' + 
-                               texto.substring(indice, indice + terminoBusqueda.length) + 
-                               '</span>' + 
-                               texto.substring(indice + terminoBusqueda.length);
-              
-              // Reemplazamos el nodo de texto con nuestro span
-              if (node.parentNode) {
-                node.parentNode.replaceChild(span, node);
+      // Si tenemos el cliente y coincide por nombre o RUC
+      if (cliente) {
+        const coincidePorNombre = cliente.nombre.toLowerCase().includes(terminoBusqueda);
+        const coincidePorRUC = cliente.ruc && cliente.ruc.toLowerCase().includes(terminoBusqueda);
+        
+        if (coincidePorNombre || coincidePorRUC) {
+          // Si coincide por nombre, resaltamos en el nombre
+          if (coincidePorNombre) {
+            el.childNodes.forEach(node => {
+              if (node.nodeType === Node.TEXT_NODE) {
+                const texto = node.textContent || '';
+                const indice = texto.toLowerCase().indexOf(terminoBusqueda);
+                
+                if (indice >= 0) {
+                  const span = document.createElement('span');
+                  span.innerHTML = texto.substring(0, indice) +
+                                  '<span class="cliente-highlight">' + 
+                                  texto.substring(indice, indice + terminoBusqueda.length) + 
+                                  '</span>' + 
+                                  texto.substring(indice + terminoBusqueda.length);
+                  
+                  // Reemplazamos el nodo de texto con nuestro span
+                  if (node.parentNode) {
+                    node.parentNode.replaceChild(span, node);
+                  }
+                }
               }
-            }
+            });
           }
-        });
+          
+          // Si coincide por RUC pero no por nombre, añadimos un badge con el RUC
+          if (coincidePorRUC && !coincidePorNombre && cliente.ruc) {
+            // Añadir el RUC como badge cerca del nombre del cliente
+            const rucBadge = document.createElement('span');
+            rucBadge.className = 'ruc-badge cliente-highlight';
+            rucBadge.textContent = `RUC: ${cliente.ruc}`;
+            el.appendChild(rucBadge);
+          }
+        }
       }
     });
+  }
+
+  private encontrarClientePorNombre(nombreCompleto: string): Cliente | null {
+    // Eliminar posibles contadores o texto adicional
+    const nombreLimpio = nombreCompleto.replace(/\(\d+\)$/, '').trim();
+    
+    for (const category of this.clientesCategoriesOriginal) {
+      for (const cliente of category.clientes) {
+        if (cliente.nombre === nombreLimpio || nombreCompleto.includes(cliente.nombre)) {
+          return cliente;
+        }
+      }
+    }
+    
+    return null;
   }
   
   // Método para limpiar resaltados previos
@@ -530,14 +837,19 @@ export class FrecuenciaServiciosComponent implements OnInit {
   }
 
   trackByCliente(index: number, item: Cliente): string {
-    return item.nombre;
+    return item.nombre || index.toString();
   }
-
+  
   trackByPlanta(index: number, item: Planta): string {
-    return item.nombre;
+    return item.nombre || index.toString();
   }
-
+  
   trackByEquipo(index: number, item: Equipos): string {
-    return item.referencia;
+    return item.referencia || item.modelo || index.toString();
   }
+  
+  trackByCategoryFn(index: number, item: any): string {
+    return item.title || index.toString();
+  }
+  
 }
