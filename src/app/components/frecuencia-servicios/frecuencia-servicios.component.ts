@@ -200,11 +200,27 @@ export class FrecuenciaServiciosComponent implements OnInit {
         }
       });
       
+      // Precargar RUCs para los primeros clientes visibles
+      this.precargarRUCsIniciales();
+      
       // Actualizar la UI una sola vez después de procesar todo
       this.cdr.markForCheck();
     });
     
     this.subscriptions.push(subscription);
+  }
+
+  private precargarRUCsIniciales(): void {
+    // Solo precargar para las primeras dos categorías para mejorar rendimiento inicial
+    const clientesVisibles = this.clientesCategoriesOriginal
+      .slice(0, 2) // Solo primeras dos categorías
+      .flatMap(cat => cat.clientes)
+      .slice(0, 20); // Limitar a 20 clientes
+      
+    if (clientesVisibles.length > 0) {
+      console.log(`Precargando RUCs para ${clientesVisibles.length} clientes iniciales`);
+      this.clienteService.precargarRUCsEficiente(clientesVisibles);
+    }
   }
 
   private loadCategoryData(category: {name: string, title: string}): void {
@@ -591,6 +607,19 @@ private cargarEquiposFrecuenciaServicio(nombrePlanta: string): void {
   
     const terminoBusqueda = this.busquedaClientes.toLowerCase().trim();
     
+    // Si es posible que sea un RUC (comienza con número), intentar precargarlo primero
+    if (/^\d/.test(terminoBusqueda)) {
+      this.precargarRUCsParaBusqueda(terminoBusqueda);
+      
+      // Dar un poco de tiempo para que se carguen los RUCs
+      setTimeout(() => this.ejecutarBusquedaYNavegacion(terminoBusqueda), 300);
+    } else {
+      // Para búsquedas que no parecen RUC, ejecutar inmediatamente
+      this.ejecutarBusquedaYNavegacion(terminoBusqueda);
+    }
+  }
+
+  private ejecutarBusquedaYNavegacion(terminoBusqueda: string): void {
     // Realizar la búsqueda
     this.filtrarClientes();
     
@@ -604,15 +633,25 @@ private cargarEquiposFrecuenciaServicio(nombrePlanta: string): void {
         if (!category.clientes) continue;
         
         for (const cliente of category.clientes) {
-          // Evitar errores si cliente es undefined o null
           if (!cliente) continue;
           
-          // Buscar por nombre
-          const coincideNombre = cliente.nombre && cliente.nombre.toLowerCase().includes(terminoBusqueda);
-          // Buscar por RUC
-          const coincideRUC = cliente.ruc && cliente.ruc.toLowerCase().includes(terminoBusqueda);
+          // Verificar coincidencia por nombre
+          const nombreCoincide = cliente.nombre && 
+            cliente.nombre.toLowerCase().includes(terminoBusqueda);
           
-          if (coincideNombre || coincideRUC) {
+          // Verificar coincidencia por RUC
+          const rucCoincide = cliente.ruc && 
+            cliente.ruc.toLowerCase().includes(terminoBusqueda);
+          
+          // Verificar coincidencia por contacto
+          const contactoCoincide = cliente.contacto && 
+            cliente.contacto.toLowerCase().includes(terminoBusqueda);
+          
+          // Si coincide por cualquier campo, es un resultado válido
+          if (nombreCoincide || rucCoincide || contactoCoincide) {
+            console.log('Cliente encontrado:', cliente.nombre);
+            console.log('RUC del cliente:', cliente.ruc);
+            
             clienteEncontrado = cliente;
             categoriaEncontrada = category;
             break;
@@ -624,18 +663,18 @@ private cargarEquiposFrecuenciaServicio(nombrePlanta: string): void {
       
       // Si encontramos un cliente, navegar a él
       if (clienteEncontrado && clienteEncontrado.nombre) {
-        // Primero asegurar que la categoría esté expandida
+        // Expandir la categoría primero
         this.expandirCategoria(categoriaEncontrada.title);
         
-        // Luego navegar al cliente
+        // Esperar un poco para que la UI se actualice
         setTimeout(() => {
           this.navegarAClientePorNombre(clienteEncontrado!.nombre);
-        }, 300); // Dar tiempo a que se expanda la categoría
+        }, 300);
       } else {
         console.log('No se encontró ningún cliente que coincida con la búsqueda');
-        // Opcionalmente mostrar un mensaje al usuario
+        // Opcionalmente mostrar un mensaje visual al usuario
       }
-    }, 300); // Dar tiempo a que se actualice el DOM con los resultados filtrados
+    }, 300);
   }
 
   private navegarAClientePorNombre(nombreCliente: string): void {
@@ -644,6 +683,7 @@ private cargarEquiposFrecuenciaServicio(nombrePlanta: string): void {
       const element = item.nativeElement as HTMLDetailsElement;
       const summaryText = element.querySelector('summary')?.textContent || '';
       
+      // La comprobación más precisa para identificar el cliente correcto
       if (summaryText.includes(nombreCliente)) {
         // Abrir el details del cliente
         element.open = true;
@@ -658,9 +698,13 @@ private cargarEquiposFrecuenciaServicio(nombrePlanta: string): void {
             // Añadir clase para resaltar temporalmente
             summaryElement.classList.add('cliente-encontrado');
             
-            // Eliminar la clase después de 3 segundos
+            // Añadir una animación más visible para destacar el resultado encontrado
+            this.renderer.addClass(summaryElement, 'cliente-encontrado-animacion');
+            
+            // Eliminar las clases después de 3 segundos
             setTimeout(() => {
               summaryElement.classList.remove('cliente-encontrado');
+              this.renderer.removeClass(summaryElement, 'cliente-encontrado-animacion');
             }, 3000);
             
             // Opcionalmente, seleccionar el cliente sin enviar el evento
@@ -938,13 +982,13 @@ filtrarEquipos(): void {
     
     // Si la búsqueda está vacía, restaurar la estructura original
     if (!this.busquedaClientes || this.busquedaClientes.trim() === '') {
-      // Usar referencias en lugar de copias profundas costosas
+      // Usar referencias en lugar de copias profundas
       this.clienteCategories = this.clientesCategoriesOriginal.map(category => ({
         ...category,
         clientes: [...category.clientes]
       }));
       
-      this.cdr.markForCheck(); // Usar markForCheck en lugar de detectChanges
+      this.cdr.markForCheck();
       
       setTimeout(() => {
         this.colapsarTodosReset();
@@ -955,16 +999,34 @@ filtrarEquipos(): void {
     
     const terminoBusqueda = this.busquedaClientes.toLowerCase().trim();
     
-    // Usar los RUCs ya cargados en lugar de hacer nuevas peticiones
-    // Filtrar directamente desde los datos originales
+    // PASO 1: Precargar los RUCs para los clientes cuando se busca por algo que podría ser un RUC
+    // Esto arregla el problema de búsqueda por RUC
+    if (/^\d/.test(terminoBusqueda)) { // Si comienza con número, podría ser un RUC
+      this.precargarRUCsParaBusqueda(terminoBusqueda);
+    }
+    
+    // PASO 2: Realizar filtrado inmediato con lo que ya tenemos
+    this.realizarFiltrado(terminoBusqueda);
+  }
+
+  private realizarFiltrado(terminoBusqueda: string): void {
     const categoriesWithMatches = this.clientesCategoriesOriginal
-    .map(category => {
-      // CORRECCIÓN: Añadir tipo explícito para el parámetro cliente
-      const clientesCoincidentes = category.clientes.filter((cliente: Cliente) => {
-        return cliente.nombre?.toLowerCase().includes(terminoBusqueda) ||
-               cliente.ruc?.toLowerCase().includes(terminoBusqueda) ||
-               cliente.contacto?.toLowerCase().includes(terminoBusqueda);
-      });
+      .map(category => {
+        const clientesCoincidentes = category.clientes.filter((cliente: Cliente) => {
+          // Búsqueda por nombre
+          const nombreCoincide = cliente.nombre ? 
+            cliente.nombre.toLowerCase().includes(terminoBusqueda) : false;
+          
+          // Búsqueda por RUC (mejorada)
+          const rucCoincide = cliente.ruc ? 
+            cliente.ruc.toLowerCase().includes(terminoBusqueda) : false;
+          
+          // Búsqueda por contacto
+          const contactoCoincide = cliente.contacto ? 
+            cliente.contacto.toLowerCase().includes(terminoBusqueda) : false;
+          
+          return nombreCoincide || rucCoincide || contactoCoincide;
+        });
         
         if (clientesCoincidentes.length > 0) {
           return {
@@ -995,6 +1057,58 @@ filtrarEquipos(): void {
       }];
       this.cdr.markForCheck();
       this.isBuscando = false;
+    }
+  }
+  
+  // Nuevo método para precargar RUCs de forma eficiente durante la búsqueda
+  private precargarRUCsParaBusqueda(terminoBusqueda: string): void {
+    console.log('Precargando RUCs para búsqueda numérica:', terminoBusqueda);
+    
+    // Obtener todos los clientes de todas las categorías
+    const todosLosClientes = this.clientesCategoriesOriginal.flatMap(cat => cat.clientes);
+    
+    // Filtrar clientes que no tienen RUC y podrían coincidir con la búsqueda por nombre
+    // Esto reduce el número de llamadas a la API
+    const clientesPosibles = todosLosClientes.filter(cliente => 
+      !cliente.ruc && 
+      cliente.nombre && 
+      cliente.nombre.toLowerCase().includes(terminoBusqueda)
+    );
+    
+    // Si hay clientes que podrían necesitar RUC, precargarlos
+    if (clientesPosibles.length > 0) {
+      // Limitar a máximo 10 clientes para no sobrecargar
+      const clientesPrioritarios = clientesPosibles.slice(0, 10);
+      
+      console.log(`Solicitando RUCs para ${clientesPrioritarios.length} clientes potenciales`);
+      
+      // Para cada cliente potencial, obtener su RUC
+      clientesPrioritarios.forEach(cliente => {
+        this.clienteService.getDetallesClientesConFallback(cliente.nombre)
+          .subscribe({
+            next: (detalles) => {
+              if (detalles && detalles.length > 0 && detalles[0].ruc) {
+                // Actualizar el RUC del cliente en todas las categorías
+                this.clientesCategoriesOriginal.forEach(category => {
+                  const clienteEnCategoria = category.clientes.find((c: { nombre: any; }) => c.nombre === cliente.nombre);
+                  if (clienteEnCategoria) {
+                    clienteEnCategoria.ruc = detalles[0].ruc;
+                    console.log(`Actualizado RUC para ${cliente.nombre}: ${detalles[0].ruc}`);
+                  }
+                });
+                
+                // Volver a aplicar el filtro si seguimos en la misma búsqueda
+                if (this.busquedaClientes && 
+                    this.busquedaClientes.toLowerCase().includes(terminoBusqueda)) {
+                  this.realizarFiltrado(terminoBusqueda);
+                }
+              }
+            },
+            error: (error) => {
+              console.error(`Error al cargar RUC para ${cliente.nombre}:`, error);
+            }
+          });
+      });
     }
   }
 
