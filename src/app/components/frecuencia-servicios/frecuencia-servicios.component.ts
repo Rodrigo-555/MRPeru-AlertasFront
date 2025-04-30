@@ -75,77 +75,63 @@ export class FrecuenciaServiciosComponent implements OnInit {
   }
 
   mostrarEquiposPlanta(event: Event, razon: string, nombreLocal: string): void {
-    // Es importante detener la propagación primero para evitar problemas con el details
-    event.preventDefault();
-    event.stopPropagation();
+    event.stopPropagation(); // Evitar interferencias con otros <details>
     
-    // Encuentra el elemento details
+    console.log(`Mostrando equipos para cliente: ${razon}, local: ${nombreLocal}`);
+    
+    // Obtener el elemento details donde se hizo clic
     const detailsElement = (event.target as HTMLElement).closest('details');
     
-    // Reset equipment selection when changing plants
+    // Reiniciar selección de equipo
     this.equipoSeleccionado = null;
     this.mostrandoDetalleEquipo = false;
     
-    // Nueva lógica de toggle: comprobamos si estamos en la misma planta y cliente
-    if (this.clienteSeleccionado === razon && this.localSeleccionado === nombreLocal) {
-      console.log('Mismo cliente y local, haciendo toggle');
+    // Comprobar si es el mismo cliente o uno diferente
+    if (this.clienteSeleccionado !== razon) {
+      // Si es un cliente diferente, resetear todo
+      this.equiposOriginales = [];
+      this.equiposFiltrados = [];
+      this.todosEquiposCliente = [];
+      this.paginaActual = 1;
       
-      // Invertimos el estado del details manualmente
-      if (detailsElement) {
-        detailsElement.open = !detailsElement.open;
-        
-        // Si lo estamos cerrando, volvemos a mostrar todos los equipos del cliente
-        if (!detailsElement.open) {
-          this.localSeleccionado = null;
-          this.EquiposPlantas = [];
-          this.mostrandoTodosEquipos = true;
-          
-          // Volver a mostrar todos los equipos del cliente
-          this.equiposOriginales = [...this.todosEquiposCliente];
-          this.equiposFiltrados = [...this.equiposOriginales];
-          this.filtrarEquipos();
-          
-          console.log('Details cerrado, mostrando todos los equipos del cliente');
-        } else {
-          // Si lo estamos abriendo, nos aseguramos de cargar los equipos de esta planta
-          this.cargarEquiposPlantas(razon, nombreLocal);
-          this.cargarEquiposFrecuenciaServicio(nombreLocal);
-          this.localSeleccionado = nombreLocal;
-          this.mostrandoTodosEquipos = false;
-          console.log('Details abierto, mostrando solo equipos de esta planta');
-        }
-      }
-    } else {
-      // Es una planta o cliente diferente
-      console.log('Diferente cliente o local, cargando nuevos equipos');
-      
-      // Si es un cliente diferente, necesitamos actualizar todo
-      if (this.clienteSeleccionado !== razon) {
-        this.clienteSeleccionado = razon;
-        this.obtenerDetallesCliente(razon);
-        this.cargarTodosEquiposCliente(razon);
-        this.mostrandoTodosEquipos = true;
-      }
-      
-      // Establecemos el nuevo local y filtramos los equipos para mostrar solo los de esta planta
-      this.localSeleccionado = nombreLocal;
-      this.mostrandoTodosEquipos = false;
-      
-      // Aseguramos que el details esté abierto
-      if (detailsElement) {
-        detailsElement.open = true;
-      }
-      
-      // Cargamos los equipos de esta planta
-      this.cargarEquiposPlantas(razon, nombreLocal);
-      this.cargarEquiposFrecuenciaServicio(nombreLocal);
+      this.clienteSeleccionado = razon;
+      this.obtenerDetallesCliente(razon);
+      this.cargarTodosEquiposCliente(razon);
     }
     
-    // Agregamos logs después de establecer las variables
+    // Actualizar la selección del local
+    this.localSeleccionado = nombreLocal;
+    this.mostrandoTodosEquipos = false;
+    
+    // Forzar la apertura del details (siempre mostrará el contenido)
+    if (detailsElement) {
+      detailsElement.open = true;
+    }
+    
+    // Cargar los equipos para este local
+    this.EquiposPlantas = []; // Resetear array para mostrar indicador de carga
+    this.cargarEquiposPlantas(razon, nombreLocal);
+    
+    // Cargar datos para la tabla
+    this.equiposOriginales = [];
+    this.equiposFiltrados = [];
+    this.paginaActual = 1;
+    this.cargarEquiposFrecuenciaServicio(nombreLocal);
+    
     console.log('Estado final - Cliente:', this.clienteSeleccionado);
     console.log('Estado final - Local:', this.localSeleccionado);
-    console.log('Mostrando todos los equipos:', this.mostrandoTodosEquipos);
+    
+    this.cdr.detectChanges();
+    
+    // Opcional: Hacer scroll a la tabla para que el usuario vea los resultados
+    setTimeout(() => {
+      const tableElement = document.querySelector('.table-container');
+      if (tableElement) {
+        tableElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 300);
   }
+  
 
   private loadClientes(): void {
     // No cargar si ya tenemos datos (para evitar recargas innecesarias)
@@ -251,39 +237,43 @@ export class FrecuenciaServiciosComponent implements OnInit {
   }
 
   expandirTodo(): void {
-    // Implementar con limitador para evitar operaciones DOM masivas
-    const maxNodes = 50;
-    let processedNodes = 0;
-    
-    // Expandir categorías primero
-    this.categoryDetails.forEach(item => {
-      if (processedNodes < maxNodes) {
-        (item.nativeElement as HTMLDetailsElement).open = true;
-        processedNodes++;
-      }
-    });
-    
-    // Si hay espacio, expandir clientes
+    // Primero expandir categorías con un pequeño retraso entre operaciones DOM
     setTimeout(() => {
-      processedNodes = 0;
-      this.clienteDetails.forEach(item => {
-        if (processedNodes < maxNodes) {
+      this.categoryDetails.forEach((item, index) => {
+        setTimeout(() => {
           (item.nativeElement as HTMLDetailsElement).open = true;
-          processedNodes++;
-        }
+        }, index * 20); // Pequeño retraso para no bloquear el UI
       });
-    }, 100);
+      
+      // Luego expandir clientes con un retraso
+      setTimeout(() => {
+        this.clienteDetails.forEach((item, index) => {
+          setTimeout(() => {
+            (item.nativeElement as HTMLDetailsElement).open = true;
+          }, index * 10); // Retraso aún menor para clientes
+        });
+      }, 300); // Esperar un poco para que se completen las categorías primero
+    });
   }
   
   // Función para colapsar todos los nodos
   colapsarTodo(): void {
+    // Primero cerrar clientes
     setTimeout(() => {
-      this.clienteDetails.forEach(item => {
-        (item.nativeElement as HTMLDetailsElement).open = false;
+      this.clienteDetails.forEach((item, index) => {
+        setTimeout(() => {
+          (item.nativeElement as HTMLDetailsElement).open = false;
+        }, index * 5);
       });
-      this.categoryDetails.forEach(item => {
-        (item.nativeElement as HTMLDetailsElement).open = false;
-      });
+      
+      // Luego cerrar categorías
+      setTimeout(() => {
+        this.categoryDetails.forEach((item, index) => {
+          setTimeout(() => {
+            (item.nativeElement as HTMLDetailsElement).open = false;
+          }, index * 10);
+        });
+      }, 200);
     });
   }
 
@@ -459,7 +449,17 @@ export class FrecuenciaServiciosComponent implements OnInit {
 
 
 private cargarEquiposFrecuenciaServicio(nombrePlanta: string): void {
-  this.frecuenciaServicioService.getFrecuenciaServicio(nombrePlanta).subscribe({
+  // Mostrar algún indicador de carga o limpiar la tabla actual
+  if (!this.mostrandoTodosEquipos || this.equiposOriginales.length === 0) {
+    this.equiposOriginales = [];
+    this.equiposFiltrados = [];
+  }
+
+  // Corregir el tipo: convertir null a undefined si es necesario
+  const clienteRazon = this.clienteSeleccionado || undefined;
+
+  // Asegurarse de pasar el cliente seleccionado como segundo parámetro
+  this.frecuenciaServicioService.getFrecuenciaServicio(nombrePlanta, clienteRazon).subscribe({
     next: (data: Equipos[]) => {
       // Si tenemos todos los equipos del cliente cargados y estamos filtrando por planta
       if (this.mostrandoTodosEquipos && this.todosEquiposCliente.length > 0) {
@@ -533,71 +533,38 @@ private cargarEquiposFrecuenciaServicio(nombrePlanta: string): void {
   }
 
   seleccionarCliente(event: Event, clienteNombre: string): void {
-    // Prevenir comportamiento predeterminado si el evento existe
-    if (event) {
-      event.preventDefault();
-      event.stopPropagation();
-    }
+    event.stopPropagation();
     
+    console.log(`Seleccionado cliente: ${clienteNombre}`);
+    
+    // Si es el mismo cliente que ya está seleccionado, no hacemos nada extra
     if (this.clienteSeleccionado === clienteNombre) {
-      // Si es el mismo cliente, hacemos un toggle
-      const detailsElement = event ? (event.target as HTMLElement)?.closest('details') : null;
-      if (detailsElement) {
-        detailsElement.open = !detailsElement.open;
-        
-        if (!detailsElement.open) {
-          // Si cerramos el detalle, limpiamos todo
-          this.clienteSeleccionado = null;
-          this.clienteRucSeleccionado = null;
-          this.localSeleccionado = null;
-          this.equiposOriginales = [];
-          this.equiposFiltrados = [];
-          this.todosEquiposCliente = [];
-          this.EquiposPlantas = [];
-          this.mostrandoTodosEquipos = false;
-          this.equipoSeleccionado = null;
-          this.mostrandoDetalleEquipo = false;
-        } else {
-          // Si abrimos el detalle, mostramos todos los equipos
-          this.cargarTodosEquiposCliente(clienteNombre);
-          this.mostrandoTodosEquipos = true;
-        }
-      } else {
-        // Si no hay elemento details, solo cargamos los equipos
-        this.cargarTodosEquiposCliente(clienteNombre);
-        this.mostrandoTodosEquipos = true;
-      }
-    } else {
-      // Es un nuevo cliente
-      // Reset equipment selection
-      this.equipoSeleccionado = null;
-      this.mostrandoDetalleEquipo = false;
-      
-      // Actualizar la selección de cliente
-      this.clienteSeleccionado = clienteNombre;
-      
-      // Limpiar la selección de local
-      this.localSeleccionado = null;
-      this.EquiposPlantas = [];
-      
-      // Usar la API para obtener el RUC del cliente
-      this.obtenerDetallesCliente(clienteNombre);
-      
-      // Cargar todos los equipos del cliente
-      this.cargarTodosEquiposCliente(clienteNombre);
-      
-      // Activar mostrandoTodosEquipos cuando seleccionamos un cliente
-      this.mostrandoTodosEquipos = true;
-      
-      // Opcional: abrir el details del cliente
-      const detailsElement = event ? (event.target as HTMLElement)?.closest('details') : null;
-      if (detailsElement) {
-        detailsElement.open = true;
-      }
+      return;
     }
     
-    console.log(`Cliente seleccionado: ${clienteNombre}, Mostrando todos equipos: ${this.mostrandoTodosEquipos}`);
+    // Limpiar datos previos antes de cargar los nuevos
+    this.equiposOriginales = [];
+    this.equiposFiltrados = [];
+    this.todosEquiposCliente = [];
+    this.paginaActual = 1;
+    
+    // Actualizar la selección con el nuevo cliente
+    this.clienteSeleccionado = clienteNombre;
+    this.localSeleccionado = null;
+    this.EquiposPlantas = [];
+    this.equipoSeleccionado = null;
+    this.mostrandoDetalleEquipo = false;
+    
+    // Obtener detalles del cliente y cargar sus equipos
+    this.obtenerDetallesCliente(clienteNombre);
+    this.cargarTodosEquiposCliente(clienteNombre);
+    
+    // Activar mostrandoTodosEquipos cuando seleccionamos un cliente
+    this.mostrandoTodosEquipos = true;
+    
+    this.cdr.detectChanges(); // Forzar actualización de la vista
   }
+  
 
   buscarYNavegar(): void {
     // Validar que tenemos un término de búsqueda
@@ -721,12 +688,20 @@ private cargarEquiposFrecuenciaServicio(nombrePlanta: string): void {
       return;
     }
     
+    // Limpiar datos previos
+    this.equiposOriginales = [];
+    this.equiposFiltrados = [];
+    this.todosEquiposCliente = [];
+    this.paginaActual = 1;
+    
     // Actualizar la selección de cliente
     this.clienteSeleccionado = clienteNombre;
     
     // Limpiar la selección de local
     this.localSeleccionado = null;
     this.EquiposPlantas = [];
+    this.equipoSeleccionado = null;
+    this.mostrandoDetalleEquipo = false;
     
     // Usar la API para obtener el RUC del cliente
     this.obtenerDetallesCliente(clienteNombre);
@@ -737,8 +712,9 @@ private cargarEquiposFrecuenciaServicio(nombrePlanta: string): void {
     // Activar mostrandoTodosEquipos cuando seleccionamos un cliente
     this.mostrandoTodosEquipos = true;
     
-    // No necesitamos manipular el elemento details aquí porque ya lo hicimos antes
     console.log(`Cliente seleccionado sin evento: ${clienteNombre}, Mostrando todos equipos: ${this.mostrandoTodosEquipos}`);
+    
+    this.cdr.detectChanges(); // Forzar actualización de la vista
   }
 
   private expandirCategoria(nombreCategoria: string): void {
@@ -754,58 +730,42 @@ private cargarEquiposFrecuenciaServicio(nombrePlanta: string): void {
 
 // Nuevo método para obtener detalles del cliente desde la API
 private obtenerDetallesCliente(Razon: string): void {
-  // Verificar que el nombre del cliente no esté vacío
-  if (!Razon || Razon.trim() === '') {
-    console.warn('Intento de obtener detalles con nombre de cliente vacío');
+  // Buscar el cliente en la caché primero
+  const clienteEncontrado = this.encontrarClientePorNombre(Razon);
+  if (clienteEncontrado && clienteEncontrado.ruc) {
+    this.clienteRucSeleccionado = clienteEncontrado.ruc;
     return;
   }
   
-  console.log(`Obteniendo detalles para cliente: ${Razon}`);
-  
-  // Usar el método con fallback para mayor robustez
-  this.clienteService.getDetallesClientesConFallback(Razon)
-    .subscribe({
-      next: (data: Detalles[]) => {
-        if (!data || data.length === 0) {
-          console.log(`No se encontraron detalles para ${Razon}`);
-          this.clienteRucSeleccionado = 'Sin información';
-          return;
+  // Si no lo encontramos o no tiene RUC, consultarlo al servicio
+  this.clienteService.getDetallesClientes(Razon).subscribe({
+    next: (detalles) => {
+      if (detalles && detalles.length > 0) {
+        this.clienteRucSeleccionado = detalles[0]?.ruc || 'Sin RUC registrado';
+        
+        // Actualizar el RUC en la caché local si es posible
+        if (clienteEncontrado) {
+          clienteEncontrado.ruc = this.clienteRucSeleccionado;
         }
-        
-        // Actualizar el RUC
-        this.clienteRucSeleccionado = data[0]?.ruc || 'Sin información';
-        console.log(`RUC obtenido para ${Razon}: ${this.clienteRucSeleccionado}`);
-        
-        // Opcional: si el backend devuelve más información, actualizar otros campos
-        
-        // Forzar la detección de cambios
-        this.cdr.detectChanges();
-      },
-      error: (error) => {
-        console.error(`Error al obtener detalles del cliente ${Razon}:`, error);
-        this.clienteRucSeleccionado = 'Error al obtener datos';
-        this.cdr.detectChanges();
-        
-        // Opcional: mostrar mensaje de error en la UI
+      } else {
+        this.clienteRucSeleccionado = 'Sin RUC registrado';
       }
-    });
+      this.cdr.detectChanges();
+    },
+    error: (error) => {
+      console.error('Error al obtener detalles del cliente:', error);
+      this.clienteRucSeleccionado = 'Error al cargar RUC';
+      this.cdr.detectChanges();
+    }
+  });
 }
 
 private cargarTodosEquiposCliente(Razon: string): void {
-  // Si ya tenemos los datos para este cliente, no volver a cargarlos
-  if (
-    this.clienteSeleccionado === Razon && 
-    this.todosEquiposCliente.length > 0 && 
-    this.todosEquiposCliente[0]?.local
-  ) {
-    console.log(`Usando datos en caché para ${Razon}`);
-    this.equiposOriginales = [...this.todosEquiposCliente];
-    this.equiposFiltrados = [...this.equiposOriginales];
-    this.filtrarEquipos();
-    this.mostrandoTodosEquipos = true;
-    this.cdr.markForCheck();
-    return;
-  }
+  // Limpiar datos previos
+  this.todosEquiposCliente = [];
+  this.equiposOriginales = [];
+  this.equiposFiltrados = [];
+  this.paginaActual = 1;
   
   console.log(`Cargando todos los equipos para el cliente: ${Razon}`);
   
@@ -830,7 +790,6 @@ private cargarTodosEquiposCliente(Razon: string): void {
   }
   
   // Usar loading state para indicar carga
-  this.todosEquiposCliente = [];
   this.mostrandoTodosEquipos = true;
   
   // Cargar máximo 3 locales a la vez para no saturar la API
@@ -848,7 +807,7 @@ private cargarTodosEquiposCliente(Razon: string): void {
     
     const requests = [];
     for (let i = inicio; i < fin; i++) {
-      requests.push(this.frecuenciaServicioService.getFrecuenciaServicio(locales[i].local)
+      requests.push(this.frecuenciaServicioService.getFrecuenciaServicio(locales[i].local, Razon)
         .pipe(
           map(equipos => ({
             local: locales[i].local,
@@ -863,6 +822,12 @@ private cargarTodosEquiposCliente(Razon: string): void {
     }
     
     const subscription = forkJoin(requests).subscribe(resultados => {
+      // Verificar si todavía estamos cargando datos para el mismo cliente
+      if (this.clienteSeleccionado !== Razon) {
+        console.log('Cliente cambió durante la carga, cancelando actualizaciones');
+        return;
+      }
+      
       resultados.forEach(resultado => {
         const equiposConLocal = resultado.equipos.map(equipo => ({ ...equipo, local: resultado.local }));
         this.todosEquiposCliente = [...this.todosEquiposCliente, ...equiposConLocal];
@@ -881,6 +846,9 @@ private cargarTodosEquiposCliente(Razon: string): void {
         setTimeout(() => cargarLote(fin), 300); // Pequeño retraso entre lotes
       } else {
         console.log(`Carga completa. Total equipos: ${equiposAgregados}`);
+        // Asegurarse de que la bandera se mantiene verdadera al finalizar
+        this.mostrandoTodosEquipos = true;
+        this.cdr.markForCheck();
       }
     });
     
@@ -891,8 +859,9 @@ private cargarTodosEquiposCliente(Razon: string): void {
   cargarLote(0);
 }
 
+
 private cargarEquiposLocal(razon: string, local: string, callback: (equipos: Equipos[]) => void): void {
-  this.frecuenciaServicioService.getFrecuenciaServicio(local).subscribe({
+  this.frecuenciaServicioService.getFrecuenciaServicio(local, razon).subscribe({
     next: (equipos: Equipos[]) => {
       const equiposConLocal = equipos.map(equipo => ({ ...equipo, local }));
       this.todosEquiposCliente = [...this.todosEquiposCliente, ...equiposConLocal];
@@ -931,8 +900,10 @@ filtrarEquipos(): void {
     if (this.busquedaContacto) {
       const busqueda = this.busquedaContacto.toLowerCase();
       filtrados = filtrados.filter(equipo => 
-        equipo.contacto.toLowerCase().includes(busqueda) || 
-        (equipo.email && equipo.email.toLowerCase().includes(busqueda))
+        (equipo.contacto && equipo.contacto.toLowerCase().includes(busqueda)) || 
+        (equipo.email && equipo.email.toLowerCase().includes(busqueda)) ||
+        (equipo.referencia && equipo.referencia.toLowerCase().includes(busqueda)) ||
+        (equipo.serie && equipo.serie.toLowerCase().includes(busqueda))
       );
     }
     
@@ -947,11 +918,23 @@ filtrarEquipos(): void {
       const coincideEstado = !this.estadoSeleccionado || equipo.estado === this.estadoSeleccionado;
       const coincideMantenimiento = !this.estadoMantenimientoSeleccionado || 
                                equipo.estadoMantenimiento === this.estadoMantenimientoSeleccionado;
-      const coincideContacto = !this.busquedaContacto || 
-                           equipo.contacto.toLowerCase().includes(this.busquedaContacto.toLowerCase()) ||
-                           (equipo.email && equipo.email.toLowerCase().includes(this.busquedaContacto.toLowerCase()));
       
-      return coincideEstado && coincideMantenimiento && coincideContacto;
+      // Variable para almacenar resultado de búsqueda - debe ser boolean
+      let coincideBusqueda = true;
+      
+      if (this.busquedaContacto) {
+        const busqueda = this.busquedaContacto.toLowerCase();
+        // Asegurar que el resultado sea siempre boolean
+        coincideBusqueda = !!(
+          (equipo.contacto && equipo.contacto.toLowerCase().includes(busqueda)) ||
+          (equipo.email && equipo.email.toLowerCase().includes(busqueda)) ||
+          (equipo.referencia && equipo.referencia.toLowerCase().includes(busqueda)) ||
+          (equipo.serie && equipo.serie.toLowerCase().includes(busqueda)) ||
+          (equipo.modelo && equipo.modelo.toLowerCase().includes(busqueda))
+        );
+      }
+      
+      return coincideEstado && coincideMantenimiento && coincideBusqueda;
     });
   }
   

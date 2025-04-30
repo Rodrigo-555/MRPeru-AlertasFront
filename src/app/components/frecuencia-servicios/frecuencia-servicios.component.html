@@ -56,7 +56,7 @@
                   <ng-container *ngIf="category.clientes?.length > 0; else noClientes">
                     <ng-container *ngFor="let cliente of category.clientes; trackBy: trackByCliente">
                       <details #clienteDetails class="cliente-details">
-                        <summary (click)="seleccionarCliente($event, cliente.nombre)">
+                        <summary (click)="$event.stopPropagation(); seleccionarCliente($event, cliente.nombre)">
                           <div class="summary-content">
                             <img src="assets/img/user-icon.png" alt="Cliente" class="icono-arbol">
                             {{ cliente.nombre }}
@@ -65,27 +65,44 @@
                         </summary>
                         <div class="local-container">
                           <ng-container *ngFor="let local of cliente.locales; trackBy: trackByPlanta">
-                            <details class="local-details">
-                              <summary
-                                class="planta-item"
-                                (click)="mostrarEquiposPlanta($event, cliente.nombre, local.local); $event.preventDefault()">
-                                <img src="assets/img/building-icon.png" alt="Local" class="icono-arbol">
-                                {{ local.local }}
+                            <details class="local-details" 
+                                    (click)="$event.stopPropagation(); mostrarEquiposPlanta($event, cliente.nombre, local.local)"
+                                    [class.local-selected]="localSeleccionado === local.local && clienteSeleccionado === cliente.nombre">
+                              <summary>
+                                <div class="summary-content">
+                                  <img src="assets/img/building-icon.png" alt="Local" class="icono-arbol">
+                                  {{ local.local }}
+                                </div>
                               </summary>
-                              <!-- Sección para equipos -->
-                              <div *ngIf="localSeleccionado === local.local && clienteSeleccionado === cliente.nombre" class="equipos-container">
-                                <ng-container *ngIf="EquiposPlantas.length > 0; else cargandoEquipos">
-                                  <div 
-                                    *ngFor="let equipo of EquiposPlantas" 
-                                    class="equipo-item"
-                                    [class.equipo-selected]="equipoSeleccionado === equipo"
-                                    (click)="seleccionarEquipo(equipo)">
-                                    <img src="assets/img/machine-icon.png" alt="Equipo" class="icono-arbol">
-                                    {{ equipo }}
-                                  </div>
+                              <!-- Contenido de equipos que siempre se expande al hacer clic -->
+                              <div class="equipos-container">
+                                <ng-container *ngIf="localSeleccionado === local.local && clienteSeleccionado === cliente.nombre; else localNoSeleccionado">
+                                  <ng-container *ngIf="EquiposPlantas.length > 0; else cargandoEquipos">
+                                    <div 
+                                      *ngFor="let equipo of EquiposPlantas" 
+                                      class="equipo-item"
+                                      [class.equipo-selected]="equipoSeleccionado === equipo"
+                                      (click)="$event.stopPropagation(); seleccionarEquipo(equipo)">
+                                      <img src="assets/img/machine-icon.png" alt="Equipo" class="icono-arbol">
+                                      {{ equipo }}
+                                    </div>
+                                  </ng-container>
                                 </ng-container>
+                                <ng-template #localNoSeleccionado>
+                                  <div class="cargando-equipos">
+                                    <div class="spinner-container">
+                                      <div class="spinner"></div>
+                                    </div>
+                                    <span>Cargando...</span>
+                                  </div>
+                                </ng-template>
                                 <ng-template #cargandoEquipos>
-                                  <div class="cargando-equipos">Sin equipos disponibles</div>
+                                  <div class="cargando-equipos">
+                                    <div class="spinner-container">
+                                      <div class="spinner"></div>
+                                    </div>
+                                    <span>Cargando equipos...</span>
+                                  </div>
                                 </ng-template>
                               </div>
                             </details>
@@ -190,7 +207,7 @@
                     Email <i class="sort-icon" [ngClass]="getSortIcon('email')"></i>
                   </th>
                   <th (click)="ordenarPor('fechaProximoServicio')">
-                    Fecha de Envío <i class="sort-icon" [ngClass]="getSortIcon('fechaProximoServicio')"></i>
+                    Próximo Servicio <i class="sort-icon" [ngClass]="getSortIcon('fechaProximoServicio')"></i>
                   </th>
                   <th (click)="ordenarPor('referencia')">
                     Referencia <i class="sort-icon" [ngClass]="getSortIcon('referencia')"></i>

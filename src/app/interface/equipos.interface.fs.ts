@@ -3,12 +3,16 @@ export interface Equipos {
   contacto: string;
   email: string;
   fechaProximoServicio?: Date;
-  referencia:string;
+  referencia: string;
   modelo: string;
   serie: string;
   tipoEquipo: string;
   estado: string;
   estadoMantenimiento: string;
+  // Campos adicionales para cálculos internos (no se mostrarán en la UI)
+  horasDeTrabajo?: number;
+  frecuenciaServicio?: string;
+  ultimaFechaServicio?: Date;
 }
 
 export interface Planta {

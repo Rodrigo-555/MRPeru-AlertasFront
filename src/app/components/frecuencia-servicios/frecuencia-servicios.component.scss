@@ -93,15 +93,16 @@ h2 {
 }
 
 /* ===== MEJORAS PARA EL CONTENT-TREE ===== */
+/* ===== MEJORAS PARA EL CONTENT-TREE ===== */
 .content-tree {
   border: none;
-  border-radius: 12px; 
+  border-radius: 16px; /* Aumentado el radio */
   padding: 0;
-  height: 600px; /* Altura fija */
+  height: 650px; /* Más altura para mostrar más contenido */
   width: 100%;
   overflow-y: auto;
   background: #ffffff;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08); /* Sombra más pronunciada */
   
   /* Estilo mejorado del scrollbar */
   &::-webkit-scrollbar {
@@ -131,11 +132,11 @@ h2 {
   }
 
   .icono-arbol {
-    width: 18px;
-    height: 18px;
+    width: 20px; /* Íconos ligeramente más grandes */
+    height: 20px;
     margin-right: 10px;
     vertical-align: middle;
-    filter: drop-shadow(0 1px 1px rgba(0,0,0,0.1));
+    filter: drop-shadow(0 2px 2px rgba(0,0,0,0.1)); /* Mejor sombra para los íconos */
     transition: transform 0.2s;
   }
 
@@ -144,15 +145,15 @@ h2 {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 15px 20px;
-    background: linear-gradient(to right, #0062cc, #007bff);
+    padding: 18px 20px; /* Padding aumentado */
+    background: linear-gradient(135deg, #0062cc, #007bff); /* Gradiente diagonal más moderno */
     color: white;
-    border-top-left-radius: 12px;
-    border-top-right-radius: 12px;
+    border-top-left-radius: 16px;
+    border-top-right-radius: 16px;
     font-weight: 600;
     letter-spacing: 0.5px;
     margin-bottom: 5px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15); /* Sombra más pronunciada */
     position: sticky;
     top: 0;
     z-index: 10;
@@ -160,14 +161,15 @@ h2 {
     .collapse-all, .expand-all {
       cursor: pointer;
       font-size: 13px;
-      padding: 4px 10px;
-      background-color: rgba(255,255,255,0.15);
+      padding: 6px 12px; /* Más padding para mejor clic */
+      background-color: rgba(255,255,255,0.2); /* Más visible */
       border-radius: 30px;
-      transition: all 0.2s;
+      transition: all 0.3s;
       
       &:hover {
-        background-color: rgba(255,255,255,0.3);
-        transform: translateY(-1px);
+        background-color: rgba(255,255,255,0.4);
+        transform: translateY(-2px);
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
       }
     }
 
@@ -179,7 +181,7 @@ h2 {
 
   /* Estilo mejorado para los elementos details */
   details {
-    margin: 6px 0;
+    margin: 8px 0;
     padding: 0;
     border-left: 3px solid transparent;
     transition: all 0.3s;
@@ -188,21 +190,22 @@ h2 {
     &[open] {
       animation: slideDown 0.3s ease-in-out;
       border-left: 3px solid #007bff;
-      padding-bottom: 4px;
+      padding-bottom: 6px;
       
       & > summary {
-        margin-bottom: 8px;
-        background: rgba(0, 123, 255, 0.05);
+        margin-bottom: 10px;
+        background: rgba(0, 123, 255, 0.08);
         font-weight: 700;
+        box-shadow: 0 3px 6px rgba(0, 0, 0, 0.07); /* Sombra al estar abierto */
       }
     }
 
     summary {
       cursor: pointer;
       font-weight: 600;
-      padding: 12px 10px;
+      padding: 14px 12px; /* Más padding vertical */
       transition: all 0.3s;
-      border-radius: 6px;
+      border-radius: 10px; /* Más redondeado */
       display: flex;
       align-items: center;
       margin: 2px 0;
@@ -219,7 +222,7 @@ h2 {
         width: 20px;
         transition: transform 0.3s, color 0.3s;
         color: #007bff;
-        font-size: 16px;
+        font-size: 18px; /* Más grande */
         position: absolute;
         left: 10px;
       }
@@ -248,17 +251,18 @@ h2 {
     summary:hover {
       color: #0056b3;
       background-color: rgba(0, 123, 255, 0.06);
-      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      box-shadow: 0 3px 5px rgba(0,0,0,0.07); /* Sombra al hacer hover */
+      transform: translateY(-1px); /* Efecto de elevación */
     }
     
     /* Mejorar anidación y sangría */
     details details {
-      margin-left: 12px;
+      margin-left: 16px;
     }
     
     /* Tercer nivel anidado */
     details details details {
-      margin-left: 12px;
+      margin-left: 16px;
     }
   }
 
@@ -266,28 +270,30 @@ h2 {
   .planta-item {
     cursor: pointer;
     font-weight: normal;
-    padding: 10px 10px 10px 50px;
+    padding: 12px 12px 12px 50px; /* Más padding vertical */
     margin-left: 0;
-    border-radius: 6px;
-    transition: all 0.2s;
+    border-radius: 10px; /* Más redondeado */
+    transition: all 0.3s; /* Transición más fluida */
     display: flex;
     align-items: center;
-    border-left: 2px solid transparent;
+    border-left: 3px solid transparent;
     background-color: #f8fbff;
     position: relative;
   
     &:hover {
       background-color: #f0f7ff;
       color: #0056b3;
-      border-left: 2px solid #80bdff;
+      border-left: 3px solid #80bdff;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.08);
+      transform: translateY(-1px);
     }
   
     &.selected {
       background-color: #e6f2ff;
       color: #0056b3;
       font-weight: 600;
-      border-left: 2px solid #007bff;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      border-left: 3px solid #007bff;
+      box-shadow: 0 3px 6px rgba(0,0,0,0.1);
     }
   }
   
@@ -296,12 +302,13 @@ h2 {
     font-size: 12px;
     background: #edf5ff;
     color: #0056b3;
-    padding: 3px 8px;
-    border-radius: 12px;
+    padding: 4px 10px; /* Más padding */
+    border-radius: 20px; /* Más redondeado */
     margin-left: auto; /* Alinea a la derecha */
-    font-weight: normal;
-    min-width: 24px;
+    font-weight: 600; /* Más negrita */
+    min-width: 28px;
     text-align: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05); /* Sutil sombra */
   }
   
   /* Estilos para categorías */
@@ -309,24 +316,86 @@ h2 {
     background-color: #f0f4f8;
     font-weight: 700;
     border-bottom: 1px solid #e0e6ed;
+    
+    .summary-content {
+      font-size: 15px; /* Texto más grande para categorías */
+    }
   }
   
   /* Estilos para clientes */
   .cliente-details > summary {
     background-color: #f5f9ff;
+    
+    .summary-content {
+      font-size: 14px; /* Texto más grande para clientes */
+    }
   }
   
   /* Mejorar espacio entre niveles del árbol */
   .cliente-container {
-    padding-left: 10px;
+    padding-left: 12px;
   }
   
   .local-container {
-    padding-left: 15px;
+    padding-left: 18px;
   }
   
-  .equipo-container {
-    padding-left: 20px;
+  .equipos-container {
+    margin: 8px 0 8px 18px;
+    border-left: 2px dashed rgba(0, 123, 255, 0.25);
+    padding: 8px 0;
+    border-radius: 0 0 0 10px;
+    background-color: rgba(240, 247, 255, 0.5);
+    transition: all 0.3s ease;
+    animation: fadeInSlideDown 0.3s ease-out;
+  }
+
+  @keyframes fadeInSlideDown {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+      max-height: 0;
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+      max-height: 1000px;
+    }
+  }
+}
+
+/* Equipo item mejorado */
+.equipo-item {
+  cursor: pointer;
+  font-weight: normal;
+  padding: 10px 10px 10px 40px;
+  margin: 6px 10px 6px 15px; /* Más margen para mejor espaciado */
+  border-radius: 8px;
+  transition: all 0.25s;
+  display: flex;
+  align-items: center;
+  border-left: 2px solid transparent;
+  background-color: #fafcff;
+
+  &:hover {
+    background-color: #f0f7ff;
+    color: #0056b3;
+    border-left: 2px solid #80bdff;
+    transform: translateY(-1px); /* Efecto de elevación */
+    box-shadow: 0 2px 4px rgba(0,0,0,0.07);
+  }
+
+  &.equipo-selected {
+    background-color: #e6f2ff;
+    color: #0056b3;
+    font-weight: 600;
+    border-left: 2px solid #007bff;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  }
+  
+  /* Evitar que el clic se propague al contenedor */
+  &:active {
+    transform: translateY(0);
   }
 }
 
@@ -392,6 +461,29 @@ h2 {
   background-color: #f8f9fa;
   border-radius: 6px;
   border-left: 2px dashed #dee2e6;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Spinner de carga */
+.spinner-container {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+
+  .spinner {
+    border: 2px solid rgba(0, 123, 255, 0.2);
+    border-top-color: #007bff;
+    border-radius: 50%;
+    width: 100%;
+    height: 100%;
+    animation: spin 1s linear infinite;
+  }
+  
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
 }
 
 .equipos-container {
@@ -811,6 +903,34 @@ h2 {
   margin-bottom: 20px;
   border-left: 4px solid #007bff;
   box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.local-details {
+  margin: 6px 0;
+  transition: all 0.3s ease;
+
+  &.local-selected > summary {
+    background-color: #e6f2ff;
+    color: #0056b3;
+    font-weight: 600;
+    border-left: 3px solid #007bff;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+  }
+  
+  /* Estilizar el summary dentro del local */
+  > summary {
+    cursor: pointer;
+    transition: all 0.3s;
+    border-radius: 10px;
+    border-left: 3px solid transparent;
+    
+    &:hover {
+      background-color: #f0f7ff;
+      color: #0056b3;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      transform: translateY(-1px);
+    }
+  }
 }
 
 .client-help-text {
