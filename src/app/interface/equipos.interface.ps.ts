@@ -1,5 +1,6 @@
 export interface Equipos {
   cliente: string;
+  email: string;
   planta: string; 
   referencia: string;
   serie: string;

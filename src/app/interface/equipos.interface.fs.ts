@@ -6,6 +6,8 @@ export interface Equipos {
   referencia: string;
   modelo: string;
   serie: string;
+  horometro?: number;
+  horometroUltimoServicio?: number;  // Asegúrate de que este campo existe
   tipoEquipo: string;
   estado: string;
   estadoMantenimiento: string;

@@ -1,0 +1,104 @@
+<div class="email-alertas-container">
+    <h3>Envío de Alertas por Correo</h3>
+    
+    <div class="alertas-info">
+      <p *ngIf="clienteSeleccionado">Cliente: <strong>{{ clienteSeleccionado }}</strong></p>
+      <p *ngIf="localSeleccionado">Local: <strong>{{ localSeleccionado }}</strong></p>
+      <p *ngIf="equipoSeleccionado">Equipo: <strong>{{ equipoSeleccionado }}</strong></p>
+      
+      <!-- Mostrar información de emails disponibles -->
+      <div class="email-destino-info" *ngIf="emailEquipoSeleccionado || emailsDestino.length > 0">
+        <p *ngIf="emailEquipoSeleccionado" class="email-info">
+          <span class="email-label">Email destino:</span> 
+          <span class="email-value">{{ emailEquipoSeleccionado }}</span>
+        </p>
+        <p *ngIf="!emailEquipoSeleccionado && emailsDestino.length > 0" class="email-info">
+          <span class="email-label">Emails disponibles:</span>
+          <span class="email-value">{{ emailsDestino.length }} contactos</span>
+          <span class="email-tooltip" title="{{ emailsDestino.join(', ') }}">Ver todos</span>
+        </p>
+      </div>
+    </div>
+    
+    <div class="debug-section" *ngIf="equipoSeleccionado">
+        <button class="btn-debug" (click)="verificarDatosEquipo()">
+          Verificar datos del equipo
+        </button>
+        <div class="debug-info" *ngIf="datosDebug">
+          <pre>{{ datosDebug | json }}</pre>
+        </div>
+    </div>
+  
+    <div class="config-dias">
+      <label for="diasAnticipacion">Días de anticipación para alertas:</label>
+      <input type="number" id="diasAnticipacion" [(ngModel)]="diasAnticipacion" min="1" max="30">
+    </div>
+  
+    <div class="acciones-envio">
+      <!-- Botón para enviar alertas a todos los equipos del cliente -->
+      <button 
+        class="btn-envio btn-cliente" 
+        [disabled]="!clienteSeleccionado || enviandoCorreo || emailsDestino.length === 0"
+        (click)="enviarAlertasEquipos()">
+        <i class="icon-cliente"></i>
+        Enviar alertas a todo el cliente
+      </button>
+  
+      <!-- Botón para enviar alertas a equipos del local -->
+      <button 
+        class="btn-envio btn-local" 
+        [disabled]="!localSeleccionado || enviandoCorreo || emailsDestino.length === 0"
+        (click)="enviarAlertasLocal()">
+        <i class="icon-local"></i>
+        Enviar alertas al local
+      </button>
+  
+      <!-- Botón para enviar alerta a equipo específico -->
+      <button 
+        class="btn-envio btn-equipo" 
+        [disabled]="!equipoSeleccionado || enviandoCorreo || !emailEquipoSeleccionado"
+        (click)="enviarAlertaEquipo()">
+        <i class="icon-equipo"></i>
+        Enviar alerta al equipo seleccionado
+      </button>
+  
+      <!-- Botón para mostrar/ocultar formulario de prueba -->
+      <button 
+        class="btn-envio btn-prueba" 
+        (click)="toggleFormularioPrueba()">
+        <i class="icon-test"></i>
+        {{ mostrarFormularioPrueba ? 'Ocultar prueba' : 'Enviar correo de prueba' }}
+      </button>
+    </div>
+  
+    <!-- Formulario para enviar correo de prueba -->
+    <div class="formulario-prueba" *ngIf="mostrarFormularioPrueba">
+      <h4>Enviar correo de prueba</h4>
+      <div class="input-group">
+        <label for="correoPrueba">Correo electrónico:</label>
+        <input type="email" id="correoPrueba" [(ngModel)]="correoPrueba" 
+               placeholder="{{ emailEquipoSeleccionado || 'ejemplo@correo.com' }}">
+        <button 
+          class="btn-enviar-prueba" 
+          [disabled]="(!correoPrueba && !emailEquipoSeleccionado) || enviandoCorreo" 
+          (click)="enviarPruebaCorreo()">
+          Enviar prueba
+        </button>
+      </div>
+      <!-- Nota informativa sobre el correo pre-rellenado -->
+      <div class="email-nota" *ngIf="emailEquipoSeleccionado">
+        <small>* Se utilizará el correo del equipo seleccionado si no ingresa una dirección diferente</small>
+      </div>
+    </div>
+  
+    <!-- Indicador de carga -->
+    <div class="loading-indicator" *ngIf="enviandoCorreo">
+      <div class="spinner"></div>
+      <p>Enviando correo, por favor espere...</p>
+    </div>
+  
+    <!-- Mensaje de resultado -->
+    <div class="mensaje-resultado" *ngIf="mensajeResultado" [ngClass]="mensajeResultado.tipo">
+      {{ mensajeResultado.mensaje }}
+    </div>
+  </div>

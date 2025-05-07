@@ -7,13 +7,13 @@ import { ClienteService } from '../../service/Clientes/cliente.service';
 import { FrecuenciaServicioService } from '../../service/FrecuenciaServicio/frecuencia-servicio.service';
 import { Cliente } from '../../interface/clientes.interface.';
 import { EquiposServiceService } from '../../service/Equipos/equipos-service.service';
-import { Detalles } from '../../interface/detalles.interface';
 import { catchError, forkJoin, map, of, Subscription } from 'rxjs';
+import { EmailAlertasComponent } from '../email-alertas/email-alertas.component';
 
 @Component({
   selector: 'app-frecuencia-servicios',
   standalone: true,
-  imports: [CommonModule, HttpClientModule, FormsModule],
+  imports: [CommonModule, HttpClientModule, FormsModule, EmailAlertasComponent],
   templateUrl: './frecuencia-servicios.component.html',
   styleUrls: ['./frecuencia-servicios.component.scss']
 })
@@ -32,6 +32,8 @@ export class FrecuenciaServiciosComponent implements OnInit {
   equiposOriginales: Equipos[] = [];
   equiposFiltrados: Equipos[] = [];
 
+  cargandoEquiposLocal: boolean = false;
+
   // Variables para filtros
   estadoSeleccionado: string = '';
   estadoMantenimientoSeleccionado: string = '';
@@ -47,6 +49,9 @@ export class FrecuenciaServiciosComponent implements OnInit {
   // Añadir estas propiedades a la clase
   private paginasCache: number[] | null = null;
   private paginasCacheKey: string = '';
+
+  private equiposPorLocalMap: { [key: string]: string[] } = {};
+  private cargandoEquiposPorLocal: { [key: string]: boolean } = {};
 
   campoOrdenamiento: string = '';
   ordenAscendente: boolean = true;
@@ -75,20 +80,22 @@ export class FrecuenciaServiciosComponent implements OnInit {
   }
 
   mostrarEquiposPlanta(event: Event, razon: string, nombreLocal: string): void {
-    event.stopPropagation(); // Evitar interferencias con otros <details>
+    event.preventDefault();
+    event.stopPropagation();
     
     console.log(`Mostrando equipos para cliente: ${razon}, local: ${nombreLocal}`);
     
-    // Obtener el elemento details donde se hizo clic
     const detailsElement = (event.target as HTMLElement).closest('details');
     
-    // Reiniciar selección de equipo
-    this.equipoSeleccionado = null;
-    this.mostrandoDetalleEquipo = false;
+    if (detailsElement) {
+      detailsElement.open = !detailsElement.open;
+    }
     
-    // Comprobar si es el mismo cliente o uno diferente
+    if (detailsElement && !detailsElement.open) {
+      return;
+    }
+    
     if (this.clienteSeleccionado !== razon) {
-      // Si es un cliente diferente, resetear todo
       this.equiposOriginales = [];
       this.equiposFiltrados = [];
       this.todosEquiposCliente = [];
@@ -99,37 +106,59 @@ export class FrecuenciaServiciosComponent implements OnInit {
       this.cargarTodosEquiposCliente(razon);
     }
     
-    // Actualizar la selección del local
+    // Guardar el local seleccionado anteriormente para detectar cambios
+    const localAnterior = this.localSeleccionado;
     this.localSeleccionado = nombreLocal;
     this.mostrandoTodosEquipos = false;
     
-    // Forzar la apertura del details (siempre mostrará el contenido)
-    if (detailsElement) {
-      detailsElement.open = true;
+    // Usar la clave combinada para identificar únicamente el local
+    const localKey = `${razon}:${nombreLocal}`;
+    
+    // Verificar que estamos cambiando de local realmente
+    const cambioDeLocal = localAnterior !== nombreLocal;
+    
+    // Limpiar EquiposPlantas solo si cambiamos de local
+    if (cambioDeLocal) {
+      console.log(`Cambiando de local ${localAnterior} a ${nombreLocal}`);
+      // Importante: Establecer explícitamente a un array vacío primero
+      this.EquiposPlantas = [];
+      this.cdr.detectChanges(); // Forzar actualización de UI antes de seguir
     }
     
-    // Cargar los equipos para este local
-    this.EquiposPlantas = []; // Resetear array para mostrar indicador de carga
-    this.cargarEquiposPlantas(razon, nombreLocal);
+    // Mostrar los equipos desde el caché si ya están cargados
+    if (this.equiposPorLocalMap[localKey] !== undefined) {
+      console.log(`Usando equipos en caché para ${nombreLocal} (${this.equiposPorLocalMap[localKey].length} equipos)`);
+      // Usar el operador || [] para garantizar que siempre sea un array
+      this.EquiposPlantas = this.equiposPorLocalMap[localKey] || [];
+      this.cargandoEquiposLocal = false;
+    } else {
+      // Si no están en caché, cargarlos
+      console.log(`Equipos no encontrados en caché para ${nombreLocal}, cargando...`);
+      this.cargandoEquiposLocal = true;
+      this.EquiposPlantas = []; // Asegurarse de que esté vacío mientras carga
+      this.cargandoEquiposPorLocal[localKey] = true;
+      this.cargarEquiposPlantas(razon, nombreLocal, localKey);
+    }
     
-    // Cargar datos para la tabla
     this.equiposOriginales = [];
     this.equiposFiltrados = [];
     this.paginaActual = 1;
     this.cargarEquiposFrecuenciaServicio(nombreLocal);
     
-    console.log('Estado final - Cliente:', this.clienteSeleccionado);
-    console.log('Estado final - Local:', this.localSeleccionado);
+    this.cdr.detectChanges(); // Forzar actualización de la UI al final
+  }
+
+  clickLocalSummary(event: Event, razon: string, nombreLocal: string): void {
+    // Prevenir la propagación pero no el comportamiento predeterminado de details
+    event.stopPropagation();
     
-    this.cdr.detectChanges();
+    // Si ya está seleccionado, dejamos que el comportamiento nativo del details funcione
+    if (this.localSeleccionado === nombreLocal && this.clienteSeleccionado === razon) {
+      return;
+    }
     
-    // Opcional: Hacer scroll a la tabla para que el usuario vea los resultados
-    setTimeout(() => {
-      const tableElement = document.querySelector('.table-container');
-      if (tableElement) {
-        tableElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
-    }, 300);
+    // Si es un nuevo local, controlamos el comportamiento
+    this.mostrarEquiposPlanta(event, razon, nombreLocal);
   }
   
 
@@ -430,22 +459,46 @@ export class FrecuenciaServiciosComponent implements OnInit {
     return this.paginasCache;
   }
 
-  private cargarEquiposPlantas(Razon: string, NombreLocal: string): void {
-  console.log(`Cargando equipos para Razon: ${Razon}, Local: ${NombreLocal}`);
-  this.EquiposPlantas = [];
-  
-  this.equipoService.getEquipos(Razon, NombreLocal).subscribe({
-    next: (data: string[]) => {
-      console.log(`Recibidos ${data.length} equipos para ${Razon}, ${NombreLocal}`);
-      this.EquiposPlantas = data;
-      this.cdr.detectChanges();
-    },
-    error: (error) => {
-      console.error(`Error al cargar equipos para ${Razon}, ${NombreLocal}:`, error);
-      this.EquiposPlantas = []; 
-    }
-  });
-}
+  private cargarEquiposPlantas(Razon: string, NombreLocal: string, localKey: string): void {
+    console.log(`Cargando equipos para Razon: ${Razon}, Local: ${NombreLocal}`);
+    
+    this.equipoService.getEquipos(Razon, NombreLocal).subscribe({
+      next: (data: string[]) => {
+        console.log(`Recibidos ${data.length} equipos para ${Razon}, ${NombreLocal}`);
+        
+        // Asegurarse de que siempre guardamos un array (incluso si está vacío)
+        this.equiposPorLocalMap[localKey] = Array.isArray(data) ? [...data] : [];
+        
+        // Actualizar datos solo si este local sigue siendo el seleccionado
+        if (this.localSeleccionado === NombreLocal && this.clienteSeleccionado === Razon) {
+          this.EquiposPlantas = Array.isArray(data) ? [...data] : [];
+        }
+        
+        // Actualizar estado de carga
+        this.cargandoEquiposPorLocal[localKey] = false;
+        this.cargandoEquiposLocal = this.localSeleccionado === NombreLocal ? false : this.cargandoEquiposLocal;
+        
+        console.log(`Estado final equipos para ${NombreLocal}: ${this.EquiposPlantas.length} elementos`);
+        this.cdr.detectChanges(); // Forzar actualización de la UI
+      },
+      error: (error) => {
+        console.error(`Error al cargar equipos para ${Razon}, ${NombreLocal}:`, error);
+        
+        // Importante: guardar explícitamente como array vacío
+        this.equiposPorLocalMap[localKey] = [];
+        this.cargandoEquiposPorLocal[localKey] = false;
+        
+        // Actualizar solo si este local sigue siendo el seleccionado
+        if (this.localSeleccionado === NombreLocal && this.clienteSeleccionado === Razon) {
+          this.EquiposPlantas = [];
+          this.cargandoEquiposLocal = false;
+        }
+        
+        console.log(`Estado final equipos para ${NombreLocal} (error): 0 elementos`);
+        this.cdr.detectChanges(); // Forzar actualización de la UI
+      }
+    });
+  }
 
 
 private cargarEquiposFrecuenciaServicio(nombrePlanta: string): void {
@@ -507,16 +560,34 @@ private cargarEquiposFrecuenciaServicio(nombrePlanta: string): void {
     if (this.equipoSeleccionado === equipoId && this.mostrandoDetalleEquipo) {
       this.equipoSeleccionado = null;
       this.mostrandoDetalleEquipo = false;
-      this.cargarEquiposFrecuenciaServicio(this.localSeleccionado!);
+      if (this.localSeleccionado) {
+        this.cargarEquiposFrecuenciaServicio(this.localSeleccionado);
+      }
       return;
     }
     
     // Update selection and mark that we're showing equipment detail
     this.equipoSeleccionado = equipoId;
     this.mostrandoDetalleEquipo = true;
+    console.log(`Equipo seleccionado: ${equipoId} (sin cargar detalles)`);
     
     // Filter to show only the selected equipment
     if (this.localSeleccionado) {
+      // Use the equipment from the existing loaded data if available
+      if (this.todosEquiposCliente.length > 0) {
+        const equipoEncontrado = this.todosEquiposCliente.find(equipo => 
+          equipo.serie === equipoId || 
+          equipo.referencia === equipoId);
+        
+        if (equipoEncontrado) {
+          this.equiposOriginales = [{ ...equipoEncontrado }];
+          this.equiposFiltrados = [...this.equiposOriginales];
+          this.cdr.detectChanges();
+          return;
+        }
+      }
+      
+      // If not found in cache, try to load from server
       this.frecuenciaServicioService.getEquipoDetalle(this.localSeleccionado, equipoId)
         .subscribe({
           next: (equipo: Equipos) => {
@@ -527,6 +598,19 @@ private cargarEquiposFrecuenciaServicio(nombrePlanta: string): void {
           },
           error: (error) => {
             console.error(`Error al cargar detalles del equipo ${equipoId}:`, error);
+            
+            // Fallback: Try to find the equipment in the current filtered list
+            const equipoLocal = this.equiposOriginales.find(e => 
+              e.serie === equipoId || 
+              e.referencia === equipoId);
+              
+            if (equipoLocal) {
+              this.equiposOriginales = [{ ...equipoLocal }];
+              this.equiposFiltrados = [...this.equiposOriginales];
+              this.cdr.detectChanges();
+            } else {
+              
+            }
           }
         });
     }
@@ -903,7 +987,8 @@ filtrarEquipos(): void {
         (equipo.contacto && equipo.contacto.toLowerCase().includes(busqueda)) || 
         (equipo.email && equipo.email.toLowerCase().includes(busqueda)) ||
         (equipo.referencia && equipo.referencia.toLowerCase().includes(busqueda)) ||
-        (equipo.serie && equipo.serie.toLowerCase().includes(busqueda))
+        (equipo.serie && equipo.serie.toLowerCase().includes(busqueda)) ||
+        (equipo.modelo && equipo.modelo.toLowerCase().includes(busqueda))
       );
     }
     
@@ -924,7 +1009,7 @@ filtrarEquipos(): void {
       
       if (this.busquedaContacto) {
         const busqueda = this.busquedaContacto.toLowerCase();
-        // Asegurar que el resultado sea siempre boolean
+        // Asegurar que el resultado sea siempre boolean y buscar en todos los campos requeridos
         coincideBusqueda = !!(
           (equipo.contacto && equipo.contacto.toLowerCase().includes(busqueda)) ||
           (equipo.email && equipo.email.toLowerCase().includes(busqueda)) ||

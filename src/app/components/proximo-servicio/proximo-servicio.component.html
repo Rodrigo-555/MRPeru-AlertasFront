@@ -67,6 +67,9 @@
               <th (click)="ordenarPor('Cliente')">
                 Cliente <i class="sort-icon" [ngClass]="getSortIcon('Cliente')"></i>
               </th>
+              <th (click)="ordenarPor('Email')">
+                Email <i class="sort-icon" [ngClass]="getSortIcon('Email')"></i>
+              </th>
               <th (click)="ordenarPor('Local')">
                 Local <i class="sort-icon" [ngClass]="getSortIcon('Local')"></i>
               </th>
@@ -91,11 +94,13 @@
               <th (click)="ordenarPor('fechaProximoServicio')">
                 Fecha Próximo Servicio <i class="sort-icon" [ngClass]="getSortIcon('fechaProximoServicio')"></i>
               </th>
+              <th class="accion-column">Enviar Notificación</th>
             </tr>
           </thead>
           <tbody>
             <tr *ngFor="let equipo of equiposFiltrados | slice:(paginaActual-1)*itemsPorPagina:paginaActual*itemsPorPagina; trackBy: trackByEquipo">
               <td>{{ equipo.cliente }}</td>
+              <td>{{ equipo.email }}</td>
               <td>{{ equipo.planta }}</td>
               <td>{{ equipo.referencia }}</td>
               <td>{{ equipo.serie }}</td>
@@ -114,9 +119,38 @@
               <td [class.proxima-fecha]="esFechaProxima(equipo.fechaProximoServicio)">
                 {{ equipo.fechaProximoServicio | date: 'dd/MM/yyyy' }}
               </td>
+              <td class="accion-column">
+                <button class="btn-enviar-notificacion" 
+                        [disabled]="!tieneEmailValido(equipo)"
+                        (click)="enviarNotificacionIndividual(equipo)" 
+                        title="Enviar notificación a este equipo">
+                  <i class="fas fa-bell"></i>
+                </button>
+              </td>
             </tr>
           </tbody>
         </table>
+        
+
+        <div class="acciones-notificacion" *ngIf="equiposSeleccionados.length > 0">
+          <div class="equipos-seleccionados">
+            <span class="badge-seleccion">{{ equiposSeleccionados.length }}</span> equipos seleccionados
+          </div>
+          <button class="btn btn-primary btn-notificacion" (click)="enviarNotificacionesMultiples()">
+            <i class="fas fa-paper-plane"></i> Enviar Notificaciones ({{ equiposSeleccionados.length }})
+          </button>
+        </div>
+
+        <!-- Estado de envío de notificaciones -->
+        <div class="loading-notificacion" *ngIf="enviandoNotificaciones">
+          <div class="spinner"></div>
+          <p>Enviando notificaciones, por favor espere...</p>
+        </div>
+
+        <!-- Mensaje de resultado -->
+        <div class="mensaje-resultado" *ngIf="mensajeResultado" [ngClass]="mensajeResultado.tipo">
+          {{ mensajeResultado.mensaje }}
+        </div>
 
         <!-- Mensaje si no hay datos -->
         <ng-template #emptyTable>

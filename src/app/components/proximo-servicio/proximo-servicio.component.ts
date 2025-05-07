@@ -5,6 +5,7 @@ import { HttpClientModule } from '@angular/common/http';
 import { Equipos } from '../../interface/equipos.interface.ps';
 import { ProximoServicioService } from '../../service/ProximoServicio/proximo-servicio.service';
 import * as XLSX from 'xlsx';
+import { EmailService } from '../../service/Email/email.service';
 
 @Component({
   selector: 'app-proximo-servicio',
@@ -17,6 +18,12 @@ export class ProximoServicioComponent implements OnInit {
   // Datos de equipos
   equiposOriginales: Equipos[] = [];
   equiposFiltrados: Equipos[] = [];
+
+  // Nuevas variables para la selección y notificación
+  equiposSeleccionados: Equipos[] = [];
+  todosSeleccionados: boolean = false;
+  enviandoNotificaciones: boolean = false;
+  mensajeResultado: { tipo: 'exito' | 'error', mensaje: string } | null = null;
 
   // Variables para filtros
   fechaInicio: string = '';
@@ -43,7 +50,8 @@ export class ProximoServicioComponent implements OnInit {
   ];
 
   constructor(
-    private proximoServicioService: ProximoServicioService
+    private proximoServicioService: ProximoServicioService,
+    private emailService: EmailService
   ) {}
 
   ngOnInit() {
@@ -65,6 +73,158 @@ export class ProximoServicioComponent implements OnInit {
         console.error('Error al cargar los equipos:', error);
       }
     );
+  }
+
+  // Método para seleccionar/deseleccionar todos los equipos
+  seleccionarTodos(event: any): void {
+    const isChecked = event.target.checked;
+    this.todosSeleccionados = isChecked;
+    
+    if (isChecked) {
+      // Seleccionar todos los equipos visibles en la página actual
+      const equiposVisibles = this.equiposFiltrados.slice(
+        (this.paginaActual - 1) * this.itemsPorPagina, 
+        this.paginaActual * this.itemsPorPagina
+      );
+      
+      // Añadir solo equipos que no estén ya seleccionados
+      equiposVisibles.forEach(equipo => {
+        if (!this.equiposSeleccionados.includes(equipo)) {
+          this.equiposSeleccionados.push(equipo);
+        }
+      });
+    } else {
+      // Filtrar para quitar solo los equipos visibles actualmente
+      const equiposVisibles = new Set(
+        this.equiposFiltrados.slice(
+          (this.paginaActual - 1) * this.itemsPorPagina, 
+          this.paginaActual * this.itemsPorPagina
+        )
+      );
+      
+      this.equiposSeleccionados = this.equiposSeleccionados.filter(
+        equipo => !equiposVisibles.has(equipo)
+      );
+    }
+  }
+
+  // Método para seleccionar/deseleccionar un equipo individual
+  toggleSeleccion(equipo: Equipos): void {
+    const index = this.equiposSeleccionados.findIndex(e => 
+      e.referencia === equipo.referencia && e.serie === equipo.serie
+    );
+    
+    if (index === -1) {
+      this.equiposSeleccionados.push(equipo);
+    } else {
+      this.equiposSeleccionados.splice(index, 1);
+    }
+    
+    // Actualizar el estado del checkbox "seleccionar todos"
+    this.verificarTodosSeleccionados();
+  }
+
+  // Verificar si todos los equipos en la página actual están seleccionados
+  verificarTodosSeleccionados(): void {
+    const equiposVisibles = this.equiposFiltrados.slice(
+      (this.paginaActual - 1) * this.itemsPorPagina, 
+      this.paginaActual * this.itemsPorPagina
+    );
+    
+    this.todosSeleccionados = equiposVisibles.length > 0 && 
+      equiposVisibles.every(equipo => 
+        this.equiposSeleccionados.some(e => 
+          e.referencia === equipo.referencia && e.serie === equipo.serie
+        )
+      );
+  }
+
+  // Verificar si un equipo tiene email válido
+  tieneEmailValido(equipo: Equipos): boolean {
+    return typeof equipo.email === 'string' && equipo.email.trim() !== '' && this.validarEmail(equipo.email);
+  }
+
+  // Validar formato de email
+  validarEmail(email: string): boolean {
+    const regex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    return regex.test(email);
+  }
+
+  // Enviar notificación a un equipo individual
+  enviarNotificacionIndividual(equipo: Equipos): void {
+    if (!this.tieneEmailValido(equipo)) {
+      this.mostrarMensaje('error', 'El equipo no tiene una dirección de correo válida');
+      return;
+    }
+    
+    this.enviandoNotificaciones = true;
+    
+    this.emailService.enviarAlertaEquipo(equipo.planta, equipo.referencia, equipo.email)
+      .subscribe({
+        next: (response) => {
+          this.mostrarMensaje('exito', `Notificación enviada a: ${equipo.email}`);
+          this.enviandoNotificaciones = false;
+        },
+        error: (error) => {
+          this.mostrarMensaje('error', `Error al enviar notificación: ${error.message}`);
+          this.enviandoNotificaciones = false;
+        }
+      });
+  }
+
+  // Enviar notificación a múltiples equipos seleccionados
+  enviarNotificacionesMultiples(): void {
+    if (this.equiposSeleccionados.length === 0) {
+      this.mostrarMensaje('error', 'No hay equipos seleccionados');
+      return;
+    }
+    
+    const equiposConEmail = this.equiposSeleccionados.filter(equipo => this.tieneEmailValido(equipo));
+    
+    if (equiposConEmail.length === 0) {
+      this.mostrarMensaje('error', 'Ninguno de los equipos seleccionados tiene email válido');
+      return;
+    }
+    
+    if (equiposConEmail.length < this.equiposSeleccionados.length) {
+      this.mostrarMensaje('error', `Advertencia: ${this.equiposSeleccionados.length - equiposConEmail.length} equipos no tienen email válido y serán omitidos`);
+    }
+    
+    this.enviandoNotificaciones = true;
+    let completados = 0;
+    let errores = 0;
+    
+    // Procesar cada equipo secuencialmente para evitar problemas de sobrecarga
+    const procesarLote = (indice: number) => {
+      if (indice >= equiposConEmail.length) {
+        // Proceso completado
+        this.enviandoNotificaciones = false;
+        this.mostrarMensaje('exito', `Notificaciones enviadas: ${completados}. Errores: ${errores}`);
+        return;
+      }
+      
+      const equipo = equiposConEmail[indice];
+      
+      this.emailService.enviarAlertaEquipo(equipo.planta, equipo.referencia, equipo.email)
+        .subscribe({
+          next: () => {
+            completados++;
+            setTimeout(() => procesarLote(indice + 1), 300); // Pequeña pausa entre envíos
+          },
+          error: () => {
+            errores++;
+            setTimeout(() => procesarLote(indice + 1), 300);
+          }
+        });
+    };
+    
+    procesarLote(0);
+  }
+
+  // Mostrar mensaje de resultado
+  mostrarMensaje(tipo: 'exito' | 'error', mensaje: string): void {
+    this.mensajeResultado = { tipo, mensaje };
+    setTimeout(() => this.mensajeResultado = null, 5000);
   }
 
   // Método específico para filtrar por rango de fechas
@@ -277,6 +437,7 @@ export class ProximoServicioComponent implements OnInit {
   
   cambiarPagina(pagina: number): void {
     this.paginaActual = pagina;
+    this.verificarTodosSeleccionados();
   }
   
   getPaginas(): number[] {

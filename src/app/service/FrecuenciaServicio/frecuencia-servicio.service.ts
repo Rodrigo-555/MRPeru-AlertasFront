@@ -34,15 +34,25 @@ export class FrecuenciaServicioService {
       console.log(`Usando caché para equipos del cliente ${Razon}`);
       return of([...this.equiposClienteCache[Razon]]);
     }
-
+  
     const params = new HttpParams().set('Razon', Razon);
-    return this.http.get<Equipos[]>(`${this.apiUrl}/equipostotales`, { params }).pipe(
+    return this.http.get<any[]>(`${this.apiUrl}/equipostotales`, { params }).pipe(
       map(response => {
+        // Normalizar los datos - mapear HorometroUltimoServicio a horometro
+        const equiposNormalizados = response.map(item => {
+          return {
+            ...item,
+            // Asegurarse de que horometro siempre exista
+            horometro: item.HorometroUltimoServicio || item.horometroUltimoServicio || 0
+          };
+        });
+        
         // Almacenar en ambos cachés
-        this.equiposCache = [...response];
-        this.equiposClienteCache[Razon] = [...response];
-        return response;
-      }), catchError(this.handleError)
+        this.equiposCache = [...equiposNormalizados];
+        this.equiposClienteCache[Razon] = [...equiposNormalizados];
+        return equiposNormalizados;
+      }), 
+      catchError(this.handleError)
     );
   }
 
@@ -70,8 +80,21 @@ export class FrecuenciaServicioService {
   }
 
   getEquipoDetalle(nombrePlanta: string, equipoId: string): Observable<Equipos> {
-    return this.http.get<Equipos>(
-      `${this.apiUrl}/equipos/${encodeURIComponent(nombrePlanta)}/${encodeURIComponent(equipoId)}`
+    console.log(`Buscando equipo: ${equipoId} en planta: ${nombrePlanta}`);
+    
+    // Usar el endpoint existente para obtener todos los equipos de la planta
+    return this.getFrecuenciaServicio(nombrePlanta).pipe(
+      map(equipos => {
+        // Buscar el equipo específico en la lista de equipos de la planta
+        const equipoEncontrado = equipos.find(equipo => 
+          equipo.serie === equipoId || equipo.referencia === equipoId);
+          
+        if (!equipoEncontrado) {
+          throw new Error(`Equipo ${equipoId} no encontrado en ${nombrePlanta}`);
+        }
+        
+        return equipoEncontrado;
+      })
     );
   }
 

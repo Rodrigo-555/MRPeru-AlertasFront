@@ -36,7 +36,7 @@
         <!-- Sección Árbol de Clientes -->
         <div class="content-tree" [class.search-active]="busquedaClientes">
           <div class="tree-header">
-            <span>Árbol de Clientes</span>
+            <span>Clientes</span>
             <div>
               <span class="expand-all" (click)="expandirTodo()">Expandir</span> | 
               <span class="collapse-all" (click)="colapsarTodo()">Colapsar</span>
@@ -66,46 +66,42 @@
                         <div class="local-container">
                           <ng-container *ngFor="let local of cliente.locales; trackBy: trackByPlanta">
                             <details class="local-details" 
-                                    (click)="$event.stopPropagation(); mostrarEquiposPlanta($event, cliente.nombre, local.local)"
-                                    [class.local-selected]="localSeleccionado === local.local && clienteSeleccionado === cliente.nombre">
-                              <summary>
-                                <div class="summary-content">
-                                  <img src="assets/img/building-icon.png" alt="Local" class="icono-arbol">
-                                  {{ local.local }}
-                                </div>
-                              </summary>
-                              <!-- Contenido de equipos que siempre se expande al hacer clic -->
-                              <div class="equipos-container">
-                                <ng-container *ngIf="localSeleccionado === local.local && clienteSeleccionado === cliente.nombre; else localNoSeleccionado">
-                                  <ng-container *ngIf="EquiposPlantas.length > 0; else cargandoEquipos">
-                                    <div 
-                                      *ngFor="let equipo of EquiposPlantas" 
-                                      class="equipo-item"
-                                      [class.equipo-selected]="equipoSeleccionado === equipo"
-                                      (click)="$event.stopPropagation(); seleccionarEquipo(equipo)">
-                                      <img src="assets/img/machine-icon.png" alt="Equipo" class="icono-arbol">
-                                      {{ equipo }}
-                                    </div>
-                                  </ng-container>
-                                </ng-container>
-                                <ng-template #localNoSeleccionado>
-                                  <div class="cargando-equipos">
-                                    <div class="spinner-container">
-                                      <div class="spinner"></div>
-                                    </div>
-                                    <span>Cargando...</span>
-                                  </div>
-                                </ng-template>
-                                <ng-template #cargandoEquipos>
-                                  <div class="cargando-equipos">
-                                    <div class="spinner-container">
-                                      <div class="spinner"></div>
-                                    </div>
-                                    <span>Cargando equipos...</span>
-                                  </div>
-                                </ng-template>
+                                  [class.local-selected]="localSeleccionado === local.local && clienteSeleccionado === cliente.nombre">
+                            <summary (click)="clickLocalSummary($event, cliente.nombre, local.local)">
+                              <div class="summary-content">
+                                <img src="assets/img/building-icon.png" alt="Local" class="icono-arbol">
+                                {{ local.local }}
                               </div>
-                            </details>
+                            </summary>
+                            <!-- Contenido igual que antes -->
+                            <div class="equipos-container">
+                              <!-- Cuando hay equipos -->
+                              <ng-container *ngIf="EquiposPlantas.length > 0">
+                                <div 
+                                  *ngFor="let equipo of EquiposPlantas" 
+                                  class="equipo-item"
+                                  [class.equipo-selected]="equipoSeleccionado === equipo"
+                                  (click)="$event.stopPropagation(); seleccionarEquipo(equipo)">
+                                  <img src="assets/img/machine-icon.png" alt="Equipo" class="icono-arbol">
+                                  {{ equipo }}
+                                </div>
+                              </ng-container>
+                              
+                              <!-- Cuando está cargando -->
+                              <div class="cargando-equipos" *ngIf="cargandoEquiposLocal">
+                                <div class="spinner-container">
+                                  <div class="spinner"></div>
+                                </div>
+                                <span>Cargando equipos...</span>
+                              </div>
+                              
+                              <!-- Cuando no hay equipos (no está cargando y el array está vacío) -->
+                              <div class="cargando-equipos" *ngIf="!cargandoEquiposLocal && EquiposPlantas.length === 0">
+                                <img alt="Sin equipos" class="icono-arbol">
+                                <span>No hay equipos para este local</span>
+                              </div>
+                            </div>
+                          </details>
                           </ng-container>
                         </div>
                       </details>
@@ -181,14 +177,23 @@
           </div>
           <div class="search-group">
             <img src="assets/img/iconoSearch.png" alt="Buscar" class="input-search-icon">
+            <img src="assets/img/iconoSearch.png" alt="Buscar" class="input-search-icon">
             <input 
               type="text" 
               class="form-control custom-search" 
-              placeholder="Buscar por contacto o referencia..."
+              placeholder="Buscar por contacto, referencia, modelo o serie..."
               [(ngModel)]="busquedaContacto"
               (input)="filtrarEquipos()">
           </div>
         </div>
+
+        <app-email-alertas 
+          *ngIf="clienteSeleccionado"
+          [clienteSeleccionado]="clienteSeleccionado"
+          [localSeleccionado]="localSeleccionado"
+          [equipoSeleccionado]="equipoSeleccionado"
+          [equipos]="equiposFiltrados">
+        </app-email-alertas>
 
         <!-- Sección Tabla de Equipos con scroll horizontal -->
         <div class="table-container">
@@ -218,6 +223,9 @@
                   <th (click)="ordenarPor('serie')">
                     Serie <i class="sort-icon" [ngClass]="getSortIcon('serie')"></i>
                   </th>
+                  <th (click)="ordenarPor('horometro')">
+                    Horometro <i class="sort-icon" [ngClass]="getSortIcon('horometro')"></i>
+                  </th>
                   <th (click)="ordenarPor('tipoEquipo')">
                     Tipo de Equipo <i class="sort-icon" [ngClass]="getSortIcon('tipoEquipo')"></i>
                   </th>
@@ -244,6 +252,7 @@
                     <td>{{ equipo.referencia }}</td>
                     <td>{{ equipo.modelo }}</td>
                     <td>{{ equipo.serie }}</td>
+                    <td>{{ equipo.horometroUltimoServicio }}</td>
                     <td>{{ equipo.tipoEquipo }}</td>
                     <td>
                       <span class="estado-badge" [ngClass]="getBadgeClass(equipo.estado)">
