@@ -556,64 +556,78 @@ private cargarEquiposFrecuenciaServicio(nombrePlanta: string): void {
   }
 
   seleccionarEquipo(equipoId: string): void {
-    // If already showing this equipment, toggle back to all equipment for the plant
+    // Si ya estamos mostrando este equipo, volver a mostrar todos los equipos de la planta
     if (this.equipoSeleccionado === equipoId && this.mostrandoDetalleEquipo) {
-      this.equipoSeleccionado = null;
-      this.mostrandoDetalleEquipo = false;
-      if (this.localSeleccionado) {
-        this.cargarEquiposFrecuenciaServicio(this.localSeleccionado);
-      }
+      this.volverAListaEquipos();
       return;
     }
     
-    // Update selection and mark that we're showing equipment detail
+    // Actualizar la selección y marcar que estamos mostrando detalles de equipo
     this.equipoSeleccionado = equipoId;
     this.mostrandoDetalleEquipo = true;
-    console.log(`Equipo seleccionado: ${equipoId} (sin cargar detalles)`);
+    console.log(`Equipo seleccionado: ${equipoId}`);
     
-    // Filter to show only the selected equipment
-    if (this.localSeleccionado) {
-      // Use the equipment from the existing loaded data if available
-      if (this.todosEquiposCliente.length > 0) {
-        const equipoEncontrado = this.todosEquiposCliente.find(equipo => 
-          equipo.serie === equipoId || 
-          equipo.referencia === equipoId);
-        
-        if (equipoEncontrado) {
-          this.equiposOriginales = [{ ...equipoEncontrado }];
+    // Mostrar estado de carga
+    this.equiposOriginales = [];
+    this.equiposFiltrados = [];
+    this.cdr.detectChanges();
+    
+    if (this.clienteSeleccionado && this.localSeleccionado) {
+      // Usar la nueva API para obtener detalles específicos del equipo
+      this.frecuenciaServicioService.getEquipoIndividual(
+        this.localSeleccionado, 
+        this.clienteSeleccionado, 
+        equipoId
+      ).subscribe({
+        next: (equipo: Equipos) => {
+          console.log('Detalles de equipo recibidos:', equipo);
+          // Mostrar solo este equipo en la tabla
+          this.equiposOriginales = [{ ...equipo, local: this.localSeleccionado! }];
           this.equiposFiltrados = [...this.equiposOriginales];
           this.cdr.detectChanges();
-          return;
-        }
-      }
-      
-      // If not found in cache, try to load from server
-      this.frecuenciaServicioService.getEquipoDetalle(this.localSeleccionado, equipoId)
-        .subscribe({
-          next: (equipo: Equipos) => {
-            // Show only this equipment in the table
-            this.equiposOriginales = [{ ...equipo, local: this.localSeleccionado! }];
-            this.equiposFiltrados = [...this.equiposOriginales];
-            this.cdr.detectChanges();
-          },
-          error: (error) => {
-            console.error(`Error al cargar detalles del equipo ${equipoId}:`, error);
-            
-            // Fallback: Try to find the equipment in the current filtered list
-            const equipoLocal = this.equiposOriginales.find(e => 
+        },
+        error: (error) => {
+          console.error(`Error al cargar detalles del equipo ${equipoId}:`, error);
+          
+          // Alternativa: Intentar encontrar el equipo en la lista actual o en todos los equipos del cliente
+          let equipoEncontrado = this.todosEquiposCliente.find(equipo => 
+            equipo.serie === equipoId || 
+            equipo.referencia === equipoId);
+          
+          if (!equipoEncontrado) {
+            equipoEncontrado = this.equiposOriginales.find(e => 
               e.serie === equipoId || 
               e.referencia === equipoId);
-              
-            if (equipoLocal) {
-              this.equiposOriginales = [{ ...equipoLocal }];
-              this.equiposFiltrados = [...this.equiposOriginales];
-              this.cdr.detectChanges();
-            } else {
-              
-            }
           }
-        });
+          
+          if (equipoEncontrado) {
+            this.equiposOriginales = [{ ...equipoEncontrado }];
+            this.equiposFiltrados = [...this.equiposOriginales];
+          } else {
+            // Mostrar mensaje de error
+            console.warn(`No se encontró el equipo ${equipoId}`);
+          }
+          this.cdr.detectChanges();
+        }
+      });
     }
+  }
+
+  volverAListaEquipos(): void {
+    this.equipoSeleccionado = null;
+    this.mostrandoDetalleEquipo = false;
+    
+    if (this.localSeleccionado) {
+      // Recargar lista de equipos para el local actual
+      this.cargarEquiposFrecuenciaServicio(this.localSeleccionado);
+    } else if (this.clienteSeleccionado && this.mostrandoTodosEquipos) {
+      // Restaurar vista filtrada de todos los equipos
+      this.equiposOriginales = [...this.todosEquiposCliente];
+      this.equiposFiltrados = [...this.equiposOriginales];
+      this.filtrarEquipos();
+    }
+    
+    this.cdr.detectChanges();
   }
 
   seleccionarCliente(event: Event, clienteNombre: string): void {

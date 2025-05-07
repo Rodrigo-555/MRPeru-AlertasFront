@@ -29,3 +29,6 @@ To get more help on the Angular CLI use `ng help` or go check out the [Angular C
 ## Instalacion de Xlss
 npm install xlsx --save
 npm install @fortawesome/fontawesome-free --save
+
+## Instalacion de Graficos estadisticos
+npm install @swimlane/ngx-charts d3 --save

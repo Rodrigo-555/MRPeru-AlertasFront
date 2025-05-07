@@ -79,6 +79,21 @@ export class FrecuenciaServicioService {
     );
   }
 
+  getEquipoIndividual(nombreLocal: string, razon: string, maquina: string): Observable<Equipos> {
+    const params = new HttpParams()
+      .set('NombreLocal', nombreLocal)
+      .set('Razon', razon)
+      .set('Maquina', maquina);
+    
+    return this.http.get<Equipos>(`${this.apiUrl}/equiposIndividuales`, { params }).pipe(
+      map(response => {
+        // Asegurar que la propiedad local esté establecida
+        return { ...response, local: nombreLocal };
+      }),
+      catchError(this.handleError)
+    );
+  }
+
   getEquipoDetalle(nombrePlanta: string, equipoId: string): Observable<Equipos> {
     console.log(`Buscando equipo: ${equipoId} en planta: ${nombrePlanta}`);
     

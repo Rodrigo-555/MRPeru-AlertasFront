@@ -445,11 +445,26 @@ h2 {
 }
 
 .equipment-detail-info {
-  background-color: #e8f4ff;
-  padding: 10px 15px;
-  border-radius: 5px;
   margin-bottom: 15px;
+  padding: 10px 15px;
+  background-color: #f8f9fa;
   border-left: 4px solid #007bff;
+  border-radius: 4px;
+
+  .detail-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    h4 {
+      margin: 0;
+      color: #007bff;
+      
+      i {
+        margin-right: 8px;
+      }
+    }
+  }
 }
 
 /* Estilo para mensaje de carga */

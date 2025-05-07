@@ -145,8 +145,16 @@
           <p>Seleccione un local en el árbol para ver sus equipos.</p>
         </div>
 
-        <div *ngIf="mostrandoDetalleEquipo" class="equipment-detail-info">
-          <h4>Mostrando detalles del equipo: {{ equipoSeleccionado }}</h4>
+        <div class="equipment-detail-info" *ngIf="mostrandoDetalleEquipo">
+          <div class="detail-header">
+            <h4>
+              <i class="fas fa-info-circle"></i> 
+              Detalles del equipo: {{ equipoSeleccionado }}
+            </h4>
+            <button class="btn btn-sm btn-outline-secondary" (click)="volverAListaEquipos()">
+              <i class="fas fa-arrow-left"></i> Volver a la lista
+            </button>
+          </div>
         </div>
         
         <!-- Sección de Filtros y Búsqueda -->
