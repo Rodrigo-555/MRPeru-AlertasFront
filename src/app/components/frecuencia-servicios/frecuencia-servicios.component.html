@@ -270,8 +270,33 @@
             </table>
             
             <ng-template #emptyTable>
-              <div class="empty-table">
-                <p>No se encontraron registros que coincidan con los criterios de búsqueda.</p>
+              <div class="chart-container">
+                <div class="chart-header">
+                  <h3>Distribución de Clientes por Categoría</h3>
+                  <p class="chart-subtitle">No se encontraron equipos según los filtros aplicados. Mostrando información de categorías.</p>
+                </div>
+                
+                <div class="chart-content-wrapper">
+                  <!-- Panel izquierdo con el gráfico -->
+                  <div class="pie-chart-wrapper">
+                    <div id="pieChart" class="pie-chart"></div>
+                    <div id="pieChartCenter" class="pie-chart-center">
+                      <!-- Solo mostrar el valor numérico -->
+                      <span id="centerValue">0</span>
+                      <span class="center-label">Clientes</span>
+                    </div>
+                  </div>
+                  
+                  <!-- Nuevo panel lateral para mostrar la categoría seleccionada -->
+                  <div class="category-info-panel">
+                    <div id="categoryInfo" class="category-detail">
+                      <span class="selection-hint">Pase el cursor sobre un segmento para ver detalles</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- La leyenda se mantiene debajo -->
+                <div id="pieChartLegend" class="pie-chart-legend"></div>
               </div>
             </ng-template>
           </div>

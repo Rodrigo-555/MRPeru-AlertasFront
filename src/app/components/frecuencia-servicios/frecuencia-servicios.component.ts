@@ -52,6 +52,24 @@ export class FrecuenciaServiciosComponent implements OnInit {
   private equiposPorLocalMap: { [key: string]: string[] } = {};
   private cargandoEquiposPorLocal: { [key: string]: boolean } = {};
 
+  private chartColors: string[] = [
+    '#3366cc', // Azul fuerte
+    '#dc3912', // Rojo
+    '#ff9900', // Naranja
+    '#109618', // Verde
+    '#990099', // Morado
+    '#0099c6', // Azul claro
+    '#dd4477', // Rosa
+    '#66aa00', // Verde claro 
+    '#b82e2e', // Rojo oscuro
+    '#316395', // Azul oscuro
+    '#994499', // Morado oscuro
+    '#22aa99', // Verde azulado
+    '#aaaa11', // Mostaza
+    '#6633cc', // Violeta
+    '#e67300'  // Naranja oscuro
+  ];
+
   campoOrdenamiento: string = '';
   ordenAscendente: boolean = true;
 
@@ -217,6 +235,9 @@ export class FrecuenciaServiciosComponent implements OnInit {
       // Precargar RUCs para los primeros clientes visibles
       this.precargarRUCsIniciales();
       
+      // Renderizar el gráfico de categorías automáticamente después de cargar datos
+      this.renderizarGraficoNativo();
+      
       // Actualizar la UI una sola vez después de procesar todo
       this.cdr.markForCheck();
     });
@@ -237,32 +258,347 @@ export class FrecuenciaServiciosComponent implements OnInit {
     }
   }
 
-  private loadCategoryData(category: {name: string, title: string}): void {
-    this.clienteService.getClientes(category.name).subscribe({
-      next: (data: Cliente[]) => {
-        const categoryData = { title: category.title, clientes: data };
-        this.clienteCategories.push(categoryData);
-        
-        // Guardar copia solo cuando se completa la carga
-        if (!this.clientesCategoriesOriginal.find(cat => cat.title === category.title)) {
-          const copiaSeguridad = JSON.parse(JSON.stringify(categoryData));
-          this.clientesCategoriesOriginal.push(copiaSeguridad);
-        }
-        
-        this.cdr.detectChanges();
-      },
-      error: (error) => {
-        console.error(`Error al cargar los clientes de ${category.name}:`, error);
-        const categoryData = { title: category.title, clientes: [] };
-        this.clienteCategories.push(categoryData);
-        this.clientesCategoriesOriginal.push(JSON.parse(JSON.stringify(categoryData)));
-      }
-    });
-  }
-
   get totalPaginas(): number {
     return Math.ceil(this.equiposFiltrados.length / this.itemsPorPagina);
   }
+
+  private renderizarGraficoNativo(): void {
+    // Agregar animación de carga y efecto de transición suave
+    setTimeout(() => {
+      const chartContainer = document.getElementById('pieChart');
+      const legendContainer = document.getElementById('pieChartLegend');
+      
+      if (!chartContainer || !legendContainer) return;
+      
+      chartContainer.innerHTML = '';
+      legendContainer.innerHTML = '';
+      
+      // Mostrar un efecto de carga inicial
+      chartContainer.classList.add('loading-chart');
+      
+      // Preparar datos para el gráfico como antes...
+      const categorias = this.clienteCategories || [];
+      
+      const datos = categorias
+        .map(cat => ({
+          nombre: cat.title,
+          valor: cat.clientes?.length || 0,
+          categoria: cat
+        }))
+        .filter(d => d.valor > 0)
+        .sort((a, b) => b.valor - a.valor); // Ordenados por cantidad
+      
+      if (datos.length === 0) {
+        chartContainer.innerHTML = '<div class="no-data">No hay datos disponibles para mostrar</div>';
+        chartContainer.classList.remove('loading-chart');
+        return;
+      }
+      
+      // Calcular total y porcentajes
+      const total = datos.reduce((sum, d) => sum + d.valor, 0);
+      
+      // Actualizar contador central con animación de contador
+      const centerValue = document.getElementById('centerValue');
+      if (centerValue) {
+        // Efecto de contador animado
+        this.animateCounter(centerValue, 0, total, 1000);
+      }
+      
+      // Crear SVG como contenedor del gráfico
+      chartContainer.innerHTML = `
+        <svg viewBox="0 0 100 100" class="pie-chart-svg">
+          <defs>
+            <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+              <feDropShadow dx="0" dy="1" stdDeviation="2" flood-opacity="0.3"/>
+            </filter>
+            <!-- Añadir gradientes para cada color -->
+            ${this.chartColors.map((color, i) => `
+              <linearGradient id="gradient-${i}" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="${this.lightenColor(color, 20)}" />
+                <stop offset="100%" stop-color="${this.darkenColor(color, 10)}" />
+              </linearGradient>
+            `).join('')}
+          </defs>
+          <!-- Los segmentos se agregarán aquí -->
+        </svg>
+      `;
+      
+      const svg = chartContainer.querySelector('svg');
+      
+      // Crear segmentos con SVG mejorado
+      let startAngle = 0;
+      const radius = 50;
+      const centerX = 50;
+      const centerY = 50;
+      
+      // Retraso para efectos escalonados
+      datos.forEach((dato, index) => {
+        const porcentaje = dato.valor / total;
+        const angle = porcentaje * 360;
+        const gradientId = `gradient-${index % this.chartColors.length}`;
+        
+        // Resto del código para generar el SVG path...
+        const endAngle = startAngle + angle;
+        const largeArcFlag = angle > 180 ? 1 : 0;
+        
+        const startAngleRad = (startAngle - 90) * Math.PI / 180;
+        const endAngleRad = (endAngle - 90) * Math.PI / 180;
+        
+        const x1 = centerX + radius * Math.cos(startAngleRad);
+        const y1 = centerY + radius * Math.sin(startAngleRad);
+        const x2 = centerX + radius * Math.cos(endAngleRad);
+        const y2 = centerY + radius * Math.sin(endAngleRad);
+        
+        const segmento = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        const d = [
+          `M ${centerX},${centerY}`,
+          `L ${x1},${y1}`,
+          `A ${radius},${radius} 0 ${largeArcFlag},1 ${x2},${y2}`,
+          'Z'
+        ].join(' ');
+        
+        segmento.setAttribute('d', d);
+        // Usar gradiente en lugar de color plano
+        segmento.setAttribute('fill', `url(#${gradientId})`);
+        segmento.setAttribute('stroke', 'white');
+        segmento.setAttribute('stroke-width', '0.5');
+        segmento.setAttribute('data-categoria', dato.nombre);
+        segmento.setAttribute('data-valor', dato.valor.toString());
+        segmento.setAttribute('data-porcentaje', Math.round(porcentaje * 100).toString());
+        segmento.classList.add('pie-segment-svg');
+        
+        // Animación de entrada para cada segmento
+        segmento.style.opacity = '0';
+        segmento.style.transform = 'scale(0.8)';
+        
+        // Mejorar interactividad
+        segmento.addEventListener('mouseenter', () => {
+          // Destacar segmento
+          segmento.classList.add('segment-highlight');
+          
+          const categoryInfo = document.getElementById('categoryInfo');
+      
+          if (categoryInfo) {
+            const porcentaje = Math.round((dato.valor / total) * 100);
+            const color = this.chartColors[index % this.chartColors.length];
+            
+            // Actualizar contenido del panel lateral con datos de la categoría
+            categoryInfo.innerHTML = `
+              <div class="category-name" style="border-color: ${color}">${dato.nombre}</div>
+              <div class="category-stats">
+                <div class="stat-item">
+                  <span class="stat-label">Clientes:</span>
+                  <span class="stat-value">${dato.valor}</span>
+                </div>
+                <div class="stat-item">
+                  <span class="stat-label">Porcentaje:</span>
+                  <span class="stat-value">${porcentaje}%</span>
+                </div>
+                <div class="percentage-bar">
+                  <div class="percentage-fill" style="width: ${porcentaje}%; background-color: ${color}"></div>
+                </div>
+              </div>
+            `;
+            
+            // Animar entrada del panel
+            categoryInfo.style.opacity = '0';
+            categoryInfo.style.transform = 'translateY(10px)';
+            
+            setTimeout(() => {
+              categoryInfo.style.opacity = '1';
+              categoryInfo.style.transform = 'translateY(0)';
+            }, 50);
+          }
+          
+          // Resaltar leyenda correspondiente (código existente)
+          const legendItem = document.querySelector(`.legend-item[data-categoria="${dato.nombre}"]`);
+          if (legendItem) {
+            legendItem.classList.add('legend-highlight');
+            legendItem.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
+          }
+        });
+        
+        segmento.addEventListener('mouseleave', () => {
+          segmento.classList.remove('segment-highlight');
+          
+          // Restaurar el panel lateral a su estado inicial
+          const categoryInfo = document.getElementById('categoryInfo');
+          if (categoryInfo) {
+            categoryInfo.innerHTML = '<span class="selection-hint">Pase el cursor sobre un segmento para ver detalles</span>';
+          }
+          
+          // Restaurar leyenda
+          const legendItem = document.querySelector('.legend-highlight');
+          if (legendItem) legendItem.classList.remove('legend-highlight');
+        });
+        
+        if (svg) {
+          svg.appendChild(segmento);
+          
+          // Animar la entrada con retrasos escalonados para un efecto más profesional
+          setTimeout(() => {
+            segmento.style.transition = 'opacity 0.5s, transform 0.7s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+            segmento.style.opacity = '1';
+            segmento.style.transform = 'scale(1)';
+          }, 100 + index * 80);
+        }
+        
+        startAngle = endAngle;
+      });
+      
+      // Crear la leyenda mejorada
+      datos.forEach((dato, index) => {
+        const porcentaje = Math.round((dato.valor / total) * 100);
+        const color = this.chartColors[index % this.chartColors.length];
+        
+        const legendItem = document.createElement('div');
+        legendItem.className = 'legend-item';
+        legendItem.dataset['categoria'] = dato.nombre;
+        
+        const colorBox = document.createElement('span');
+        colorBox.className = 'color-box';
+        colorBox.style.backgroundColor = color;
+        
+        const titleSpan = document.createElement('span');
+        titleSpan.className = 'legend-title';
+        titleSpan.textContent = this.abreviarTexto(dato.nombre, 25);
+        titleSpan.title = dato.nombre; // Tooltip para ver nombre completo
+        
+        const countSpan = document.createElement('span');
+        countSpan.className = 'legend-count';
+        countSpan.textContent = `${dato.valor} (${porcentaje}%)`;
+        
+        legendItem.appendChild(colorBox);
+        legendItem.appendChild(titleSpan);
+        legendItem.appendChild(countSpan);
+        
+        // En la parte donde se crean los elementos de la leyenda:
+        legendItem.addEventListener('mouseenter', () => {
+          legendItem.classList.add('legend-highlight');
+          
+          // Resaltar segmento
+          const segmento = svg?.querySelector(`path[data-categoria="${dato.nombre}"]`);
+          if (segmento) segmento.classList.add('segment-highlight');
+          
+          // Actualizar panel lateral en lugar del centro
+          const categoryInfo = document.getElementById('categoryInfo');
+          if (categoryInfo) {
+            const porcentaje = Math.round((dato.valor / total) * 100);
+            const color = this.chartColors[index % this.chartColors.length];
+            
+            // Actualizar contenido del panel lateral con datos
+            categoryInfo.innerHTML = `
+              <div class="category-name" style="border-color: ${color}">${dato.nombre}</div>
+              <div class="category-stats">
+                <div class="stat-item">
+                  <span class="stat-label">Clientes:</span>
+                  <span class="stat-value">${dato.valor}</span>
+                </div>
+                <div class="stat-item">
+                  <span class="stat-label">Porcentaje:</span>
+                  <span class="stat-value">${porcentaje}%</span>
+                </div>
+                <div class="percentage-bar">
+                  <div class="percentage-fill" style="width: ${porcentaje}%; background-color: ${color}"></div>
+                </div>
+              </div>
+            `;
+          }
+        });
+
+        legendItem.addEventListener('mouseleave', () => {
+          legendItem.classList.remove('legend-highlight');
+          
+          // Quitar resaltado del segmento
+          const segmento = svg?.querySelector('.segment-highlight');
+          if (segmento) segmento.classList.remove('segment-highlight');
+          
+          // Restaurar panel lateral
+          const categoryInfo = document.getElementById('categoryInfo');
+          if (categoryInfo) {
+            categoryInfo.innerHTML = '<span class="selection-hint">Pase el cursor sobre un segmento para ver detalles</span>';
+          }
+        });
+        
+        legendContainer.appendChild(legendItem);
+      });
+      
+      // Quitar clase de carga cuando todo está listo
+      setTimeout(() => {
+        chartContainer.classList.remove('loading-chart');
+      }, 300);
+      
+    }, 100);
+  }
+
+  // Método auxiliar para animar contador
+private animateCounter(element: HTMLElement, start: number, end: number, duration: number, extraHTML: string = ''): void {
+  // Asegurar que los valores son números
+  start = isNaN(start) ? 0 : start;
+  end = isNaN(end) ? 0 : end;
+  
+  const range = end - start;
+  const minTimer = 50; // mínimo tiempo entre actualizaciones
+  const stepTime = Math.abs(Math.floor(duration / range));
+  const startTime = new Date().getTime();
+  const endTime = startTime + duration;
+  let timer: any;
+  
+  // No animar si no hay cambio o el elemento no existe
+  if (range === 0 || !element) {
+    element.innerHTML = end.toString() + extraHTML;
+    return;
+  }
+  
+  const run = () => {
+    const now = new Date().getTime();
+    const remaining = Math.max((endTime - now) / duration, 0);
+    const value = Math.round(end - (remaining * range));
+    element.innerHTML = value.toString() + extraHTML;
+    if (value === end) {
+      clearInterval(timer);
+    }
+  };
+  
+  timer = setInterval(run, Math.min(stepTime, minTimer));
+  run();
+}
+
+// Métodos auxiliares para manipular colores
+private lightenColor(color: string, percent: number): string {
+  const num = parseInt(color.replace('#', ''), 16);
+  const amt = Math.round(2.55 * percent);
+  const R = (num >> 16) + amt;
+  const G = (num >> 8 & 0x00FF) + amt;
+  const B = (num & 0x0000FF) + amt;
+  
+  return '#' + (
+    0x1000000 + 
+    (R < 255 ? (R < 1 ? 0 : R) : 255) * 0x10000 + 
+    (G < 255 ? (G < 1 ? 0 : G) : 255) * 0x100 + 
+    (B < 255 ? (B < 1 ? 0 : B) : 255)
+  ).toString(16).slice(1);
+}
+
+private darkenColor(color: string, percent: number): string {
+  const num = parseInt(color.replace('#', ''), 16);
+  const amt = Math.round(2.55 * percent);
+  const R = (num >> 16) - amt;
+  const G = (num >> 8 & 0x00FF) - amt;
+  const B = (num & 0x0000FF) - amt;
+  
+  return '#' + (
+    0x1000000 + 
+    (R > 0 ? R : 0) * 0x10000 + 
+    (G > 0 ? G : 0) * 0x100 + 
+    (B > 0 ? B : 0)
+  ).toString(16).slice(1);
+}
+
+// Método auxiliar para abreviar textos largos
+private abreviarTexto(texto: string, maxLongitud: number): string {
+  return texto.length > maxLongitud ? texto.substring(0, maxLongitud) + '...' : texto;
+}
 
   expandirTodo(): void {
     // Primero expandir categorías con un pequeño retraso entre operaciones DOM
@@ -1045,7 +1381,12 @@ filtrarEquipos(): void {
   
   this.paginaActual = 1; // Regresar a la primera página solo cuando es necesario
   this.totalEquiposCliente = source.length;
-  this.cdr.markForCheck();
+    // Si no hay resultados, renderizar el gráfico de categorías
+    if (this.equiposFiltrados.length === 0) {
+      this.renderizarGraficoNativo();
+    }
+    
+    this.cdr.markForCheck();
 }
 
   // Función de filtrado de clientes mejorada
