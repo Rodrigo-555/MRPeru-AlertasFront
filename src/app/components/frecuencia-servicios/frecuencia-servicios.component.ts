@@ -8,12 +8,11 @@ import { FrecuenciaServicioService } from '../../service/FrecuenciaServicio/frec
 import { Cliente } from '../../interface/clientes.interface.';
 import { EquiposServiceService } from '../../service/Equipos/equipos-service.service';
 import { catchError, forkJoin, map, of, Subscription } from 'rxjs';
-import { EmailAlertasComponent } from '../email-alertas/email-alertas.component';
 
 @Component({
   selector: 'app-frecuencia-servicios',
   standalone: true,
-  imports: [CommonModule, HttpClientModule, FormsModule, EmailAlertasComponent],
+  imports: [CommonModule, HttpClientModule, FormsModule],
   templateUrl: './frecuencia-servicios.component.html',
   styleUrls: ['./frecuencia-servicios.component.scss']
 })

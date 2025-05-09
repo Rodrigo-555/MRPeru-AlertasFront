@@ -43,14 +43,26 @@ export class EmailService {
       );
   }
 
-  // Enviar alerta para un equipo específico
-  enviarAlertaEquipo(nombrePlanta: string, equipoId: string, email?: string): Observable<any> {
-    console.log(`Enviando alerta para equipo ${equipoId} en ${nombrePlanta}, email: ${email}`);
+  // Enviar alerta para un equipo específico usando el nuevo endpoint manual
+  enviarAlertaEquipo(nombrePlanta: string, equipoId: string, email: string, tipoEquipo?: string, serie?: string, fechaProxima?: string): Observable<any> {
+    console.log(`Enviando alerta manual para equipo ${equipoId} en ${nombrePlanta}, email: ${email}`);
     
-    // Crear el objeto de datos que incluye el email
-    const data = email ? { emailDestino: email } : {};
+    // Construir los parámetros para la solicitud
+    let params = new HttpParams()
+      .set('nombrePlanta', nombrePlanta)
+      .set('referencia', equipoId)
+      .set('email', email);
     
-    return this.http.post(`${this.apiUrl}/enviar-alerta-equipo/${nombrePlanta}/${equipoId}`, data)
+    // Añadir los parámetros opcionales si están disponibles
+    if (tipoEquipo) params = params.set('tipoEquipo', tipoEquipo);
+    if (serie) params = params.set('serie', serie);
+    if (fechaProxima) params = params.set('fechaProxima', fechaProxima);
+    
+    // Si no se proporciona tipo de equipo o serie, utilizar valores por defecto
+    if (!tipoEquipo) params = params.set('tipoEquipo', 'Compresor');
+    if (!serie) params = params.set('serie', equipoId);
+    
+    return this.http.post(`${this.apiUrl}/enviar-alerta-manual`, null, { params })
       .pipe(
         tap(response => console.log('Alerta equipo enviada:', response)),
         catchError(this.handleError)

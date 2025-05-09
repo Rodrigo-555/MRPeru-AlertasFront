@@ -161,13 +161,34 @@ export class EmailAlertasComponent implements OnInit, OnChanges {
       return;
     }
   
+    // Buscar el equipo para obtener sus datos completos
+    const equipoEncontrado = this.equipos.find(e => 
+      e.serie === this.equipoSeleccionado || 
+      e.referencia === this.equipoSeleccionado
+    );
+
+    if (!equipoEncontrado) {
+      this.mostrarError('No se encontraron los datos completos del equipo');
+      return;
+    }
+  
     this.enviandoCorreo = true;
     
-    // Enviar el email junto con la solicitud
+    // Convertir la fecha a string si existe
+    const fechaProximaStr = equipoEncontrado.fechaProximoServicio 
+      ? typeof equipoEncontrado.fechaProximoServicio === 'string'
+        ? equipoEncontrado.fechaProximoServicio
+        : new Date(equipoEncontrado.fechaProximoServicio).toISOString().split('T')[0]
+      : undefined;
+    
+    // Enviar todos los datos necesarios
     this.emailService.enviarAlertaEquipo(
       this.localSeleccionado, 
       this.equipoSeleccionado,
-      this.emailEquipoSeleccionado // Enviar el email que ya tenemos
+      this.emailEquipoSeleccionado,
+      equipoEncontrado.tipoEquipo,
+      equipoEncontrado.serie,
+      fechaProximaStr
     )
       .subscribe({
         next: (response) => {

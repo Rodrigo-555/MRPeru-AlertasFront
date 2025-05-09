@@ -14,6 +14,7 @@ import { EmailService } from '../../service/Email/email.service';
   templateUrl: './proximo-servicio.component.html',
   styleUrls: ['./proximo-servicio.component.scss']
 })
+
 export class ProximoServicioComponent implements OnInit {
   // Datos de equipos
   equiposOriginales: Equipos[] = [];
@@ -38,6 +39,10 @@ export class ProximoServicioComponent implements OnInit {
   // Variables para paginación
   paginaActual: number = 1;
   itemsPorPagina: number = 10;
+
+  // Variables para el modal de confirmación
+  mostrarModalConfirmacion: boolean = false;
+  equipoSeleccionado: Equipos | null = null;
 
   // Lista de categorías disponibles
   categoriasClientes: string[] = [
@@ -152,24 +157,8 @@ export class ProximoServicioComponent implements OnInit {
 
   // Enviar notificación a un equipo individual
   enviarNotificacionIndividual(equipo: Equipos): void {
-    if (!this.tieneEmailValido(equipo)) {
-      this.mostrarMensaje('error', 'El equipo no tiene una dirección de correo válida');
-      return;
-    }
-    
-    this.enviandoNotificaciones = true;
-    
-    this.emailService.enviarAlertaEquipo(equipo.planta, equipo.referencia, equipo.email)
-      .subscribe({
-        next: (response) => {
-          this.mostrarMensaje('exito', `Notificación enviada a: ${equipo.email}`);
-          this.enviandoNotificaciones = false;
-        },
-        error: (error) => {
-          this.mostrarMensaje('error', `Error al enviar notificación: ${error.message}`);
-          this.enviandoNotificaciones = false;
-        }
-      });
+    this.mostrarConfirmacion(equipo);
+
   }
 
   // Enviar notificación a múltiples equipos seleccionados
@@ -225,6 +214,56 @@ export class ProximoServicioComponent implements OnInit {
   mostrarMensaje(tipo: 'exito' | 'error', mensaje: string): void {
     this.mensajeResultado = { tipo, mensaje };
     setTimeout(() => this.mensajeResultado = null, 5000);
+  }
+
+  // Método para mostrar el modal de confirmación
+  mostrarConfirmacion(equipo: Equipos): void {
+    if (!this.tieneEmailValido(equipo)) {
+      this.mostrarMensaje('error', 'El equipo no tiene una dirección de correo válida');
+      return;
+    }
+    
+    this.equipoSeleccionado = equipo;
+    this.mostrarModalConfirmacion = true;
+  }
+    
+  // Método para cancelar el envío
+  cancelarEnvio(): void {
+      this.mostrarModalConfirmacion = false;
+      this.equipoSeleccionado = null;
+  }
+
+  // Método para confirmar y enviar la notificación
+  confirmarEnvio(): void {
+        if (!this.equipoSeleccionado) return;
+      
+        const equipo = this.equipoSeleccionado;
+        this.mostrarModalConfirmacion = false;
+        
+        this.enviandoNotificaciones = true;
+        
+        // Usar el nuevo método con todos los parámetros necesarios
+        this.emailService.enviarAlertaEquipo(
+          equipo.planta,
+          equipo.referencia, 
+          equipo.email,
+          equipo.tipoEquipo,
+          equipo.serie,
+          equipo.fechaProximoServicio || undefined
+        )
+          .subscribe({
+            next: (response) => {
+              this.mostrarMensaje('exito', `Notificación enviada a: ${equipo.email}`);
+              this.enviandoNotificaciones = false;
+            },
+            error: (error) => {
+              this.mostrarMensaje('error', `Error al enviar notificación: ${error.message}`);
+              this.enviandoNotificaciones = false;
+            }
+          });
+          
+        // Limpiar la referencia después de enviar
+        this.equipoSeleccionado = null;
   }
 
   // Método específico para filtrar por rango de fechas

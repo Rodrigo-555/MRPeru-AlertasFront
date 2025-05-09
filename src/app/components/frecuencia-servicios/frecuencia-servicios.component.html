@@ -151,7 +151,7 @@
               <i class="fas fa-info-circle"></i> 
               Detalles del equipo: {{ equipoSeleccionado }}
             </h4>
-            <button class="btn btn-sm btn-outline-secondary" (click)="volverAListaEquipos()">
+            <button class="btn-volver" (click)="volverAListaEquipos()">
               <i class="fas fa-arrow-left"></i> Volver a la lista
             </button>
           </div>
@@ -194,14 +194,6 @@
               (input)="filtrarEquipos()">
           </div>
         </div>
-
-        <app-email-alertas 
-          *ngIf="clienteSeleccionado"
-          [clienteSeleccionado]="clienteSeleccionado"
-          [localSeleccionado]="localSeleccionado"
-          [equipoSeleccionado]="equipoSeleccionado"
-          [equipos]="equiposFiltrados">
-        </app-email-alertas>
 
         <!-- Sección Tabla de Equipos con scroll horizontal -->
         <div class="table-container">
